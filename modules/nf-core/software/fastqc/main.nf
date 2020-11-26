@@ -11,12 +11,12 @@ process FASTQC {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), publish_id:meta.id) }
 
-    conda     (params.enable_conda ? params.enable_conda : null)
+    conda     (params.enable_conda ? "bioconda::fastqc=0.11.9" : null)
     container "quay.io/biocontainers/fastqc:0.11.9--0"
-
+    
     input:
     tuple val(meta), path(reads)
-
+    
     output:
     tuple val(meta), path("*.html"), emit: html
     tuple val(meta), path("*.zip") , emit: zip
