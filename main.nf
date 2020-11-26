@@ -20,4 +20,7 @@ workflow {
 
   // call FASTQC from module
   FASTQC(input)
+
+  // reference to an emit channel to be used out FASTQC scope (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
+  FASTQC.out.html.view()
 }
