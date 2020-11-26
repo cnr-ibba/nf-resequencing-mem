@@ -2,11 +2,16 @@
 Resequencing Nextflow Pipeline
 ==============================
 
-Please modify `params` in `nextflow.config` according your needs: The `params`
-scopes defines variables which applies to the whole pipeline.
+When running Nextflow, Nextflow looks for a file named `nextflow.config` in the
+current directory and in the script base directory (if it is not the same as the
+current directory). Finally it checks for the file `$HOME/.nextflow/config`.
+Please modify `params` in `nextflow.config` according your needs:
 
-The `profiles` scope defines variables which apply to the particular profile
+* The `params` scope defines variables which applies to the whole pipeline.
+* The `profiles` scope defines variables which apply to the particular profile
 invoked with the `-profile` Nextflow parameter
+* The `process` scope can define parameters applied to a single process (for example
+the number of CPUs used or the required RAM)
 
 Pipeline profiles
 -----------------
@@ -22,15 +27,15 @@ the pipeline with a [custom profile](https://www.nextflow.io/docs/edge/config.ht
 Nextflow profiles let nextflow to manage software dependencies and custom parameters.
 Three profiles are currently defined:
 
-  * **conda**: every pipeline step will manage its requirements using conda in a
-  specific environment. Conda environments are created inside `work` directory
-  (but you can change this behaviour using `cacheDir` option within the conda
-  scope).
-  * **docker**: manage requirements using docker images. You will need to be part of
-  the `docker` group in order to use this profile
-  * **singularity**: manage requirements using singularity images. You can execute
-  this profile without any permissions. `singularity` software need to be installed
-  and available in your `$PATH` bash environment variable
+* **conda**: every pipeline step will manage its requirements using conda in a
+specific environment. Conda environments are created inside `work` directory
+(but you can change this behaviour using `cacheDir` option within the conda
+scope).
+* **docker**: manage requirements using docker images. You will need to be part of
+the `docker` group in order to use this profile
+* **singularity**: manage requirements using singularity images. You can execute
+this profile without any permissions. `singularity` software need to be installed
+and available in your `$PATH` bash environment variable
 
 Calling nextflow using conda
 ----------------------------

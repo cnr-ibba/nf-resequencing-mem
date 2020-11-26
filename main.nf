@@ -31,20 +31,18 @@ workflow {
   // call FASTQC from module
   FASTQC(fastqc_input)
 
-  // reference to an emit channel to be used out FASTQC scope (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
-  // FASTQC.out.html.view()
-
   // TODO: add a multiqc step
 
   // indexing genome
   BWA_INDEX(file(params.genome_path, checkIfExists: true))
 
-  // aligning reads to genome: in DSL2 I can't using into to duplicate the channel
+  // aligning reads to genome: in DSL2 I can't use 'into' to duplicate the channel
   // like DSL1, but I can read the output from another workflow or open a new channel
-  // call the same function as before for FASTQC:
+  // call the same function I used before for FASTQC:
   bwa_input = get_reads(params.reads_path)
 
   // aligning with bwa: need reads in the same format used with FASTQC, a index file
-  // (which can be read from BWA_INDEX.out and the genome used)
+  // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
+  // and the last parameter is the genome file (the same used in indexing)
   BWA_MEM(bwa_input, BWA_INDEX.out.index, file(params.genome_path, checkIfExists: true))
 }
