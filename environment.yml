@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=main
+  - bwa=0.7.17=hed695b0_7
   - fastqc=0.11.9=0
   - font-ttf-dejavu-sans-mono=2.37=h6964260_0
   - fontconfig=2.13.0=h9420a91_0
