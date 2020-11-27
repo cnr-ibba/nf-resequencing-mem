@@ -10,6 +10,8 @@ include { BWA_INDEX } from './modules/nf-core/software/bwa/index/main' addParams
 include { BWA_MEM } from './modules/nf-core/software/bwa/mem/main' addParams( options: [:], publish_dir_mode: "symlink" )
 include { SAMTOOLS_SORT } from './modules/nf-core/software/samtools/sort/main' addParams( options: [:], publish_dir_mode: "symlink" )
 include { PICARD_MARKDUPLICATES } from './modules/nf-core/software/picard/markduplicates/main' addParams( options: [:], publish_dir_mode: "symlink" )
+include { SAMTOOLS_INDEX } from './modules/nf-core/software/samtools/index/main' addParams( options: [:], publish_dir_mode: "symlink" )
+include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/software/samtools/flagstat/main' addParams( options: [:] )
 
 // a function to reads from reads file channel and convert this to the format used by
 // imported workflows
@@ -57,4 +59,17 @@ workflow {
   // markduplicates step. It requires meta information + bam files, the same output of
   // SAMTOOLS_SORT step
   PICARD_MARKDUPLICATES(SAMTOOLS_SORT.out.bam)
+
+  // bam need to be indexed before doing flagstat
+  SAMTOOLS_INDEX(PICARD_MARKDUPLICATES.out.bam)
+
+  // now I can do the flagstat step. I need bam and bai files from markduplicates and
+  // samtools index and the meta informations as three different input. From both channels,
+  // I have an output like val(meta), path("*.bam") and val(meta), path("*.bai")
+  // I can join two channels with the same key (https://www.nextflow.io/docs/latest/operator.html#join)
+  flagstat_input = PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX.out.bai, failOnMismatch: true, failOnDuplicate: true)//.view()
+
+  // time to call flagstat
+  SAMTOOLS_FLAGSTAT(flagstat_input)
+
 }
