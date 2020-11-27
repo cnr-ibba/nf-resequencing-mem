@@ -8,6 +8,8 @@ include { FASTQC } from './modules/nf-core/software/fastqc/main' addParams( opti
 include { BWA_INDEX } from './modules/nf-core/software/bwa/index/main' addParams( options: [:] )
 // override default publish_dir_mode: I don't want to copy a BAM file outside the "work" directory
 include { BWA_MEM } from './modules/nf-core/software/bwa/mem/main' addParams( options: [:], publish_dir_mode: "symlink" )
+include { SAMTOOLS_SORT } from './modules/nf-core/software/samtools/sort/main' addParams( options: [:], publish_dir_mode: "symlink" )
+include { PICARD_MARKDUPLICATES } from './modules/nf-core/software/picard/markduplicates/main' addParams( options: [:], publish_dir_mode: "symlink" )
 
 // a function to reads from reads file channel and convert this to the format used by
 // imported workflows
@@ -45,4 +47,11 @@ workflow {
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
   // and the last parameter is the genome file (the same used in indexing)
   BWA_MEM(bwa_input, BWA_INDEX.out.index, file(params.genome_path, checkIfExists: true))
+
+  // BAM file need to be sorted in order to mark duplicates
+  SAMTOOLS_SORT(BWA_MEM.out.bam)
+
+  // markduplicates step. It requires meta information + bam files, the same output of
+  // SAMTOOLS_SORT step
+  PICARD_MARKDUPLICATES(SAMTOOLS_SORT.out.bam)
 }
