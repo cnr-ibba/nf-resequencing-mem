@@ -48,7 +48,10 @@ workflow {
   // and the last parameter is the genome file (the same used in indexing)
   BWA_MEM(bwa_input, BWA_INDEX.out.index, file(params.genome_path, checkIfExists: true))
 
-  // BAM file need to be sorted in order to mark duplicates
+  // BAM file need to be sorted in order to mark duplicates. Please note that the output
+  // file has been renamed by modiying the nextflow core SAMTOOLS_SORT modules. This is
+  // required since samtools can't sort using the same file names for input and output
+  // as nextflow does in work directory
   SAMTOOLS_SORT(BWA_MEM.out.bam)
 
   // markduplicates step. It requires meta information + bam files, the same output of
