@@ -5,6 +5,7 @@ nextflow.enable.dsl = 2
 
 // include workflow dependencies from external modules
 include { FASTQC } from './modules/nf-core/software/fastqc/main' addParams( options: [:] )
+include { MULTIQC } from './modules/nf-core/software/multiqc/main' addParams( options: [:] )
 include { BWA_INDEX } from './modules/nf-core/software/bwa/index/main' addParams( options: [:] )
 // override default publish_dir_mode: I don't want to copy a BAM file outside the "work" directory
 include { BWA_MEM } from './modules/nf-core/software/bwa/mem/main' addParams( options: [:], publish_dir_mode: "symlink" )
@@ -35,7 +36,15 @@ workflow {
   // call FASTQC from module
   FASTQC(fastqc_input)
 
-  // TODO: add a multiqc step
+  // get only the data I need for a MultiQC step
+  html_report = FASTQC.out.html.map( sample -> sample[1] )
+  zip_report = FASTQC.out.zip.map( sample -> sample[1] )
+
+  // combine two channel (mix) and the get only one emission
+  multiqc_input = html_report.mix(zip_report).collect()//.view()
+
+  // calling MultiQC
+  MULTIQC(multiqc_input)
 
   // indexing genome
   BWA_INDEX(file(params.genome_path, checkIfExists: true))
