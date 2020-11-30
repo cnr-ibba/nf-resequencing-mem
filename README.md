@@ -2,6 +2,26 @@
 Resequencing Nextflow Pipeline
 ==============================
 
+Setting up
+----------
+
+In order to execute this pipeline, you will need `nextflow` installed and one of this
+different executors: `conda`, `singularity` and `docker`. You can choose to clone
+this repository if you plan to change this pipeline according your needs:
+
+```
+$ git clone https://github.com/cnr-ibba/nf-resequencing-mem
+```
+
+The other way to running this pipeline is described in
+[pipeline sharing](https://www.nextflow.io/docs/latest/sharing.html#pipeline-sharing)
+nextflow manual. You will need also to define your credentials for private
+repositories. See [SCM configuration file](https://www.nextflow.io/docs/latest/sharing.html#scm-configuration-file)
+for more details.
+
+Customize configuration
+-----------------------
+
 When running Nextflow, Nextflow looks for a file named `nextflow.config` in the
 current directory and in the script base directory (if it is not the same as the
 current directory). Finally it checks for the file `$HOME/.nextflow/config`.
@@ -13,8 +33,11 @@ invoked with the `-profile` Nextflow parameter
 * The `process` scope can define parameters applied to a single process (for example
 the number of CPUs used or the required RAM)
 
-Pipeline profiles
------------------
+### params scope
+
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+### profiles scope
 
 By default, this pipeline is supposed to work in an environment with all required softwares
 already installed. You could install and manage all required software in a conda
@@ -37,33 +60,9 @@ the `docker` group in order to use this profile
 this profile without any permissions. `singularity` software need to be installed
 and available in your `$PATH` bash environment variable
 
-Calling nextflow using conda
-----------------------------
+### process scope
 
-### Creating an environment relying on environment export file
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
-`cacheDir`: defined in [conda scope](https://www.nextflow.io/docs/latest/config.html#scope-conda),
-specifies where environment should be created or found
-
-```
-profiles {
-  conda {
-    process.conda = "$projectDir/environment.yml"
-    conda.cacheDir = "/home/paolo/Softwares/anaconda3/envs"
-  }
-}
-```
-
-Calling nextflow using docker
------------------------------
-
-```
-$ nextflow run main.nf --reads_path='data/*R{1,2}_001.fastq.gz' -resume -profile docker
-```
-
-Calling nextflow using singularity
-----------------------------------
-
-```
-$ nextflow run main.nf -resume -profile singularity --reads_path="/mnt/storage/140822_M01314_0102_000000000-AA7HH/*_R{1,2}_*.fastq.gz"
-```
+Calling nextflow with a custom executor
+---------------------------------------

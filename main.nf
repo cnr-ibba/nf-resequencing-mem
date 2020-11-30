@@ -14,7 +14,7 @@ include { PICARD_MARKDUPLICATES } from './modules/nf-core/software/picard/markdu
 include { SAMTOOLS_INDEX } from './modules/nf-core/software/samtools/index/main' addParams( options: [:], publish_dir_mode: "symlink" )
 include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/software/samtools/flagstat/main' addParams( options: [:] )
 
-// a function to reads from reads file channel and convert this to the format used by
+// a function to read from reads file channel and convert this to the format used by
 // imported workflows
 def get_reads(reads_path) {
   // define a simple input channel derived form a glob path matching reads.
@@ -22,6 +22,8 @@ def get_reads(reads_path) {
     .fromFilePairs( params.reads_path, checkIfExists: true )//.view()
     .ifEmpty { error "Cannot find any reads matching: '${ params.reads_path }'" }
 
+  // create the meta key used in module. Is the sample name plus a boolean value
+  // for single_end reads.
   // Functions implicitly return the result of the last evaluated statement. However:
   return reads.map( sample -> [ [id: sample[0], single_end: false], sample[1] ] )//.view()
 }
@@ -50,8 +52,8 @@ workflow {
   BWA_INDEX(file(params.genome_path, checkIfExists: true))
 
   // aligning reads to genome: in DSL2 I can't use 'into' to duplicate the channel
-  // like DSL1, but I can read the output from another workflow or open a new channel
-  // call the same function I used before for FASTQC:
+  // like DSL1, but I can read the output from another workflow or open a new channel.
+  // Call the same function I used before for FASTQC:
   bwa_input = get_reads(params.reads_path)
 
   // aligning with bwa: need reads in the same format used with FASTQC, a index file
@@ -74,8 +76,9 @@ workflow {
 
   // now I can do the flagstat step. I need bam and bai files from markduplicates and
   // samtools index and the meta informations as three different input. From both channels,
-  // I have an output like val(meta), path("*.bam") and val(meta), path("*.bai")
+  // I have an output like 'val(meta), path("*.bam")' and 'val(meta), path("*.bai")'
   // I can join two channels with the same key (https://www.nextflow.io/docs/latest/operator.html#join)
+  // two options to check to have exactly the same keys with no duplications
   flagstat_input = PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX.out.bai, failOnMismatch: true, failOnDuplicate: true)//.view()
 
   // time to call flagstat
