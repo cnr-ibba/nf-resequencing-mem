@@ -17,7 +17,11 @@ The other way to running this pipeline is described in
 [pipeline sharing](https://www.nextflow.io/docs/latest/sharing.html#pipeline-sharing)
 nextflow manual. You will need also to define your credentials for private
 repositories. See [SCM configuration file](https://www.nextflow.io/docs/latest/sharing.html#scm-configuration-file)
-for more details.
+for more details. After that, call this pipeline with:
+
+```
+$ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
+```
 
 Customize configuration
 -----------------------

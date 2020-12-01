@@ -6,12 +6,12 @@ nextflow.enable.dsl = 2
 // include workflow dependencies from external modules
 include { FASTQC } from './modules/nf-core/software/fastqc/main' addParams( options: [:] )
 include { MULTIQC } from './modules/nf-core/software/multiqc/main' addParams( options: [:] )
-include { BWA_INDEX } from './modules/nf-core/software/bwa/index/main' addParams( options: [:] )
+include { BWA_INDEX } from './modules/nf-core/software/bwa/index/main' addParams( options: [publish_files: false] )
 // override default publish_dir_mode: I don't want to copy a BAM file outside the "work" directory
-include { BWA_MEM } from './modules/nf-core/software/bwa/mem/main' addParams( options: [:], publish_dir_mode: "symlink" )
-include { SAMTOOLS_SORT } from './modules/nf-core/software/samtools/sort/main' addParams( options: [:], publish_dir_mode: "symlink" )
-include { PICARD_MARKDUPLICATES } from './modules/nf-core/software/picard/markduplicates/main' addParams( options: [:], publish_dir_mode: "symlink" )
-include { SAMTOOLS_INDEX } from './modules/nf-core/software/samtools/index/main' addParams( options: [:], publish_dir_mode: "symlink" )
+include { BWA_MEM } from './modules/nf-core/software/bwa/mem/main' addParams( options: [publish_files: false] )
+include { SAMTOOLS_SORT } from './modules/nf-core/software/samtools/sort/main' addParams( options: [publish_files: false] )
+include { PICARD_MARKDUPLICATES } from './modules/nf-core/software/picard/markduplicates/main' addParams( options: [publish_files: false] )
+include { SAMTOOLS_INDEX } from './modules/nf-core/software/samtools/index/main' addParams( options: [publish_files: false] )
 include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/software/samtools/flagstat/main' addParams( options: [:] )
 
 // a function to read from reads file channel and convert this to the format used by
