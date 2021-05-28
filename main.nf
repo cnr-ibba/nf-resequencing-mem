@@ -6,6 +6,7 @@ nextflow.enable.dsl = 2
 // include workflow dependencies from external modules
 include { FASTQC } from './modules/nf-core/software/fastqc/main' addParams( options: [:] )
 include { MULTIQC } from './modules/nf-core/software/multiqc/main' addParams( options: [:] )
+include { TRIMGALORE } from './modules/nf-core/software/trimgalore/main' addParams( options: [:] )
 include { BWA_INDEX } from './modules/nf-core/software/bwa/index/main' addParams( options: [publish_files: false] )
 // override default publish_dir_mode: I don't want to copy a BAM file outside the "work" directory
 include { BWA_MEM } from './modules/nf-core/software/bwa/mem/main' addParams( options: [publish_files: false] )
@@ -51,15 +52,18 @@ workflow {
   // indexing genome
   BWA_INDEX(file(params.genome_path, checkIfExists: true))
 
-  // aligning reads to genome: in DSL2 I can't use 'into' to duplicate the channel
+  // trimming sequences: in DSL2 I can't use 'into' to duplicate the channel
   // like DSL1, but I can read the output from another workflow or open a new channel.
   // Call the same function I used before for FASTQC:
-  bwa_input = get_reads(params.reads_path)
+  trimgalore_input = get_reads(params.reads_path)
+
+  // Trimming reads
+  TRIMGALORE(trimgalore_input)
 
   // aligning with bwa: need reads in the same format used with FASTQC, a index file
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
   // and the last parameter is the genome file (the same used in indexing)
-  BWA_MEM(bwa_input, BWA_INDEX.out.index, file(params.genome_path, checkIfExists: true))
+  BWA_MEM(TRIMGALORE.out.reads, BWA_INDEX.out.index, file(params.genome_path, checkIfExists: true))
 
   // BAM file need to be sorted in order to mark duplicates. Please note that the output
   // file has been renamed by modiying the nextflow core SAMTOOLS_SORT modules. This is
