@@ -6,7 +6,8 @@ nextflow.enable.dsl = 2
 // include workflow dependencies from external modules
 include { FASTQC } from './modules/nf-core/software/fastqc/main' addParams( options: [:] )
 include { MULTIQC } from './modules/nf-core/software/multiqc/main' addParams( options: [:] )
-include { TRIMGALORE } from './modules/nf-core/software/trimgalore/main' addParams( options: [:] )
+// for trimgalore, publish only reports (txt - not trimmed files!)
+include { TRIMGALORE } from './modules/nf-core/software/trimgalore/main' addParams( options: [publish_files: ['report.txt': '']] )
 include { BWA_INDEX } from './modules/nf-core/software/bwa/index/main' addParams( options: [publish_files: false] )
 // override default publish_dir_mode: I don't want to copy a BAM file outside the "work" directory
 include { BWA_MEM } from './modules/nf-core/software/bwa/mem/main' addParams( options: [publish_files: false] )
