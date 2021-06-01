@@ -1,0 +1,50 @@
+name: freebayes_single
+description: Run freebayes on sample
+keywords:
+  - freebayes
+  - single
+tools:
+  - freebayes:
+      description: Bayesian haplotype-based polymorphism discovery and genotyping
+      homepage: None
+      documentation: None
+      tool_dev_url: None
+      doi: ""
+      licence: ['MIT']
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - bam:
+      type: path
+      description: a BAM file
+      pattern: "*.{bam}"
+  - genome_fasta:
+      type: path
+      description: The genome fasta file (not compressed)
+      pattern: "*.{fa,fasta}"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - vcf:
+      type: path
+      description: VCF compressed with bgzip
+      pattern: "*.{vcf.gz}"
+  - index:
+      type: path
+      description: VCF indexed with tabix
+      pattern: "*.{vcf.gz.tbi}"
+  - version:
+      type: file
+      description: File containing software version
+      pattern: "*.{version.txt}"
+
+authors:
+  - "@bunop"

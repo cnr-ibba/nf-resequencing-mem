@@ -3,6 +3,8 @@
 
 # ignore data dir
 data/
+testdata/
+reference/
 
 # ignore results dir
 work/
