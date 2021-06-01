@@ -15,7 +15,7 @@ include { SAMTOOLS_SORT } from './modules/nf-core/software/samtools/sort/main' a
 include { PICARD_MARKDUPLICATES } from './modules/nf-core/software/picard/markduplicates/main' addParams( options: [publish_files: false] )
 include { SAMTOOLS_INDEX } from './modules/nf-core/software/samtools/index/main' addParams( options: [publish_files: false] )
 include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/software/samtools/flagstat/main' addParams( options: [:] )
-include { FREEBAYES } from './modules/external/freebayes/main' addParams( options: [:] )
+include { FREEBAYES_SINGLE } from './modules/external/freebayes/single/main' addParams( options: [:] )
 
 // a function to read from reads file channel and convert this to the format used by
 // imported workflows
@@ -91,7 +91,6 @@ workflow {
   SAMTOOLS_FLAGSTAT(flagstat_input)
 
   // prepare to call freebayes (single) - remove meta key
-  freebayes_input = PICARD_MARKDUPLICATES.out.bam.map( sample -> sample[1] ).collect()
-  FREEBAYES(freebayes_input, file(params.genome_path, checkIfExists: true))
+  FREEBAYES_SINGLE(PICARD_MARKDUPLICATES.out.bam, file(params.genome_path, checkIfExists: true))
 
 }
