@@ -39,7 +39,8 @@ the number of CPUs used or the required RAM)
 
 ### params scope
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+The params scope let you to define parameters to the pipeline. You can set those
+params directly in config file or passing those from command line.
 
 ### profiles scope
 
@@ -66,7 +67,48 @@ and available in your `$PATH` bash environment variable
 
 ### process scope
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+The process configuration scope allows you to provide the default configuration
+for all the processes. You can specify here any property described in the process
+directive and the executor sections and override them.
+With the `withLabel` selector, you can configure of all processes annotated with
+such label selector. For example:
 
-Calling nextflow with a custom executor
----------------------------------------
+```
+process {
+  // only processes with this label have those parameters
+  withLabel: process_high {
+    cpus = 4
+    memory = 4.GB
+  }
+}
+```
+
+Will affect all the processes annotated with `process_high` label.
+
+Calling this pipeline with local executor
+-----------------------------------------
+
+The local executor is the default executor used when calling pipeline. It spawns
+pipeline processes using fork and threads using all your local CPUs and memory
+available. If you need to set a limit to the resources used, enable this configuration
+for local executor:
+
+```
+executor {
+  // for the local executer, I will set the maximum values of CPU and MEMORY
+  $local {
+    cpus = 8
+    memory = '16 GB'
+  }
+}
+```
+
+Calling this pipeline using pbs executor
+----------------------------------------
+
+You can change the default executor by specifying the `pbs` profile. Simply add
+such profile to your command line, for example:
+
+```
+$ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
+```
