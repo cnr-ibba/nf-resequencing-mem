@@ -2,31 +2,34 @@
 include { initOptions; saveFiles; getSoftwareName } from './functions'
 
 params.options = [:]
-def options = initOptions(params.options)
+options        = initOptions(params.options)
 
 process MULTIQC {
-    tag "multiqc"
     label 'process_medium'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename: filename, options: params.options, publish_dir: getSoftwareName(task.process), publish_id:'') }
+        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:[:], publish_by_meta:[]) }
 
-    conda(params.enable_conda ? "bioconda::multiqc=1.9" : null)
-    container "quay.io/biocontainers/multiqc:1.9--py_1"
+    conda (params.enable_conda ? "bioconda::multiqc=1.10.1" : null)
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://depot.galaxyproject.org/singularity/multiqc:1.10.1--py_0"
+    } else {
+        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    }
 
     input:
-    path(generic_report)
+    path multiqc_files
 
     output:
-    path("multiqc_data"), emit: dir
-    path("multiqc_report.html"), emit: html
-    path "*.version.txt", emit: version
+    path "*multiqc_report.html", emit: report
+    path "*_data"              , emit: data
+    path "*_plots"             , optional:true, emit: plots
+    path "*.version.txt"       , emit: version
 
     script:
     def software = getSoftwareName(task.process)
-
     """
-    multiqc .
+    multiqc -f $options.args .
     multiqc --version | sed -e "s/multiqc, version //g" > ${software}.version.txt
     """
 }

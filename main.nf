@@ -64,8 +64,7 @@ workflow {
 
   // aligning with bwa: need reads in the same format used with FASTQC, a index file
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
-  // and the last parameter is the genome file (the same used in indexing)
-  BWA_MEM(TRIMGALORE.out.reads, BWA_INDEX.out.index, file(params.genome_path, checkIfExists: true))
+  BWA_MEM(TRIMGALORE.out.reads, BWA_INDEX.out.index)
 
   // BAM file need to be sorted in order to mark duplicates. Please note that the output
   // file has been renamed by modiying the nextflow core SAMTOOLS_SORT modules. This is
