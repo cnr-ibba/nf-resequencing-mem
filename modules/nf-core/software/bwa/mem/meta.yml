@@ -16,22 +16,6 @@ tools:
         homepage: http://bio-bwa.sourceforge.net/
         documentation: http://www.htslib.org/doc/samtools.html
         arxiv: arXiv:1303.3997
-params:
-    - outdir:
-        type: string
-        description: |
-            The pipeline's output directory. By default, the module will
-            output files into `$params.outdir/<SOFTWARE>`
-    - publish_dir_mode:
-        type: string
-        description: |
-            Value for the Nextflow `publishDir` mode parameter.
-            Available: symlink, rellink, link, copy, copyNoFollow, move.
-    - enable_conda:
-        type: boolean
-        description: |
-            Run the module with Conda using the software specified
-            via the `conda` directive
 input:
     - meta:
         type: map
@@ -46,10 +30,7 @@ input:
     - index:
         type: file
         description: BWA genome index files
-        pattern: "*.{amb,ann,bwt,pac,sa}"
-    - fasta:
-        type: file
-        description: Input genome fasta file
+        pattern: "Directory containing BWA index *.{amb,ann,bwt,pac,sa}"
 output:
     - bam:
         type: file
