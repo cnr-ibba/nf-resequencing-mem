@@ -1,15 +1,13 @@
 
-Resequencing Nextflow Pipeline
-==============================
+# Resequencing Nextflow Pipeline
 
-Setting up
-----------
+## Setting up
 
 In order to execute this pipeline, you will need `nextflow` installed and one of this
 different executors: `conda`, `singularity` and `docker`. You can choose to clone
 this repository if you plan to change this pipeline according your needs:
 
-```
+```text
 $ git clone https://github.com/cnr-ibba/nf-resequencing-mem
 ```
 
@@ -19,12 +17,11 @@ nextflow manual. You will need also to define your credentials for private
 repositories. See [SCM configuration file](https://www.nextflow.io/docs/latest/sharing.html#scm-configuration-file)
 for more details. After that, call this pipeline with:
 
-```
+```text
 $ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
 ```
 
-Customize configuration
------------------------
+## Customize configuration
 
 When running Nextflow, Nextflow looks for a file named `nextflow.config` in the
 current directory and in the script base directory (if it is not the same as the
@@ -73,7 +70,7 @@ directive and the executor sections and override them.
 With the `withLabel` selector, you can configure of all processes annotated with
 such label selector. For example:
 
-```
+```text
 process {
   // only processes with this label have those parameters
   withLabel: process_high {
@@ -85,15 +82,14 @@ process {
 
 Will affect all the processes annotated with `process_high` label.
 
-Calling this pipeline with local executor
------------------------------------------
+## Calling this pipeline with local executor
 
 The local executor is the default executor used when calling pipeline. It spawns
 pipeline processes using fork and threads using all your local CPUs and memory
 available. If you need to set a limit to the resources used, enable this configuration
 for local executor:
 
-```
+```text
 executor {
   // for the local executer, I will set the maximum values of CPU and MEMORY
   $local {
@@ -103,12 +99,11 @@ executor {
 }
 ```
 
-Calling this pipeline using pbs executor
-----------------------------------------
+## Calling this pipeline using pbs executor
 
 You can change the default executor by specifying the `pbs` profile. Simply add
 such profile to your command line, for example:
 
-```
+```text
 $ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
 ```
