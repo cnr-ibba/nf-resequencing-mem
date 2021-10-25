@@ -1,6 +1,8 @@
 
 # Resequencing Nextflow Pipeline
 
+<!-- markdownlint-disable MD014 -->
+
 ## Setting up
 
 In order to execute this pipeline, you will need `nextflow` installed and one of this
