@@ -1,0 +1,8 @@
+lint:
+  actions_awsfulltest: False
+  pipeline_todos: False
+  files_exist: False
+  nextflow_config: False
+  files_unchanged:
+    - .gitignore
+  actions_ci: False

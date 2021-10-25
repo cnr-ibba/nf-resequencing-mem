@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/resequencing/master/nextflow_schema.json",
-    "title": "nf-core/resequencing pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/cnr-ibba/nf-resequencing-mem/master/nextflow_schema.json",
+    "title": "cnr-ibba/nf-resequencing-mem pipeline parameters",
     "description": "Nextflow Resequencing with BWA MEM",
     "type": "object",
     "definitions": {
