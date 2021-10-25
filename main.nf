@@ -4,18 +4,18 @@
 nextflow.enable.dsl = 2
 
 // include workflow dependencies from external modules
-include { FASTQC } from './modules/nf-core/software/fastqc/main' addParams( options: [:] )
-include { MULTIQC } from './modules/nf-core/software/multiqc/main' addParams( options: [:] )
+include { FASTQC } from './modules/nf-core/modules/fastqc/main' addParams( options: [:] )
+include { MULTIQC } from './modules/nf-core/modules/multiqc/main' addParams( options: [:] )
 // for trimgalore, publish only reports (txt - not trimmed files!)
-include { TRIMGALORE } from './modules/nf-core/software/trimgalore/main' addParams( options: [publish_files: ['report.txt': '']] )
-include { BWA_INDEX } from './modules/nf-core/software/bwa/index/main' addParams( options: [publish_files: false] )
+include { TRIMGALORE } from './modules/nf-core/modules/trimgalore/main' addParams( options: [publish_files: ['report.txt': '']] )
+include { BWA_INDEX } from './modules/nf-core/modules/bwa/index/main' addParams( options: [publish_files: false] )
 // override default publish_dir_mode: I don't want to copy a BAM file outside the "work" directory
-include { BWA_MEM } from './modules/nf-core/software/bwa/mem/main' addParams( options: [publish_files: false] )
-include { SAMTOOLS_SORT } from './modules/nf-core/software/samtools/sort/main' addParams( options: [publish_files: false] )
-include { PICARD_MARKDUPLICATES } from './modules/nf-core/software/picard/markduplicates/main' addParams( options: [publish_files: false] )
-include { SAMTOOLS_INDEX } from './modules/nf-core/software/samtools/index/main' addParams( options: [publish_files: false] )
-include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/software/samtools/flagstat/main' addParams( options: [:] )
-include { FREEBAYES_SINGLE } from './modules/external/freebayes/single/main' addParams( options: [:] )
+include { BWA_MEM } from './modules/nf-core/modules/bwa/mem/main' addParams( options: [publish_files: false] )
+include { SAMTOOLS_SORT } from './modules/nf-core/modules/samtools/sort/main' addParams( options: [publish_files: false] )
+include { PICARD_MARKDUPLICATES } from './modules/nf-core/modules/picard/markduplicates/main' addParams( options: [publish_files: false] )
+include { SAMTOOLS_INDEX } from './modules/nf-core/modules/samtools/index/main' addParams( options: [publish_files: false] )
+include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/modules/samtools/flagstat/main' addParams( options: [:] )
+include { FREEBAYES_SINGLE } from './modules/cnr-ibba/nf-modules/freebayes/single/main' addParams( options: [:] )
 
 // a function to read from reads file channel and convert this to the format used by
 // imported workflows
