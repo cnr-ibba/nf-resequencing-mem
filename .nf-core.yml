@@ -5,4 +5,6 @@ lint:
   nextflow_config: False
   files_unchanged:
     - .gitignore
+    - .github/workflows/linting.yml
   actions_ci: False
+  merge_markers: False
