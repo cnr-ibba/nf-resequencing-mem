@@ -117,10 +117,26 @@ jobs:
           python-version: '3.6'
           architecture: 'x64'
 
-      - name: Install dependencies
+      # - name: Install dependencies
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install nf-core
+
+      - name: Install a custom nf-core tool (which deal with authentication)
         run: |
           python -m pip install --upgrade pip
-          pip install nf-core
+          pip install -e git+https://github.com/bunop/tools.git@auth-issue#egg=nf_core
+
+      - name: Create ~/.config/gh/hosts.yml
+        run: |
+          mkdir -p ~/.config/gh/
+          cat << EOF > ~/.config/gh/hosts.yml
+          github.com:
+            oauth_token: ${{ secrets.OAUTH_TOKEN }}
+            user: bunop
+            git_protocol: https
+          EOF
+          gh auth status
 
       - name: Run nf-core lint
         env:
@@ -142,4 +158,3 @@ jobs:
             lint_log.txt
             lint_results.md
             PR_number.txt
-
