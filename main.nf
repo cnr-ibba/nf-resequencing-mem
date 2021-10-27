@@ -11,7 +11,7 @@ include { TRIMGALORE } from './modules/nf-core/modules/trimgalore/main' addParam
 include { BWA_INDEX } from './modules/nf-core/modules/bwa/index/main' addParams( options: [publish_files: false] )
 // override default publish_dir_mode: I don't want to copy a BAM file outside the "work" directory
 include { BWA_MEM } from './modules/nf-core/modules/bwa/mem/main' addParams( options: [publish_files: false] )
-include { SAMTOOLS_SORT } from './modules/nf-core/modules/samtools/sort/main' addParams( options: [publish_files: false] )
+include { SAMTOOLS_SORT } from './modules/nf-core/modules/samtools/sort/main' addParams( options: [publish_files: false, suffix: '.sort'] )
 include { PICARD_MARKDUPLICATES } from './modules/nf-core/modules/picard/markduplicates/main' addParams( options: [publish_files: false] )
 include { SAMTOOLS_INDEX } from './modules/nf-core/modules/samtools/index/main' addParams( options: [publish_files: false] )
 include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/modules/samtools/flagstat/main' addParams( options: [:] )
