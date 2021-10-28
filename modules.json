@@ -4,7 +4,7 @@
     "repos": {
         "cnr-ibba/nf-modules": {
             "freebayes/single": {
-                "git_sha": "a722f652d23698767e1b0f95ffa57f6c41560d56"
+                "git_sha": "c9cd24da9b9db3eeba9b8d9142d8509adbf79592"
             }
         },
         "nf-core/modules": {

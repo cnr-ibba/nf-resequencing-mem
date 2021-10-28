@@ -1,5 +1,5 @@
 // Import generic module functions
-include { initOptions; saveFiles; getSoftwareName } from './functions'
+include { initOptions; saveFiles; getSoftwareName; getProcessName } from './functions'
 
 params.options = [:]
 options        = initOptions(params.options)
@@ -25,7 +25,7 @@ process FREEBAYES_SINGLE {
     output:
     tuple val(meta), path("*.vcf.gz")     , emit: vcf
     tuple val(meta), path("*.vcf.gz.tbi") , emit: index
-    path "*.version.txt"                  , emit: version
+    path  "versions.yml"                  , emit: versions
 
     script:
     def software = getSoftwareName(task.process)
@@ -33,6 +33,9 @@ process FREEBAYES_SINGLE {
     """
     freebayes $options.args -b $bam --standard-filters -f $genome_fasta | bgzip --threads $task.cpus --stdout > ${prefix}.vcf.gz
     tabix ${prefix}.vcf.gz
-    echo \$(freebayes --version 2>&1) | sed 's/^version: * v//' > ${software}.version.txt
+    cat <<-END_VERSIONS > versions.yml
+    ${getProcessName(task.process)}:
+        ${getSoftwareName(task.process)}: \$(freebayes --version 2>&1 | sed 's/^version: * v//')
+    END_VERSIONS
     """
 }
