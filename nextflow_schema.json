@@ -111,6 +111,90 @@
         },
         "three_prime_clip_r2": {
             "type": "string"
+        },
+        "multiqc_config": {
+            "type": "string"
+        },
+        "multiqc_title": {
+            "type": "string"
+        },
+        "max_multiqc_email_size": {
+            "type": "string",
+            "default": "25.MB"
+        },
+        "trim_nextseq": {
+            "type": "string"
+        },
+        "save_trimmed": {
+            "type": "string"
+        },
+        "skip_trimming": {
+            "type": "string"
+        },
+        "tracedir": {
+            "type": "string",
+            "default": "./results/pipeline_info"
+        },
+        "email": {
+            "type": "string"
+        },
+        "email_on_fail": {
+            "type": "string"
+        },
+        "plaintext_email": {
+            "type": "string"
+        },
+        "monochrome_logs": {
+            "type": "string"
+        },
+        "help": {
+            "type": "string"
+        },
+        "validate_params": {
+            "type": "string",
+            "default": "true"
+        },
+        "show_hidden_params": {
+            "type": "string"
+        },
+        "singularity_pull_docker_container": {
+            "type": "string"
+        },
+        "custom_config_version": {
+            "type": "string",
+            "default": "master"
+        },
+        "custom_config_base": {
+            "type": "string",
+            "default": "https://raw.githubusercontent.com/nf-core/configs/master"
+        },
+        "hostnames": {
+            "type": "string",
+            "default": "[binac:['.binac.uni-tuebingen.de'], cbe:['.cbe.vbc.ac.at'], cfc:['.hpc.uni-tuebingen.de'], crick:['.thecrick.org'], genotoul:['.genologin1.toulouse.inra.fr', '.genologin2.toulouse.inra.fr'], genouest:['.genouest.org'], icr_davros:['.davros.compute.estate'], imperial:['.hpc.ic.ac.uk'], imperial_mb:['.hpc.ic.ac.uk'], uppmax:['.uppmax.uu.se'], utd_ganymede:['ganymede.utdallas.edu'], utd_sysbio:['sysbio.utdallas.edu']]"
+        },
+        "config_profile_description": {
+            "type": "string"
+        },
+        "config_profile_contact": {
+            "type": "string"
+        },
+        "config_profile_url": {
+            "type": "string"
+        },
+        "config_profile_name": {
+            "type": "string"
+        },
+        "max_memory": {
+            "type": "string",
+            "default": "128.GB"
+        },
+        "max_cpus": {
+            "type": "integer",
+            "default": 16
+        },
+        "max_time": {
+            "type": "string",
+            "default": "240.h"
         }
     }
 }
