@@ -16,6 +16,7 @@ include { PICARD_MARKDUPLICATES } from './modules/nf-core/modules/picard/markdup
 include { SAMTOOLS_INDEX } from './modules/nf-core/modules/samtools/index/main' addParams( options: [publish_files: false] )
 include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/modules/samtools/flagstat/main' addParams( options: [:] )
 include { FREEBAYES_SINGLE } from './modules/cnr-ibba/nf-modules/freebayes/single/main' addParams( options: [:] )
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from './modules/nf-core/modules/custom/dumpsoftwareversions/main'  addParams( options: [publish_files : ['_versions.yml':'']] )
 
 // a function to read from reads file channel and convert this to the format used by
 // imported workflows
@@ -35,11 +36,16 @@ def get_reads(reads_path) {
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
 // of the workflow application.
 workflow {
+  // collect software version
+  ch_versions = Channel.empty()
+
   // get reads in the format required for fastqc module
   fastqc_input = get_reads(params.reads_path)
 
   // call FASTQC from module
   FASTQC(fastqc_input)
+
+  ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
   // get only the data I need for a MultiQC step
   html_report = FASTQC.out.html.map( sample -> sample[1] )
@@ -91,5 +97,10 @@ workflow {
 
   // prepare to call freebayes (single) - remove meta key
   FREEBAYES_SINGLE(PICARD_MARKDUPLICATES.out.bam, file(params.genome_path, checkIfExists: true))
+
+  // return software version
+  CUSTOM_DUMPSOFTWAREVERSIONS (
+    ch_versions.unique().collectFile(name: 'collated_versions.yml')
+  )
 
 }
