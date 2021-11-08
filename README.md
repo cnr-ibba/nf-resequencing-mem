@@ -109,3 +109,23 @@ such profile to your command line, for example:
 ```text
 $ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
 ```
+
+## Calling this pipeline using AWS batch
+
+This pipeline could run using the [AWS batch queue system](https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html).
+In order to do so, you need to configure your credentials with [aws cli](https://docs.aws.amazon.com/translate/latest/dg/setup-awscli.html):
+you require to configure a *IAM* account with permission to run *batch*, *EC2* and *S3*.
+You require also a s3 bucket in which nextflow could store and retrive data (nextflow
+will make a copy of the input data and will retrieve the results from here) and
+a AWS batch queue with *EC2 spot instances* as recommended compute environment.
+After that, you could launch this pipeline by providing only *awsbatch* as profile
+and the *queue name* and the AWS *region* with the `--awsqueue` and `--awsregion`
+parameters:
+
+```text
+$ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch -bucket-dir s3://<s3 bucket name>/<subfolder> --reads_path '<reads_path>/*_{R1,R2}_*.fastq.gz' --genome_path <<genome_path>> --awsqueue <aws batch queue name> --awsregion <aws region>
+```
+
+Please see the [Amazon Cloud](https://www.nextflow.io/docs/latest/awscloud.html#)
+section of nextflow documentation to get other information on nextflow and AWS
+usage.
