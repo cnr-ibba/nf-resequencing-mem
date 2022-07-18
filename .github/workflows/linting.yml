@@ -58,6 +58,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install nf-core
 
+      - name: Create ~/.config/gh/hosts.yml
+        run: |
+          mkdir -p ~/.config/gh/
+          cat << EOF > ~/.config/gh/hosts.yml
+          github.com:
+            oauth_token: ${{ secrets.OAUTH_TOKEN }}
+            user: bunop
+            git_protocol: https
+          EOF
+          gh auth status
+
       - name: Run nf-core lint
         env:
           GITHUB_COMMENTS_URL: ${{ github.event.pull_request.comments_url }}
