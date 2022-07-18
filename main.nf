@@ -12,6 +12,7 @@ include { BWA_INDEX } from './modules/nf-core/modules/bwa/index/main' addParams(
 // override default publish_dir_mode: I don't want to copy a BAM file outside the "work" directory
 include { BWA_MEM } from './modules/nf-core/modules/bwa/mem/main' addParams( options: [publish_files: false] )
 include { SAMTOOLS_SORT } from './modules/nf-core/modules/samtools/sort/main' addParams( options: [publish_files: false, suffix: '.sort'] )
+include { BAMADDRG } from './modules/cnr-ibba/nf-modules/bamaddrg/main' addParams( options: [:] )
 include { PICARD_MARKDUPLICATES } from './modules/nf-core/modules/picard/markduplicates/main' addParams( options: [publish_files: false] )
 include { SAMTOOLS_INDEX } from './modules/nf-core/modules/samtools/index/main' addParams( options: [publish_files: false] )
 include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/modules/samtools/flagstat/main' addParams( options: [:] )
@@ -78,9 +79,12 @@ workflow {
   // as nextflow does in work directory
   SAMTOOLS_SORT(BWA_MEM.out.bam)
 
+  // add sample names to BAM files. Required to name samples with freebayes
+  BAMADDRG(SAMTOOLS_SORT.out.bam)
+
   // markduplicates step. It requires meta information + bam files, the same output of
   // SAMTOOLS_SORT step
-  PICARD_MARKDUPLICATES(SAMTOOLS_SORT.out.bam)
+  PICARD_MARKDUPLICATES(BAMADDRG.out.bam)
 
   // bam need to be indexed before doing flagstat
   SAMTOOLS_INDEX(PICARD_MARKDUPLICATES.out.bam)

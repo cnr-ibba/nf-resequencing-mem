@@ -1,0 +1,46 @@
+name: "bamaddrg"
+description: adds read groups to input BAM files
+keywords:
+  - sort
+tools:
+  - "bamaddrg":
+      description: "Add read group to BAM files"
+      homepage: "https://github.com/ekg/bamaddrg"
+      documentation: "https://github.com/ekg/bamaddrg"
+      tool_dev_url: "https://github.com/ekg/bamaddrg"
+      doi: ""
+      licence: "['MIT']"
+
+input:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  #
+  - bam:
+      type: file
+      description: BAM/CRAM/SAM file
+      pattern: "*.{bam,cram,sam}"
+
+output:
+  # Only when we have meta
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  #
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  #
+  - bam:
+      type: file
+      description: Sorted BAM/CRAM/SAM file
+      pattern: "*.{bam,cram,sam}"
+
+authors:
+  - "@bunop"

@@ -1,4 +1,3 @@
-
 # Resequencing Nextflow Pipeline
 
 <!-- markdownlint-disable MD014 -->
@@ -30,11 +29,11 @@ current directory and in the script base directory (if it is not the same as the
 current directory). Finally it checks for the file `$HOME/.nextflow/config`.
 Please modify `params` in `nextflow.config` according your needs:
 
-* The `params` scope defines variables which applies to the whole pipeline.
-* The `profiles` scope defines variables which apply to the particular profile
-invoked with the `-profile` Nextflow parameter
-* The `process` scope can define parameters applied to a single process (for example
-the number of CPUs used or the required RAM)
+- The `params` scope defines variables which applies to the whole pipeline.
+- The `profiles` scope defines variables which apply to the particular profile
+  invoked with the `-profile` Nextflow parameter
+- The `process` scope can define parameters applied to a single process (for example
+  the number of CPUs used or the required RAM)
 
 ### params scope
 
@@ -54,15 +53,15 @@ the pipeline with a [custom profile](https://www.nextflow.io/docs/edge/config.ht
 Nextflow profiles let nextflow to manage software dependencies and custom parameters.
 Three profiles are currently defined:
 
-* **conda**: every pipeline step will manage its requirements using conda in a
-specific environment. Conda environments are created inside `work` directory
-(but you can change this behaviour using `cacheDir` option within the conda
-scope).
-* **docker**: manage requirements using docker images. You will need to be part of
-the `docker` group in order to use this profile
-* **singularity**: manage requirements using singularity images. You can execute
-this profile without any permissions. `singularity` software need to be installed
-and available in your `$PATH` bash environment variable
+- **conda**: every pipeline step will manage its requirements using conda in a
+  specific environment. Conda environments are created inside `work` directory
+  (but you can change this behaviour using `cacheDir` option within the conda
+  scope).
+- **docker**: manage requirements using docker images. You will need to be part of
+  the `docker` group in order to use this profile
+- **singularity**: manage requirements using singularity images. You can execute
+  this profile without any permissions. `singularity` software need to be installed
+  and available in your `$PATH` bash environment variable
 
 ### process scope
 
@@ -114,12 +113,12 @@ $ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity --r
 
 This pipeline could run using the [AWS batch queue system](https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html).
 In order to do so, you need to configure your credentials with [aws cli](https://docs.aws.amazon.com/translate/latest/dg/setup-awscli.html):
-you require to configure a *IAM* account with permission to run *batch*, *EC2* and *S3*.
+you require to configure a _IAM_ account with permission to run _batch_, _EC2_ and _S3_.
 You require also a s3 bucket in which nextflow could store and retrive data (nextflow
 will make a copy of the input data and will retrieve the results from here) and
-a AWS batch queue with *EC2 spot instances* as recommended compute environment.
-After that, you could launch this pipeline by providing only *awsbatch* as profile
-and the *queue name* and the AWS *region* with the `--awsqueue` and `--awsregion`
+a AWS batch queue with _EC2 spot instances_ as recommended compute environment.
+After that, you could launch this pipeline by providing only _awsbatch_ as profile
+and the _queue name_ and the AWS _region_ with the `--awsqueue` and `--awsregion`
 parameters:
 
 ```text
