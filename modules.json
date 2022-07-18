@@ -15,7 +15,7 @@
                 "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
             },
             "bwa/mem": {
-                "git_sha": "3aacd46da2b221ed47aaa05c413a828538d2c2ae"
+                "git_sha": "4f5274c3de0c9521f5033893ff61057a74c45ba9"
             },
             "custom/dumpsoftwareversions": {
                 "git_sha": "3aacd46da2b221ed47aaa05c413a828538d2c2ae"
@@ -33,9 +33,6 @@
                 "git_sha": "3aacd46da2b221ed47aaa05c413a828538d2c2ae"
             },
             "samtools/index": {
-                "git_sha": "3aacd46da2b221ed47aaa05c413a828538d2c2ae"
-            },
-            "samtools/sort": {
                 "git_sha": "3aacd46da2b221ed47aaa05c413a828538d2c2ae"
             },
             "trimgalore": {
