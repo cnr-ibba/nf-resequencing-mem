@@ -31,6 +31,7 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { CAT_FASTQ } from '../modules/nf-core/modules/cat/fastq/main'
 include { FASTQC } from '../modules/nf-core/modules/fastqc/main'
 include { MULTIQC } from '../modules/nf-core/modules/multiqc/main'
 include { TRIMGALORE } from '../modules/nf-core/modules/trimgalore/main'
@@ -56,7 +57,37 @@ workflow RESEQUENCING_MEM {
   INPUT_CHECK (
     ch_input
   )
+  .reads
+  .map {
+      meta, fastq ->
+        def meta_clone = meta.clone()
+        tmp = meta_clone.id.split('_')
+        if (tmp.size() > 1) {
+          meta_clone.id = tmp[0..-2].join('_')
+        }
+        [ meta_clone, fastq ]
+    }
+    .groupTuple(by: [0])
+    .branch {
+      meta, fastq ->
+        single  : fastq.size() == 1
+          return [ meta, fastq.flatten() ]
+        multiple: fastq.size() > 1
+          return [ meta, fastq.flatten() ]
+    }
+    .set { ch_fastq }
   ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+
+  //
+  // MODULE: Concatenate FastQ files from same sample if required
+  //
+  CAT_FASTQ (
+    ch_fastq.multiple
+  )
+  .reads
+  .mix(ch_fastq.single)
+  .set { ch_cat_fastq }
+  ch_versions = ch_versions.mix(CAT_FASTQ.out.versions.first().ifEmpty(null))
 
   // call FASTQC from module
   FASTQC(INPUT_CHECK.out.reads)
@@ -83,7 +114,7 @@ workflow RESEQUENCING_MEM {
   ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
 
   // Trimming reads
-  TRIMGALORE(INPUT_CHECK.out.reads)
+  TRIMGALORE(ch_cat_fastq)
   ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
 
   // aligning with bwa: need reads in the same format used with FASTQC, a index file

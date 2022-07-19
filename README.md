@@ -29,6 +29,9 @@ where:
   columns are described (see `assets/samplesheet.csv` for an example). In the
   `fastq_1` and `fastq_2` columns you need to specify the path fore _R1_ and _R2_
   files respectively. If you have single paired reads, leave `fastq_2` column empty.
+  if you have more file for the same sample, specify all the single/pair files using
+  the same _sample name_: this pipeline will append all reads belonging to the
+  same sample before calling _trimgalore_
 - `--genome_path`: path to genome (FASTA, uncompressed) file
 - `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
   is the recommended profile in a HPC environment
