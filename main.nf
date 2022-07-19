@@ -4,20 +4,17 @@
 nextflow.enable.dsl = 2
 
 // include workflow dependencies from external modules
-include { FASTQC } from './modules/nf-core/modules/fastqc/main' addParams( options: [:] )
-include { MULTIQC } from './modules/nf-core/modules/multiqc/main' addParams( options: [:] )
-// for trimgalore, publish only reports (txt - not trimmed files!)
-include { TRIMGALORE } from './modules/nf-core/modules/trimgalore/main' addParams( options: [publish_files: ['report.txt': '']] )
-include { BWA_INDEX } from './modules/nf-core/modules/bwa/index/main' addParams( options: [publish_files: false] )
-// override default publish_dir_mode: I don't want to copy a BAM file outside the "work" directory
-include { BWA_MEM } from './modules/nf-core/modules/bwa/mem/main' addParams( options: [publish_files: false] )
-include { SAMTOOLS_SORT } from './modules/nf-core/modules/samtools/sort/main' addParams( options: [publish_files: false, suffix: '.sort'] )
-include { BAMADDRG } from './modules/cnr-ibba/nf-modules/bamaddrg/main' addParams( options: [:] )
-include { PICARD_MARKDUPLICATES } from './modules/nf-core/modules/picard/markduplicates/main' addParams( options: [publish_files: false] )
-include { SAMTOOLS_INDEX } from './modules/nf-core/modules/samtools/index/main' addParams( options: [publish_files: false] )
-include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/modules/samtools/flagstat/main' addParams( options: [:] )
-include { FREEBAYES_SINGLE } from './modules/cnr-ibba/nf-modules/freebayes/single/main' addParams( options: [:] )
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from './modules/nf-core/modules/custom/dumpsoftwareversions/main'  addParams( options: [publish_files : ['_versions.yml':'']] )
+include { FASTQC } from './modules/nf-core/modules/fastqc/main'
+include { MULTIQC } from './modules/nf-core/modules/multiqc/main'
+include { TRIMGALORE } from './modules/nf-core/modules/trimgalore/main'
+include { BWA_INDEX } from './modules/nf-core/modules/bwa/index/main'
+include { BWA_MEM } from './modules/nf-core/modules/bwa/mem/main'
+include { BAMADDRG } from './modules/cnr-ibba/nf-modules/bamaddrg/main'
+include { PICARD_MARKDUPLICATES } from './modules/nf-core/modules/picard/markduplicates/main'
+include { SAMTOOLS_INDEX } from './modules/nf-core/modules/samtools/index/main'
+include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/modules/samtools/flagstat/main'
+include { FREEBAYES_SINGLE } from './modules/cnr-ibba/nf-modules/freebayes/single/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from './modules/nf-core/modules/custom/dumpsoftwareversions/main'
 
 // a function to read from reads file channel and convert this to the format used by
 // imported workflows
@@ -55,8 +52,13 @@ workflow {
   // combine two channel (mix) and the get only one emission
   multiqc_input = html_report.mix(zip_report).collect()//.view()
 
+  // prepare multiqc_config file
+  multiqc_config = Channel.fromPath(params.multiqc_config)
+  multiqc_config = multiqc_config.concat(Channel.fromPath(params.multiqc_logo))
+  multiqc_config = multiqc_config.collect()
+
   // calling MultiQC
-  MULTIQC(multiqc_input)
+  MULTIQC(multiqc_input, multiqc_config)
 
   // indexing genome
   BWA_INDEX(file(params.genome_path, checkIfExists: true))
@@ -71,18 +73,15 @@ workflow {
 
   // aligning with bwa: need reads in the same format used with FASTQC, a index file
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
-  BWA_MEM(TRIMGALORE.out.reads, BWA_INDEX.out.index)
-
-  // BAM file need to be sorted in order to mark duplicates. Please note that the output
-  // file has been renamed by modiying the nextflow core SAMTOOLS_SORT modules. This is
-  // required since samtools can't sort using the same file names for input and output
-  // as nextflow does in work directory
-  SAMTOOLS_SORT(BWA_MEM.out.bam)
+  // third params is if we want to sort data or not (true, so I don't need to SORT
+  // with an additional step)
+  BWA_MEM(TRIMGALORE.out.reads, BWA_INDEX.out.index, true)
 
   // add sample names to BAM files. Required to name samples with freebayes
-  BAMADDRG(SAMTOOLS_SORT.out.bam)
+  BAMADDRG(BWA_MEM.out.bam)
 
-  // markduplicates step. It requires meta information + bam files, the same output of
+  // BAM file need to be sorted in order to mark duplicates. This was don in BWA_MEM
+  // step. Markduplicates requires meta information + bam files, the same output of
   // SAMTOOLS_SORT step
   PICARD_MARKDUPLICATES(BAMADDRG.out.bam)
 

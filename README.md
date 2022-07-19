@@ -18,9 +18,36 @@ nextflow manual. You will need also to define your credentials for private
 repositories. See [SCM configuration file](https://www.nextflow.io/docs/latest/sharing.html#scm-configuration-file)
 for more details. After that, call this pipeline with:
 
-```text
-$ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
 ```
+
+There are also addition parameters that can be provided when calling nextflow:
+
+- `--save_bam`: save markduplicated bam files with their indexes in results folder
+- `--save_trimmed`: save trimmed reads in results folder
+
+### Provide parameters as a config file
+
+In alternative (for reproducibility purpose) you can create a custom configuration
+file a provide it when calling nextflow. For example if you create a file like this
+
+```conf
+params {
+  reads_path = "<reads_path/*_R{1,2}_*.fastq.gz>"
+  genome_path = "<genome_path>"
+  outdir = "<results dir>"
+}
+```
+
+Then you can call nextflow providing such configuration file:
+
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> -config custom.config
+```
+
+See Nextflow [Configuration](https://www.nextflow.io/docs/latest/config.html)
+documentation for more information.
 
 ## Customize configuration
 
@@ -34,6 +61,11 @@ Please modify `params` in `nextflow.config` according your needs:
   invoked with the `-profile` Nextflow parameter
 - The `process` scope can define parameters applied to a single process (for example
   the number of CPUs used or the required RAM)
+
+There are also configuration files in the `conf` folder of this repository, for
+example the `conf/modules.config` file keeps the configuration for each module
+used within this pipeline: you can affect a module behavior without modifying the
+proper module simply changing the proper process configuration section.
 
 ### params scope
 
@@ -105,8 +137,8 @@ executor {
 You can change the default executor by specifying the `pbs` profile. Simply add
 such profile to your command line, for example:
 
-```text
-$ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
 ```
 
 ## Calling this pipeline using AWS batch
@@ -121,8 +153,8 @@ After that, you could launch this pipeline by providing only _awsbatch_ as profi
 and the _queue name_ and the AWS _region_ with the `--awsqueue` and `--awsregion`
 parameters:
 
-```text
-$ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch -bucket-dir s3://<s3 bucket name>/<subfolder> --reads_path '<reads_path>/*_{R1,R2}_*.fastq.gz' --genome_path <<genome_path>> --awsqueue <aws batch queue name> --awsregion <aws region>
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch -bucket-dir s3://<s3 bucket name>/<subfolder> --reads_path '<reads_path>/*_{R1,R2}_*.fastq.gz' --genome_path <<genome_path>> --awsqueue <aws batch queue name> --awsregion <aws region>
 ```
 
 Please see the [Amazon Cloud](https://www.nextflow.io/docs/latest/awscloud.html#)
