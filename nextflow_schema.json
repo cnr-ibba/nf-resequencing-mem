@@ -99,6 +99,9 @@
     "save_trimmed": {
       "type": "boolean"
     },
+    "save_bam": {
+      "type": "boolean"
+    },
     "skip_trimming": {
       "type": "boolean"
     },
