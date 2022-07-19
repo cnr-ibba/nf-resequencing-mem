@@ -1,5 +1,18 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    VALIDATE INPUTS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// Check input path parameters to see if they exist
+def checkPathParamList = [ params.input, params.multiqc_config, params.genome_path ]
+for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
+
+// Check mandatory parameters
+if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -18,31 +31,17 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { FASTQC } from './modules/nf-core/modules/fastqc/main'
-include { MULTIQC } from './modules/nf-core/modules/multiqc/main'
-include { TRIMGALORE } from './modules/nf-core/modules/trimgalore/main'
-include { BWA_INDEX } from './modules/nf-core/modules/bwa/index/main'
-include { BWA_MEM } from './modules/nf-core/modules/bwa/mem/main'
-include { BAMADDRG } from './modules/cnr-ibba/nf-modules/bamaddrg/main'
-include { PICARD_MARKDUPLICATES } from './modules/nf-core/modules/picard/markduplicates/main'
-include { SAMTOOLS_INDEX } from './modules/nf-core/modules/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT } from './modules/nf-core/modules/samtools/flagstat/main'
-include { FREEBAYES_SINGLE } from './modules/cnr-ibba/nf-modules/freebayes/single/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from './modules/nf-core/modules/custom/dumpsoftwareversions/main'
-
-// a function to read from reads file channel and convert this to the format used by
-// imported workflows
-def get_reads(reads_path) {
-  // define a simple input channel derived form a glob path matching reads.
-  reads = Channel
-    .fromFilePairs( params.reads_path, checkIfExists: true )//.view()
-    .ifEmpty { error "Cannot find any reads matching: '${ params.reads_path }'" }
-
-  // create the meta key used in module. Is the sample name plus a boolean value
-  // for single_end reads.
-  // Functions implicitly return the result of the last evaluated statement. However:
-  return reads.map( sample -> [ [id: sample[0], single_end: false], sample[1] ] )//.view()
-}
+include { FASTQC } from '../modules/nf-core/modules/fastqc/main'
+include { MULTIQC } from '../modules/nf-core/modules/multiqc/main'
+include { TRIMGALORE } from '../modules/nf-core/modules/trimgalore/main'
+include { BWA_INDEX } from '../modules/nf-core/modules/bwa/index/main'
+include { BWA_MEM } from '../modules/nf-core/modules/bwa/mem/main'
+include { BAMADDRG } from '../modules/cnr-ibba/nf-modules/bamaddrg/main'
+include { PICARD_MARKDUPLICATES } from '../modules/nf-core/modules/picard/markduplicates/main'
+include { SAMTOOLS_INDEX } from '../modules/nf-core/modules/samtools/index/main'
+include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/modules/samtools/flagstat/main'
+include { FREEBAYES_SINGLE } from '../modules/cnr-ibba/nf-modules/freebayes/single/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -51,13 +50,17 @@ workflow RESEQUENCING_MEM {
   // collect software version
   ch_versions = Channel.empty()
 
-  // get reads in the format required for fastqc module
-  fastqc_input = get_reads(params.reads_path)
+  //
+  // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+  //
+  INPUT_CHECK (
+      ch_input
+  )
+  ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
   // call FASTQC from module
-  FASTQC(fastqc_input)
-
-  ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+  FASTQC(INPUT_CHECK.out.reads)
+  ch_versions = ch_versions.mix(FASTQC.out.versions)
 
   // get only the data I need for a MultiQC step
   html_report = FASTQC.out.html.map( sample -> sample[1] )
@@ -73,34 +76,36 @@ workflow RESEQUENCING_MEM {
 
   // calling MultiQC
   MULTIQC(multiqc_input, multiqc_config)
+  ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
   // indexing genome
   BWA_INDEX(file(params.genome_path, checkIfExists: true))
-
-  // trimming sequences: in DSL2 I can't use 'into' to duplicate the channel
-  // like DSL1, but I can read the output from another workflow or open a new channel.
-  // Call the same function I used before for FASTQC:
-  trimgalore_input = get_reads(params.reads_path)
+  ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
 
   // Trimming reads
-  TRIMGALORE(trimgalore_input)
+  TRIMGALORE(INPUT_CHECK.out.reads)
+  ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
 
   // aligning with bwa: need reads in the same format used with FASTQC, a index file
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
   // third params is if we want to sort data or not (true, so I don't need to SORT
   // with an additional step)
   BWA_MEM(TRIMGALORE.out.reads, BWA_INDEX.out.index, true)
+  ch_versions = ch_versions.mix(BWA_MEM.out.versions)
 
   // add sample names to BAM files. Required to name samples with freebayes
   BAMADDRG(BWA_MEM.out.bam)
+  ch_versions = ch_versions.mix(BAMADDRG.out.versions)
 
   // BAM file need to be sorted in order to mark duplicates. This was don in BWA_MEM
   // step. Markduplicates requires meta information + bam files, the same output of
   // SAMTOOLS_SORT step
   PICARD_MARKDUPLICATES(BAMADDRG.out.bam)
+  ch_versions = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
 
   // bam need to be indexed before doing flagstat
   SAMTOOLS_INDEX(PICARD_MARKDUPLICATES.out.bam)
+  ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
   // now I can do the flagstat step. I need bam and bai files from markduplicates and
   // samtools index and the meta informations as three different input. From both channels,
@@ -111,9 +116,11 @@ workflow RESEQUENCING_MEM {
 
   // time to call flagstat
   SAMTOOLS_FLAGSTAT(flagstat_input)
+  ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
   // prepare to call freebayes (single) - remove meta key
   FREEBAYES_SINGLE(PICARD_MARKDUPLICATES.out.bam, file(params.genome_path, checkIfExists: true))
+  ch_versions = ch_versions.mix(FREEBAYES_SINGLE.out.versions)
 
   // return software version
   CUSTOM_DUMPSOFTWAREVERSIONS (

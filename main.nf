@@ -22,7 +22,7 @@ include { RESEQUENCING_MEM } from './workflows/resequencing-mem'
 //
 // WORKFLOW: Run main cnr-ibba/nf-resequencing-mem analysis pipeline
 //
-workflow CNR-IBBA_RESEQUENCING_MEM {
+workflow CNR_IBBA {
     RESEQUENCING_MEM ()
 }
 
@@ -37,7 +37,7 @@ workflow CNR-IBBA_RESEQUENCING_MEM {
 // See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
-    IBBA_RESEQUENCING_MEM ()
+    CNR_IBBA ()
 }
 
 /*
