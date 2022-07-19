@@ -86,6 +86,9 @@
     "multiqc_title": {
       "type": "string"
     },
+    "multiqc_logo": {
+      "type": "string"
+    },
     "max_multiqc_email_size": {
       "type": "string",
       "default": "25.MB"

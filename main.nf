@@ -54,8 +54,13 @@ workflow {
   // combine two channel (mix) and the get only one emission
   multiqc_input = html_report.mix(zip_report).collect()//.view()
 
+  // prepare multiqc_config file
+  multiqc_config = Channel.fromPath(params.multiqc_config)
+  multiqc_config = multiqc_config.concat(Channel.fromPath(params.multiqc_logo))
+  multiqc_config = multiqc_config.collect()
+
   // calling MultiQC
-  MULTIQC(multiqc_input)
+  MULTIQC(multiqc_input, multiqc_config)
 
   // indexing genome
   BWA_INDEX(file(params.genome_path, checkIfExists: true))
