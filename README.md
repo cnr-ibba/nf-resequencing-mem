@@ -19,10 +19,24 @@ repositories. See [SCM configuration file](https://www.nextflow.io/docs/latest/s
 for more details. After that, call this pipeline with:
 
 ```bash
-nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
+  --input <samplesheet.csv> --genome_path <genome_path> --outdir <results dir>
 ```
 
-There are also addition parameters that can be provided when calling nextflow:
+where:
+
+- `--input`: specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
+  columns are described (see `assets/samplesheet.csv` for an example). In the
+  `fastq_1` and `fastq_2` columns you need to specify the path fore _R1_ and _R2_
+  files respectively. If you have single paired reads, leave `fastq_2` column empty.
+  if you have more file for the same sample, specify all the single/pair files using
+  the same _sample name_: this pipeline will append all reads belonging to the
+  same sample before calling _trimgalore_
+- `--genome_path`: path to genome (FASTA, uncompressed) file
+- `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
+  is the recommended profile in a HPC environment
+
+There are also additional parameters that can be provided when calling nextflow:
 
 - `--save_bam`: save markduplicated bam files with their indexes in results folder
 - `--save_trimmed`: save trimmed reads in results folder
@@ -34,7 +48,7 @@ file a provide it when calling nextflow. For example if you create a file like t
 
 ```conf
 params {
-  reads_path = "<reads_path/*_R{1,2}_*.fastq.gz>"
+  input = "<samplesheet.csv>"
   genome_path = "<genome_path>"
   outdir = "<results dir>"
 }
@@ -43,7 +57,8 @@ params {
 Then you can call nextflow providing such configuration file:
 
 ```bash
-nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> -config custom.config
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
+  -config custom.config
 ```
 
 See Nextflow [Configuration](https://www.nextflow.io/docs/latest/config.html)
@@ -138,7 +153,8 @@ You can change the default executor by specifying the `pbs` profile. Simply add
 such profile to your command line, for example:
 
 ```bash
-nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity \
+  --input "<samplesheet.csv>" --genome_path <genome_path> --outdir <results dir>
 ```
 
 ## Calling this pipeline using AWS batch
@@ -154,7 +170,10 @@ and the _queue name_ and the AWS _region_ with the `--awsqueue` and `--awsregion
 parameters:
 
 ```bash
-nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch -bucket-dir s3://<s3 bucket name>/<subfolder> --reads_path '<reads_path>/*_{R1,R2}_*.fastq.gz' --genome_path <<genome_path>> --awsqueue <aws batch queue name> --awsregion <aws region>
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch \
+  -bucket-dir s3://<s3 bucket name>/<subfolder> \
+  --input '<samplesheet.csv>' --genome_path <genome_path> \
+  --awsqueue <aws batch queue name> --awsregion <aws region>
 ```
 
 Please see the [Amazon Cloud](https://www.nextflow.io/docs/latest/awscloud.html#)

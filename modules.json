@@ -17,6 +17,9 @@
       "bwa/mem": {
         "git_sha": "4f5274c3de0c9521f5033893ff61057a74c45ba9"
       },
+      "cat/fastq": {
+        "git_sha": "9aadd9a6d3f5964476582319b3a1c54a3e3fe7c9"
+      },
       "custom/dumpsoftwareversions": {
         "git_sha": "682f789f93070bd047868300dd018faf3d434e7c"
       },

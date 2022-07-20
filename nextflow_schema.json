@@ -53,13 +53,11 @@
     }
   ],
   "properties": {
-    "reads_path": {
-      "type": "string",
-      "default": "data/*_R{1,2}_*.fastq.gz"
+    "input": {
+      "type": "string"
     },
     "genome_path": {
-      "type": "string",
-      "default": "/path/to/genome.fasta"
+      "type": "string"
     },
     "clip_r1": {
       "type": "string"
