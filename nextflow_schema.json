@@ -96,6 +96,9 @@
     "save_bam": {
       "type": "boolean"
     },
+    "save_fasta_index": {
+      "type": "boolean"
+    },
     "skip_trimming": {
       "type": "boolean"
     },

@@ -23,23 +23,30 @@ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
   --input <samplesheet.csv> --genome_fasta <genome_fasta> --outdir <results dir>
 ```
 
-where:
+where the following are `nextflow` parameters:
 
-- `--input`: specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
+- `-resume`: recover previous attempt
+- `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
+  is the recommended profile in a HPC environment
+
+these are instead pipeline parameters which are *mandatory*:
+
+- `--input`: (required) specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
   columns are described (see `assets/samplesheet.csv` for an example). In the
   `fastq_1` and `fastq_2` columns you need to specify the path fore _R1_ and _R2_
   files respectively. If you have single paired reads, leave `fastq_2` column empty.
   if you have more file for the same sample, specify all the single/pair files using
   the same _sample name_: this pipeline will append all reads belonging to the
   same sample before calling _trimgalore_
-- `--genome_fasta`: path to genome (FASTA, uncompressed) file
-- `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
-  is the recommended profile in a HPC environment
+- `--genome_fasta`: (required) path to genome (FASTA, uncompressed) file
 
-There are also additional parameters that can be provided when calling nextflow:
+There are also additional parameters that can be provided:
 
-- `--save_bam`: save markduplicated bam files with their indexes in results folder
-- `--save_trimmed`: save trimmed reads in results folder
+- `--genome_fasta_fai`: path to fasta index file
+- `--save_bam`: (bool, def. true) save markduplicated bam files with their indexes
+  in results folder
+- `--save_trimmed`: (bool, def. true) save trimmed reads in results folder
+- `--save_fasta_index`: (bool, def. true) save fasta index (for reuse with this pipeline)
 
 ### Provide parameters as a config file
 
