@@ -10,6 +10,7 @@ process FREEBAYES_MULTI {
 
     input:
     path(bam)
+    path(bai)
     path(genome_fasta)
     path(genome_fasta_fai)
 

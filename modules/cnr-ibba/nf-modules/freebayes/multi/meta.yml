@@ -15,8 +15,12 @@ tools:
 input:
   - bam:
       type: path
-      description: A list of *BAM files
+      description: A list of BAM files
       pattern: "*.{bam}"
+  - bai:
+      type: path
+      description: A list of BAM index files
+      pattern: "*.{bai}"
   - genome_fasta:
       type: path
       description: The genome fasta file (not compressed)

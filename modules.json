@@ -7,7 +7,7 @@
         "git_sha": "6c9a5926ad259c73317500a2374d3aca7ae24e32"
       },
       "freebayes/multi": {
-        "git_sha": "52a8df7870642dd721fd603d637eef894472d964"
+        "git_sha": "7978bcfedc6828719a726a764ef7593643612f83"
       }
     },
     "nf-core/modules": {

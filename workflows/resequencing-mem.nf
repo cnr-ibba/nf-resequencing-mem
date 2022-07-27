@@ -160,10 +160,11 @@ workflow RESEQUENCING_MEM {
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
-  freebayes_input = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect()
+  freebayes_input_bam = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect()
+  freebayes_input_bai = SAMTOOLS_INDEX.out.bai.map{ meta, bai -> [bai] }.collect()
 
   // call freebayes multi
-  FREEBAYES_MULTI(freebayes_input, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
+  FREEBAYES_MULTI(freebayes_input_bam, freebayes_input_bai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
   ch_versions = ch_versions.mix(FREEBAYES_MULTI.out.versions)
 
   // return software version
