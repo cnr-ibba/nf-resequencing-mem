@@ -1,4 +1,3 @@
-
 # Resequencing Nextflow Pipeline
 
 <!-- markdownlint-disable MD014 -->
@@ -19,9 +18,51 @@ nextflow manual. You will need also to define your credentials for private
 repositories. See [SCM configuration file](https://www.nextflow.io/docs/latest/sharing.html#scm-configuration-file)
 for more details. After that, call this pipeline with:
 
-```text
-$ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
+  --input <samplesheet.csv> --genome_path <genome_path> --outdir <results dir>
 ```
+
+where:
+
+- `--input`: specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
+  columns are described (see `assets/samplesheet.csv` for an example). In the
+  `fastq_1` and `fastq_2` columns you need to specify the path fore _R1_ and _R2_
+  files respectively. If you have single paired reads, leave `fastq_2` column empty.
+  if you have more file for the same sample, specify all the single/pair files using
+  the same _sample name_: this pipeline will append all reads belonging to the
+  same sample before calling _trimgalore_
+- `--genome_path`: path to genome (FASTA, uncompressed) file
+- `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
+  is the recommended profile in a HPC environment
+
+There are also additional parameters that can be provided when calling nextflow:
+
+- `--save_bam`: save markduplicated bam files with their indexes in results folder
+- `--save_trimmed`: save trimmed reads in results folder
+
+### Provide parameters as a config file
+
+In alternative (for reproducibility purpose) you can create a custom configuration
+file a provide it when calling nextflow. For example if you create a file like this
+
+```conf
+params {
+  input = "<samplesheet.csv>"
+  genome_path = "<genome_path>"
+  outdir = "<results dir>"
+}
+```
+
+Then you can call nextflow providing such configuration file:
+
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
+  -config custom.config
+```
+
+See Nextflow [Configuration](https://www.nextflow.io/docs/latest/config.html)
+documentation for more information.
 
 ## Customize configuration
 
@@ -30,11 +71,16 @@ current directory and in the script base directory (if it is not the same as the
 current directory). Finally it checks for the file `$HOME/.nextflow/config`.
 Please modify `params` in `nextflow.config` according your needs:
 
-* The `params` scope defines variables which applies to the whole pipeline.
-* The `profiles` scope defines variables which apply to the particular profile
-invoked with the `-profile` Nextflow parameter
-* The `process` scope can define parameters applied to a single process (for example
-the number of CPUs used or the required RAM)
+- The `params` scope defines variables which applies to the whole pipeline.
+- The `profiles` scope defines variables which apply to the particular profile
+  invoked with the `-profile` Nextflow parameter
+- The `process` scope can define parameters applied to a single process (for example
+  the number of CPUs used or the required RAM)
+
+There are also configuration files in the `conf` folder of this repository, for
+example the `conf/modules.config` file keeps the configuration for each module
+used within this pipeline: you can affect a module behavior without modifying the
+proper module simply changing the proper process configuration section.
 
 ### params scope
 
@@ -54,15 +100,15 @@ the pipeline with a [custom profile](https://www.nextflow.io/docs/edge/config.ht
 Nextflow profiles let nextflow to manage software dependencies and custom parameters.
 Three profiles are currently defined:
 
-* **conda**: every pipeline step will manage its requirements using conda in a
-specific environment. Conda environments are created inside `work` directory
-(but you can change this behaviour using `cacheDir` option within the conda
-scope).
-* **docker**: manage requirements using docker images. You will need to be part of
-the `docker` group in order to use this profile
-* **singularity**: manage requirements using singularity images. You can execute
-this profile without any permissions. `singularity` software need to be installed
-and available in your `$PATH` bash environment variable
+- **conda**: every pipeline step will manage its requirements using conda in a
+  specific environment. Conda environments are created inside `work` directory
+  (but you can change this behaviour using `cacheDir` option within the conda
+  scope).
+- **docker**: manage requirements using docker images. You will need to be part of
+  the `docker` group in order to use this profile
+- **singularity**: manage requirements using singularity images. You can execute
+  this profile without any permissions. `singularity` software need to be installed
+  and available in your `$PATH` bash environment variable
 
 ### process scope
 
@@ -106,24 +152,28 @@ executor {
 You can change the default executor by specifying the `pbs` profile. Simply add
 such profile to your command line, for example:
 
-```text
-$ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity --reads_path "<reads_path/*_R{1,2}_*.fastq.gz>" --genome_path <genome_path> --outdir <results dir>
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity \
+  --input "<samplesheet.csv>" --genome_path <genome_path> --outdir <results dir>
 ```
 
 ## Calling this pipeline using AWS batch
 
 This pipeline could run using the [AWS batch queue system](https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html).
 In order to do so, you need to configure your credentials with [aws cli](https://docs.aws.amazon.com/translate/latest/dg/setup-awscli.html):
-you require to configure a *IAM* account with permission to run *batch*, *EC2* and *S3*.
+you require to configure a _IAM_ account with permission to run _batch_, _EC2_ and _S3_.
 You require also a s3 bucket in which nextflow could store and retrive data (nextflow
 will make a copy of the input data and will retrieve the results from here) and
-a AWS batch queue with *EC2 spot instances* as recommended compute environment.
-After that, you could launch this pipeline by providing only *awsbatch* as profile
-and the *queue name* and the AWS *region* with the `--awsqueue` and `--awsregion`
+a AWS batch queue with _EC2 spot instances_ as recommended compute environment.
+After that, you could launch this pipeline by providing only _awsbatch_ as profile
+and the _queue name_ and the AWS _region_ with the `--awsqueue` and `--awsregion`
 parameters:
 
-```text
-$ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch -bucket-dir s3://<s3 bucket name>/<subfolder> --reads_path '<reads_path>/*_{R1,R2}_*.fastq.gz' --genome_path <<genome_path>> --awsqueue <aws batch queue name> --awsregion <aws region>
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch \
+  -bucket-dir s3://<s3 bucket name>/<subfolder> \
+  --input '<samplesheet.csv>' --genome_path <genome_path> \
+  --awsqueue <aws batch queue name> --awsregion <aws region>
 ```
 
 Please see the [Amazon Cloud](https://www.nextflow.io/docs/latest/awscloud.html#)

@@ -8,3 +8,5 @@ lint:
     - .github/workflows/linting.yml
   actions_ci: False
   merge_markers: False
+  multiqc_config: False
+repository_type: pipeline
