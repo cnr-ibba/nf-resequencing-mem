@@ -24,7 +24,6 @@ workflow PREPARE_GENOME {
       ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
     }
 
-
     emit:
       genome_fasta = genome_fasta
       genome_fasta_fai = genome_fasta_fai

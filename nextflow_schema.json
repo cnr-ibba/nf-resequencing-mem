@@ -99,6 +99,9 @@
     "save_fasta_index": {
       "type": "boolean"
     },
+    "save_bwa_index": {
+      "type": "boolean"
+    },
     "skip_trimming": {
       "type": "boolean"
     },

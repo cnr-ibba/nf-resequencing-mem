@@ -43,10 +43,11 @@ these are instead pipeline parameters which are *mandatory*:
 There are also additional parameters that can be provided:
 
 - `--genome_fasta_fai`: path to fasta index file
-- `--save_bam`: (bool, def. true) save markduplicated bam files with their indexes
+- `--save_bam`: (bool, def. false) save markduplicated bam files with their indexes
   in results folder
-- `--save_trimmed`: (bool, def. true) save trimmed reads in results folder
-- `--save_fasta_index`: (bool, def. true) save fasta index (for reuse with this pipeline)
+- `--save_trimmed`: (bool, def. false) save trimmed reads in results folder
+- `--save_fasta_index`: (bool, def. false) save fasta index (for reuse with this pipeline)
+- `--save_bwa_index`: (bool, def. false) save bwa index (for reuse with this pipeline)
 
 ### Provide parameters as a config file
 
