@@ -5,6 +5,7 @@
 //
 // Initialize channels based on params or indices that were just built
 include { SAMTOOLS_FAIDX } from '../../modules/nf-core/modules/samtools/faidx/main'
+include { BWA_INDEX } from '../../modules/nf-core/modules/bwa/index/main'
 
 workflow PREPARE_GENOME {
   take:
@@ -24,7 +25,13 @@ workflow PREPARE_GENOME {
       ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
     }
 
+    // indexing genome
+  BWA_INDEX(genome_fasta)
+  ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
+
     emit:
-      genome_fasta = genome_fasta
+      genome_fasta     = genome_fasta
       genome_fasta_fai = genome_fasta_fai
+      bwa_index        = BWA_INDEX.out.index
+      versions         = ch_versions
 }

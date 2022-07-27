@@ -36,7 +36,6 @@ include { CAT_FASTQ } from '../modules/nf-core/modules/cat/fastq/main'
 include { FASTQC } from '../modules/nf-core/modules/fastqc/main'
 include { MULTIQC } from '../modules/nf-core/modules/multiqc/main'
 include { TRIMGALORE } from '../modules/nf-core/modules/trimgalore/main'
-include { BWA_INDEX } from '../modules/nf-core/modules/bwa/index/main'
 include { BWA_MEM } from '../modules/nf-core/modules/bwa/mem/main'
 include { BAMADDRG } from '../modules/cnr-ibba/nf-modules/bamaddrg/main'
 include { PICARD_MARKDUPLICATES } from '../modules/nf-core/modules/picard/markduplicates/main'
@@ -87,6 +86,7 @@ workflow RESEQUENCING_MEM {
     genome_fasta,
     genome_fasta_fai
   )
+  ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 
   //
   // MODULE: Concatenate FastQ files from same sample if required
@@ -119,10 +119,6 @@ workflow RESEQUENCING_MEM {
   MULTIQC(multiqc_input, multiqc_config)
   ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
-  // indexing genome
-  BWA_INDEX(PREPARE_GENOME.out.genome_fasta)
-  ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
-
   // Trimming reads
   TRIMGALORE(ch_cat_fastq)
   ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
@@ -131,7 +127,7 @@ workflow RESEQUENCING_MEM {
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
   // third params is if we want to sort data or not (true, so I don't need to SORT
   // with an additional step)
-  BWA_MEM(TRIMGALORE.out.reads, BWA_INDEX.out.index, true)
+  BWA_MEM(TRIMGALORE.out.reads, PREPARE_GENOME.out.bwa_index, true)
   ch_versions = ch_versions.mix(BWA_MEM.out.versions)
 
   // add sample names to BAM files. Required to name samples with freebayes
