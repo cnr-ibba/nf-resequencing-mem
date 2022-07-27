@@ -1,46 +1,49 @@
 {
-    "name": "nf-resequencing-mem",
-    "homePage": "https://github.com/cnr-ibba/nf-resequencing-mem",
-    "repos": {
-        "cnr-ibba/nf-modules": {
-            "bamaddrg": {
-                "git_sha": "6c9a5926ad259c73317500a2374d3aca7ae24e32"
-            },
-            "freebayes/multi": {
-                "git_sha": "52a8df7870642dd721fd603d637eef894472d964"
-            }
-        },
-        "nf-core/modules": {
-            "bwa/index": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "bwa/mem": {
-                "git_sha": "4f5274c3de0c9521f5033893ff61057a74c45ba9"
-            },
-            "cat/fastq": {
-                "git_sha": "9aadd9a6d3f5964476582319b3a1c54a3e3fe7c9"
-            },
-            "custom/dumpsoftwareversions": {
-                "git_sha": "682f789f93070bd047868300dd018faf3d434e7c"
-            },
-            "fastqc": {
-                "git_sha": "49b18b1639f4f7104187058866a8fab33332bdfe"
-            },
-            "multiqc": {
-                "git_sha": "5138acca0985ca01c38a1c4fba917d83772b1106"
-            },
-            "picard/markduplicates": {
-                "git_sha": "682f789f93070bd047868300dd018faf3d434e7c"
-            },
-            "samtools/flagstat": {
-                "git_sha": "ecece498f10b47b7c9d06f53a310cea5811b4c5f"
-            },
-            "samtools/index": {
-                "git_sha": "897c33d5da084b61109500ee44c01da2d3e4e773"
-            },
-            "trimgalore": {
-                "git_sha": "85ec13ff1fc2196c5a507ea497de468101baabed"
-            }
-        }
+  "name": "nf-resequencing-mem",
+  "homePage": "https://github.com/cnr-ibba/nf-resequencing-mem",
+  "repos": {
+    "cnr-ibba/nf-modules": {
+      "bamaddrg": {
+        "git_sha": "6c9a5926ad259c73317500a2374d3aca7ae24e32"
+      },
+      "freebayes/multi": {
+        "git_sha": "52a8df7870642dd721fd603d637eef894472d964"
+      }
+    },
+    "nf-core/modules": {
+      "bwa/index": {
+        "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
+      },
+      "bwa/mem": {
+        "git_sha": "4f5274c3de0c9521f5033893ff61057a74c45ba9"
+      },
+      "cat/fastq": {
+        "git_sha": "9aadd9a6d3f5964476582319b3a1c54a3e3fe7c9"
+      },
+      "custom/dumpsoftwareversions": {
+        "git_sha": "682f789f93070bd047868300dd018faf3d434e7c"
+      },
+      "fastqc": {
+        "git_sha": "49b18b1639f4f7104187058866a8fab33332bdfe"
+      },
+      "multiqc": {
+        "git_sha": "5138acca0985ca01c38a1c4fba917d83772b1106"
+      },
+      "picard/markduplicates": {
+        "git_sha": "682f789f93070bd047868300dd018faf3d434e7c"
+      },
+      "samtools/faidx": {
+        "git_sha": "ce06694af8ca2f7453206aa974c2c9a2b99ec093"
+      },
+      "samtools/flagstat": {
+        "git_sha": "ecece498f10b47b7c9d06f53a310cea5811b4c5f"
+      },
+      "samtools/index": {
+        "git_sha": "897c33d5da084b61109500ee44c01da2d3e4e773"
+      },
+      "trimgalore": {
+        "git_sha": "85ec13ff1fc2196c5a507ea497de468101baabed"
+      }
     }
+  }
 }

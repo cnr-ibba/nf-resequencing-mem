@@ -5,7 +5,7 @@
 */
 
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.genome_path ]
+def checkPathParamList = [ params.input, params.multiqc_config, params.genome_fasta ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
@@ -21,6 +21,7 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
+include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,7 +42,7 @@ include { BAMADDRG } from '../modules/cnr-ibba/nf-modules/bamaddrg/main'
 include { PICARD_MARKDUPLICATES } from '../modules/nf-core/modules/picard/markduplicates/main'
 include { SAMTOOLS_INDEX } from '../modules/nf-core/modules/samtools/index/main'
 include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/modules/samtools/flagstat/main'
-include { FREEBAYES_SINGLE } from '../modules/cnr-ibba/nf-modules/freebayes/single/main'
+include { FREEBAYES_MULTI } from '../modules/cnr-ibba/nf-modules/freebayes/multi/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 
 // A workflow definition which does not declare any name is assumed to be the
@@ -78,6 +79,15 @@ workflow RESEQUENCING_MEM {
     .set { ch_fastq }
   ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
+  genome_fasta = Channel.fromPath(params.genome_fasta).collect()
+  genome_fasta_fai = params.genome_fasta_fai ? Channel.fromPath(params.genome_fasta_fai).collect() : Channel.empty()
+
+  // Build indices if needed
+  PREPARE_GENOME(
+    genome_fasta,
+    genome_fasta_fai
+  )
+
   //
   // MODULE: Concatenate FastQ files from same sample if required
   //
@@ -110,7 +120,7 @@ workflow RESEQUENCING_MEM {
   ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
   // indexing genome
-  BWA_INDEX(file(params.genome_path, checkIfExists: true))
+  BWA_INDEX(PREPARE_GENOME.out.genome_fasta)
   ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
 
   // Trimming reads
@@ -149,9 +159,12 @@ workflow RESEQUENCING_MEM {
   SAMTOOLS_FLAGSTAT(flagstat_input)
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
-  // prepare to call freebayes (single) - remove meta key
-  FREEBAYES_SINGLE(PICARD_MARKDUPLICATES.out.bam, file(params.genome_path, checkIfExists: true))
-  ch_versions = ch_versions.mix(FREEBAYES_SINGLE.out.versions)
+  // prepare to call freebayes (multi) - get rid of meta.id
+  freebayes_input = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect()
+
+  // call freebayes multi
+  FREEBAYES_MULTI(freebayes_input, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
+  ch_versions = ch_versions.mix(FREEBAYES_MULTI.out.versions)
 
   // return software version
   CUSTOM_DUMPSOFTWAREVERSIONS (

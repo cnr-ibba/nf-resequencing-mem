@@ -20,7 +20,7 @@ for more details. After that, call this pipeline with:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
-  --input <samplesheet.csv> --genome_path <genome_path> --outdir <results dir>
+  --input <samplesheet.csv> --genome_fasta <genome_fasta> --outdir <results dir>
 ```
 
 where:
@@ -32,7 +32,7 @@ where:
   if you have more file for the same sample, specify all the single/pair files using
   the same _sample name_: this pipeline will append all reads belonging to the
   same sample before calling _trimgalore_
-- `--genome_path`: path to genome (FASTA, uncompressed) file
+- `--genome_fasta`: path to genome (FASTA, uncompressed) file
 - `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
   is the recommended profile in a HPC environment
 
@@ -49,7 +49,7 @@ file a provide it when calling nextflow. For example if you create a file like t
 ```conf
 params {
   input = "<samplesheet.csv>"
-  genome_path = "<genome_path>"
+  genome_fasta = "<genome_fasta>"
   outdir = "<results dir>"
 }
 ```
@@ -154,7 +154,7 @@ such profile to your command line, for example:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity \
-  --input "<samplesheet.csv>" --genome_path <genome_path> --outdir <results dir>
+  --input "<samplesheet.csv>" --genome_fasta <genome_fasta> --outdir <results dir>
 ```
 
 ## Calling this pipeline using AWS batch
@@ -172,7 +172,7 @@ parameters:
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch \
   -bucket-dir s3://<s3 bucket name>/<subfolder> \
-  --input '<samplesheet.csv>' --genome_path <genome_path> \
+  --input '<samplesheet.csv>' --genome_fasta <genome_fasta> \
   --awsqueue <aws batch queue name> --awsregion <aws region>
 ```
 

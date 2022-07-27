@@ -56,7 +56,10 @@
     "input": {
       "type": "string"
     },
-    "genome_path": {
+    "genome_fasta": {
+      "type": "string"
+    },
+    "genome_fasta_fai": {
       "type": "string"
     },
     "clip_r1": {
