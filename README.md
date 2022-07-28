@@ -23,7 +23,7 @@ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
   --input <samplesheet.csv> --genome_fasta <genome_fasta> --outdir <results dir>
 ```
 
-where the following are `nextflow` parameters:
+where the following are `nextflow` specific parameters:
 
 - `-resume`: recover previous attempt
 - `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
@@ -38,7 +38,8 @@ these are instead pipeline parameters which are _mandatory_:
   if you have more file for the same sample, specify all the single/pair files using
   the same _sample name_: this pipeline will append all reads belonging to the
   same sample before calling _trimgalore_
-- `--genome_fasta`: (required) path to genome (FASTA, uncompressed) file
+- `--genome_fasta`: (required) path to genome (FASTA) file. If file is compressed,
+  index calculation will be forced even if provided by CLI
 
 There are also additional parameters that can be provided:
 
@@ -63,7 +64,7 @@ params {
 }
 ```
 
-Then you can call nextflow providing such configuration file:
+Then you can call `nextflow` providing such configuration file:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
