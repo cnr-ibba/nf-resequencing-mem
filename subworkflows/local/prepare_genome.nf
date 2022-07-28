@@ -6,6 +6,7 @@
 // Initialize channels based on params or indices that were just built
 include { SAMTOOLS_FAIDX } from '../../modules/nf-core/modules/samtools/faidx/main'
 include { BWA_INDEX } from '../../modules/nf-core/modules/bwa/index/main'
+include { TABIX_BGZIP } from '../../modules/nf-core/modules/tabix/bgzip/main'
 
 workflow PREPARE_GENOME {
   take:
@@ -17,8 +18,21 @@ workflow PREPARE_GENOME {
 
     ch_versions = Channel.empty()
 
+    // this flag force index calculation
+    force_index = false
+
+    // check if reference genome is compressed or not
+    if (params.genome_fasta.endsWith('.gz')) {
+      // unpack genome
+      TABIX_BGZIP(genome_fasta.map{ it -> [[id:it[0].baseName], it] })
+      genome_fasta = TABIX_BGZIP.out.output.map{ meta, fasta -> [fasta] }
+
+      // force index calculation on uncompressed file
+      force_index = true
+    }
+
     // create fasta index if necessary
-    if (! params.genome_fasta_fai) {
+    if (! params.genome_fasta_fai || force_index) {
       SAMTOOLS_FAIDX(genome_fasta.map{ it -> [[id:it[0].getName()], it] })
       genome_fasta_fai = SAMTOOLS_FAIDX.out.fai.map{ meta, fai -> [fai] }
 
@@ -27,7 +41,7 @@ workflow PREPARE_GENOME {
     }
 
     // indexing genome if necessary
-    if (! params.genome_bwa_index) {
+    if (! params.genome_bwa_index || force_index) {
       BWA_INDEX(genome_fasta)
       genome_bwa_index = BWA_INDEX.out.index
       ch_versions = ch_versions.mix(BWA_INDEX.out.versions)

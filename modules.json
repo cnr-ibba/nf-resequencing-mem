@@ -41,6 +41,9 @@
       "samtools/index": {
         "git_sha": "897c33d5da084b61109500ee44c01da2d3e4e773"
       },
+      "tabix/bgzip": {
+        "git_sha": "37bf3936f3665483d070a5e0e0b314311032af7c"
+      },
       "trimgalore": {
         "git_sha": "85ec13ff1fc2196c5a507ea497de468101baabed"
       }
