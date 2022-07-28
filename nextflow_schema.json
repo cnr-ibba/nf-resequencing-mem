@@ -56,7 +56,13 @@
     "input": {
       "type": "string"
     },
-    "genome_path": {
+    "genome_fasta": {
+      "type": "string"
+    },
+    "genome_fasta_fai": {
+      "type": "string"
+    },
+    "genome_bwa_index": {
       "type": "string"
     },
     "clip_r1": {
@@ -91,6 +97,12 @@
       "type": "boolean"
     },
     "save_bam": {
+      "type": "boolean"
+    },
+    "save_fasta_index": {
+      "type": "boolean"
+    },
+    "save_bwa_index": {
       "type": "boolean"
     },
     "skip_trimming": {
