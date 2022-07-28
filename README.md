@@ -20,26 +20,36 @@ for more details. After that, call this pipeline with:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
-  --input <samplesheet.csv> --genome_path <genome_path> --outdir <results dir>
+  --input <samplesheet.csv> --genome_fasta <genome_fasta> --outdir <results dir>
 ```
 
-where:
+where the following are `nextflow` specific parameters:
 
-- `--input`: specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
+- `-resume`: recover previous attempt
+- `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
+  is the recommended profile in a HPC environment
+
+these are instead pipeline parameters which are _mandatory_:
+
+- `--input`: (required) specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
   columns are described (see `assets/samplesheet.csv` for an example). In the
   `fastq_1` and `fastq_2` columns you need to specify the path fore _R1_ and _R2_
   files respectively. If you have single paired reads, leave `fastq_2` column empty.
   if you have more file for the same sample, specify all the single/pair files using
   the same _sample name_: this pipeline will append all reads belonging to the
   same sample before calling _trimgalore_
-- `--genome_path`: path to genome (FASTA, uncompressed) file
-- `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
-  is the recommended profile in a HPC environment
+- `--genome_fasta`: (required) path to genome (FASTA) file. If file is compressed,
+  index calculation will be forced even if provided by CLI
 
-There are also additional parameters that can be provided when calling nextflow:
+There are also additional parameters that can be provided:
 
-- `--save_bam`: save markduplicated bam files with their indexes in results folder
-- `--save_trimmed`: save trimmed reads in results folder
+- `--genome_fasta_fai`: path to fasta index file (skip fasta index step)
+- `--genome_bwa_index`: path to genome bwa index directory (skip bwa index step)
+- `--save_bam`: (bool, def. false) save markduplicated bam files with their indexes
+  in results folder
+- `--save_trimmed`: (bool, def. false) save trimmed reads in results folder
+- `--save_fasta_index`: (bool, def. false) save fasta index (for reuse with this pipeline)
+- `--save_bwa_index`: (bool, def. false) save bwa index (for reuse with this pipeline)
 
 ### Provide parameters as a config file
 
@@ -49,12 +59,12 @@ file a provide it when calling nextflow. For example if you create a file like t
 ```conf
 params {
   input = "<samplesheet.csv>"
-  genome_path = "<genome_path>"
+  genome_fasta = "<genome_fasta>"
   outdir = "<results dir>"
 }
 ```
 
-Then you can call nextflow providing such configuration file:
+Then you can call `nextflow` providing such configuration file:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
@@ -154,7 +164,7 @@ such profile to your command line, for example:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity \
-  --input "<samplesheet.csv>" --genome_path <genome_path> --outdir <results dir>
+  --input "<samplesheet.csv>" --genome_fasta <genome_fasta> --outdir <results dir>
 ```
 
 ## Calling this pipeline using AWS batch
@@ -172,7 +182,7 @@ parameters:
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch \
   -bucket-dir s3://<s3 bucket name>/<subfolder> \
-  --input '<samplesheet.csv>' --genome_path <genome_path> \
+  --input '<samplesheet.csv>' --genome_fasta <genome_fasta> \
   --awsqueue <aws batch queue name> --awsregion <aws region>
 ```
 
