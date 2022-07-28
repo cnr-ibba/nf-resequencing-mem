@@ -1,10 +1,15 @@
 {
     "cSpell.words": [
+        "awsbatch",
+        "conda",
         "fasta",
+        "freebayes",
         "ibba",
         "nextflow",
         "outdir",
+        "ploidy",
         "resequencing",
-        "samplesheet"
+        "samplesheet",
+        "slurm"
     ]
 }
