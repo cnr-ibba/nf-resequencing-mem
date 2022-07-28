@@ -29,7 +29,7 @@ where the following are `nextflow` specific parameters:
 - `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
   is the recommended profile in a HPC environment
 
-these are instead pipeline parameters which are _mandatory_:
+these are pipeline parameters which are _mandatory_:
 
 - `--input`: (required) specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
   columns are described (see `assets/samplesheet.csv` for an example). In the
@@ -41,7 +41,7 @@ these are instead pipeline parameters which are _mandatory_:
 - `--genome_fasta`: (required) path to genome (FASTA) file. If file is compressed,
   index calculation will be forced even if provided by CLI
 
-There are also additional parameters that can be provided:
+There are also additional pipeline parameters that can be provided:
 
 - `--genome_fasta_fai`: path to fasta index file (skip fasta index step)
 - `--genome_bwa_index`: path to genome bwa index directory (skip bwa index step)
@@ -54,7 +54,7 @@ There are also additional parameters that can be provided:
 ### Provide parameters as a config file
 
 In alternative (for reproducibility purpose) you can create a custom configuration
-file a provide it when calling nextflow. For example if you create a file like this
+file and provide it when calling nextflow. For example if you create a file like this
 
 ```conf
 params {
@@ -138,7 +138,21 @@ process {
 }
 ```
 
-Will affect all the processes annotated with `process_high` label.
+Will affect all the processes annotated with `process_high` label. Similarly, you
+can provide additional parameters to a certain step. For example, supposing to
+change the `freebayes` _ploidy_ since you are dealing with a non-diploid sample
+(default): you can provide a `custom.config` file in which pass extra parameters
+to freebayes:
+
+```text
+process {
+    withName: FREEBAYES_MULTI {
+        ext.args = '--ploidy 4'
+    }
+}
+```
+
+Then call `nextflow` with `-config` parameter
 
 ## Calling this pipeline with local executor
 
@@ -165,6 +179,27 @@ such profile to your command line, for example:
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity \
   --input "<samplesheet.csv>" --genome_fasta <genome_fasta> --outdir <results dir>
+```
+
+In alternative, you can export this environment variable:
+
+```bash
+export NXF_EXECUTOR=pbs
+```
+
+## Calling this pipeline using slurm executor
+
+Like `pbs` executor, simply add such profile to your command line, for example:
+
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile slurm,singularity \
+  --input "<samplesheet.csv>" --genome_fasta <genome_fasta> --outdir <results dir>
+```
+
+In alternative, you can export this environment variable:
+
+```bash
+export NXF_EXECUTOR=slurm
 ```
 
 ## Calling this pipeline using AWS batch
