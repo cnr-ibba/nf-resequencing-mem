@@ -80,11 +80,13 @@ workflow RESEQUENCING_MEM {
 
   genome_fasta = Channel.fromPath(params.genome_fasta).collect()
   genome_fasta_fai = params.genome_fasta_fai ? Channel.fromPath(params.genome_fasta_fai).collect() : Channel.empty()
+  genome_bwa_index = params.genome_bwa_index ? Channel.fromPath(params.genome_bwa_index).collect() : Channel.empty()
 
   // Build indices if needed
   PREPARE_GENOME(
     genome_fasta,
-    genome_fasta_fai
+    genome_fasta_fai,
+    genome_bwa_index
   )
   ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 

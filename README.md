@@ -29,7 +29,7 @@ where the following are `nextflow` parameters:
 - `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
   is the recommended profile in a HPC environment
 
-these are instead pipeline parameters which are *mandatory*:
+these are instead pipeline parameters which are _mandatory_:
 
 - `--input`: (required) specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
   columns are described (see `assets/samplesheet.csv` for an example). In the
@@ -42,7 +42,8 @@ these are instead pipeline parameters which are *mandatory*:
 
 There are also additional parameters that can be provided:
 
-- `--genome_fasta_fai`: path to fasta index file
+- `--genome_fasta_fai`: path to fasta index file (skip fasta index step)
+- `--genome_bwa_index`: path to genome bwa index directory (skip bwa index step)
 - `--save_bam`: (bool, def. false) save markduplicated bam files with their indexes
   in results folder
 - `--save_trimmed`: (bool, def. false) save trimmed reads in results folder

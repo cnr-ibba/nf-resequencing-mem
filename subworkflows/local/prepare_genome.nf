@@ -11,6 +11,7 @@ workflow PREPARE_GENOME {
   take:
     genome_fasta      // channel: [mandatory] fasta
     genome_fasta_fai  // channel: [optional]  fasta_fai
+    genome_bwa_index  // channel: [optional]  bwa index
 
   main:
 
@@ -25,13 +26,17 @@ workflow PREPARE_GENOME {
       ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
     }
 
-    // indexing genome
-  BWA_INDEX(genome_fasta)
-  ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
+    // indexing genome if necessary
+    if (! params.genome_bwa_index) {
+      BWA_INDEX(genome_fasta)
+      genome_bwa_index = BWA_INDEX.out.index
+      ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
+    }
 
-    emit:
-      genome_fasta     = genome_fasta
-      genome_fasta_fai = genome_fasta_fai
-      bwa_index        = BWA_INDEX.out.index
-      versions         = ch_versions
+
+  emit:
+    genome_fasta     = genome_fasta
+    genome_fasta_fai = genome_fasta_fai
+    bwa_index        = genome_bwa_index
+    versions         = ch_versions
 }

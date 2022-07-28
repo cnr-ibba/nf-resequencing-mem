@@ -62,6 +62,9 @@
     "genome_fasta_fai": {
       "type": "string"
     },
+    "genome_bwa_index": {
+      "type": "string"
+    },
     "clip_r1": {
       "type": "string"
     },
