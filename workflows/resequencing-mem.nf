@@ -41,6 +41,7 @@ include { BAMADDRG } from '../modules/cnr-ibba/nf-modules/bamaddrg/main'
 include { PICARD_MARKDUPLICATES } from '../modules/nf-core/modules/picard/markduplicates/main'
 include { SAMTOOLS_INDEX } from '../modules/nf-core/modules/samtools/index/main'
 include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/modules/samtools/flagstat/main'
+include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/nf-modules/samtools/coverage/main'
 include { FREEBAYES_MULTI } from '../modules/cnr-ibba/nf-modules/freebayes/multi/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 
@@ -155,6 +156,10 @@ workflow RESEQUENCING_MEM {
 
   // time to call flagstat
   SAMTOOLS_FLAGSTAT(flagstat_input)
+  ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
+
+  // calculate sample coverage
+  SAMTOOLS_COVERAGE(PICARD_MARKDUPLICATES.out.bam)
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
