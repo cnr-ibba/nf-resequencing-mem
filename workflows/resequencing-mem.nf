@@ -22,7 +22,6 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 //
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
-include { BEDTOOLS_GENOMECOV } from '../modules/local/bedtools_genomecov'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -157,10 +156,6 @@ workflow RESEQUENCING_MEM {
   // time to call flagstat
   SAMTOOLS_FLAGSTAT(flagstat_input)
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
-
-  // calculate genome coverage
-  BEDTOOLS_GENOMECOV(PICARD_MARKDUPLICATES.out.bam)
-  ch_versions = ch_versions.mix(BEDTOOLS_GENOMECOV.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
   freebayes_input_bam = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect()
