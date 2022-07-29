@@ -22,7 +22,6 @@ if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input sample
 //
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
-include { BEDTOOLS_GENOMECOV } from '../modules/local/bedtools_genomecov'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,6 +41,7 @@ include { BAMADDRG } from '../modules/cnr-ibba/nf-modules/bamaddrg/main'
 include { PICARD_MARKDUPLICATES } from '../modules/nf-core/modules/picard/markduplicates/main'
 include { SAMTOOLS_INDEX } from '../modules/nf-core/modules/samtools/index/main'
 include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/modules/samtools/flagstat/main'
+include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/nf-modules/samtools/coverage/main'
 include { FREEBAYES_MULTI } from '../modules/cnr-ibba/nf-modules/freebayes/multi/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
 
@@ -158,9 +158,9 @@ workflow RESEQUENCING_MEM {
   SAMTOOLS_FLAGSTAT(flagstat_input)
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
-  // calculate genome coverage
-  BEDTOOLS_GENOMECOV(PICARD_MARKDUPLICATES.out.bam)
-  ch_versions = ch_versions.mix(BEDTOOLS_GENOMECOV.out.versions)
+  // calculate sample coverage
+  SAMTOOLS_COVERAGE(PICARD_MARKDUPLICATES.out.bam)
+  ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
   freebayes_input_bam = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect()
