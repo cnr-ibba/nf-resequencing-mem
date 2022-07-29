@@ -8,6 +8,9 @@
       },
       "freebayes/multi": {
         "git_sha": "7978bcfedc6828719a726a764ef7593643612f83"
+      },
+      "samtools/coverage": {
+        "git_sha": "3b90d33722e0862f1bfa901f21644a5e23567fc0"
       }
     },
     "nf-core/modules": {
