@@ -1,7 +1,7 @@
 
 process BEDTOOLS_GENOMECOV {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_low'
 
     conda (params.enable_conda ? "bioconda::bedtools=2.30.0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -27,20 +27,20 @@ process BEDTOOLS_GENOMECOV {
         -ibam $bam \\
         $args \\
         -bga \\
-        > ${prefix}.bga_coverage
+        | gzip -c > ${prefix}.bga_coverage.gz
 
     bedtools \\
         genomecov \\
         -ibam $bam \\
         $args \\
         -d \\
-        > ${prefix}.d_coverage
+        | gzip -c > ${prefix}.d_coverage.gz
 
-    awk '{total += \$3} END {print total}' ${prefix}.d_coverage > ${prefix}.seq_nr
+    zcat ${prefix}.d_coverage.gz | awk '{total += \$3} END {print total}' > ${prefix}.seq_nr
 
-    awk 'END{print FNR}' ${prefix}.d_coverage > ${prefix}.positions
+    zcat ${prefix}.d_coverage.gz | awk 'END{print FNR}' > ${prefix}.positions
 
-    grep -w 0 ${prefix}.d_coverage | wc -l > ${prefix}.uncovered_positions
+    zcat ${prefix}.d_coverage.gz | grep -w 0 | wc -l > ${prefix}.uncovered_positions
 
     awk 'BEGIN{getline to_add < "${prefix}.seq_nr"}{print \$0,to_add}' ${prefix}.positions > ${prefix}.cov_calculation
 
