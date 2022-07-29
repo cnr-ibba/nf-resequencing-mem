@@ -3,6 +3,7 @@ process SAMTOOLS_COVERAGE {
     tag "$meta.id"
     label 'process_low'
 
+    conda (params.enable_conda ? "bioconda::samtools=1.15.1 conda-forge::libzlib=1.2.12" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/samtools:1.15.1--h1170115_0' :
         'quay.io/biocontainers/samtools:1.15.1--h1170115_0' }"
