@@ -140,13 +140,15 @@ def read_head(handle, num_lines=10):
     return "".join(lines)
 
 
-def sniff_format(handle):
+def sniff_format(handle, has_header=False):
     """
     Detect the tabular format.
 
     Args:
         handle (text file): A handle to a `text file`_ object. The read position is
         expected to be at the beginning (index 0).
+        has_header (bool): Assume first row is header (don't test with
+        `csv.Sniffer.has_header()`)
 
     Returns:
         csv.Dialect: The detected tabular format.
@@ -158,14 +160,14 @@ def sniff_format(handle):
     peek = read_head(handle)
     handle.seek(0)
     sniffer = csv.Sniffer()
-    if not sniffer.has_header(peek):
+    if not has_header and not sniffer.has_header(peek):
         logger.critical("The given sample sheet does not appear to contain a header.")
         sys.exit(1)
     dialect = sniffer.sniff(peek)
     return dialect
 
 
-def check_samplesheet(file_in, file_out):
+def check_samplesheet(file_in, file_out, has_header=False):
     """
     Check that the tabular samplesheet has the structure expected by nf-core pipelines.
 
@@ -177,6 +179,7 @@ def check_samplesheet(file_in, file_out):
             CSV, TSV, or any other format automatically recognized by ``csv.Sniffer``.
         file_out (pathlib.Path): Where the validated and transformed samplesheet should
             be created; always in CSV format.
+        has_header (bool): Assume first row is header (default "False")
 
     Example:
         This function checks that the samplesheet follows the following structure,
@@ -194,7 +197,7 @@ def check_samplesheet(file_in, file_out):
     required_columns = {"sample", "fastq_1", "fastq_2"}
     # See https://docs.python.org/3.9/library/csv.html#id3 to read up on `newline=""`.
     with file_in.open(newline="") as in_handle:
-        reader = csv.DictReader(in_handle, dialect=sniff_format(in_handle))
+        reader = csv.DictReader(in_handle, dialect=sniff_format(in_handle, has_header))
         # Validate the existence of the expected header columns.
         if not required_columns.issubset(reader.fieldnames):
             req_cols = ", ".join(required_columns)
@@ -244,6 +247,11 @@ def parse_args(argv=None):
         choices=("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"),
         default="WARNING",
     )
+    parser.add_argument(
+        '--has_header',
+        help="Don't search for header row, assume first row is header",
+        action='store_true'
+    )
     return parser.parse_args(argv)
 
 
@@ -255,7 +263,7 @@ def main(argv=None):
         logger.error(f"The given input file {args.file_in} was not found!")
         sys.exit(2)
     args.file_out.parent.mkdir(parents=True, exist_ok=True)
-    check_samplesheet(args.file_in, args.file_out)
+    check_samplesheet(args.file_in, args.file_out, args.has_header)
 
 
 if __name__ == "__main__":
