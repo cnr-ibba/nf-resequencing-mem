@@ -14,8 +14,10 @@ process SAMPLESHEET_CHECK {
     path "versions.yml", emit: versions
 
     script: // This script is bundled with the pipeline, in nf-core/test/bin/
+    def args = task.ext.args ?: ''
     """
     check_samplesheet.py \\
+        $args \\
         $samplesheet \\
         samplesheet.valid.csv
 
