@@ -4,9 +4,9 @@
 // inspired from nf-core/sarek:subworkflows/local/prepare_genome.nf
 //
 // Initialize channels based on params or indices that were just built
-include { SAMTOOLS_FAIDX } from '../../modules/nf-core/modules/samtools/faidx/main'
-include { BWA_INDEX } from '../../modules/nf-core/modules/bwa/index/main'
-include { TABIX_BGZIP } from '../../modules/nf-core/modules/tabix/bgzip/main'
+include { SAMTOOLS_FAIDX } from '../../modules/nf-core/samtools/faidx/main'
+include { BWA_INDEX } from '../../modules/nf-core/bwa/index/main'
+include { TABIX_BGZIP } from '../../modules/nf-core/tabix/bgzip/main'
 
 workflow PREPARE_GENOME {
   take:
@@ -42,7 +42,7 @@ workflow PREPARE_GENOME {
 
     // indexing genome if necessary
     if (! params.genome_bwa_index || force_index) {
-      BWA_INDEX(genome_fasta)
+      BWA_INDEX(genome_fasta.map{ it -> [[id:it[0].baseName], it] })
       genome_bwa_index = BWA_INDEX.out.index
       ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
     }

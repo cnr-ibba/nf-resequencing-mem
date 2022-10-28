@@ -32,18 +32,18 @@ include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { CAT_FASTQ } from '../modules/nf-core/modules/cat/fastq/main'
-include { FASTQC } from '../modules/nf-core/modules/fastqc/main'
-include { MULTIQC } from '../modules/nf-core/modules/multiqc/main'
-include { TRIMGALORE } from '../modules/nf-core/modules/trimgalore/main'
-include { BWA_MEM } from '../modules/nf-core/modules/bwa/mem/main'
-include { BAMADDRG } from '../modules/cnr-ibba/nf-modules/bamaddrg/main'
-include { PICARD_MARKDUPLICATES } from '../modules/nf-core/modules/picard/markduplicates/main'
-include { SAMTOOLS_INDEX } from '../modules/nf-core/modules/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/modules/samtools/flagstat/main'
-include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/nf-modules/samtools/coverage/main'
-include { FREEBAYES_MULTI } from '../modules/cnr-ibba/nf-modules/freebayes/multi/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
+include { CAT_FASTQ } from '../modules/nf-core/cat/fastq/main'
+include { FASTQC } from '../modules/nf-core/fastqc/main'
+include { MULTIQC } from '../modules/nf-core/multiqc/main'
+include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
+include { BWA_MEM } from '../modules/nf-core/bwa/mem/main'
+include { BAMADDRG } from '../modules/cnr-ibba/bamaddrg/main'
+include { PICARD_MARKDUPLICATES } from '../modules/nf-core/picard/markduplicates/main'
+include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/samtools/flagstat/main'
+include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/samtools/coverage/main'
+include { FREEBAYES_MULTI } from '../modules/cnr-ibba/freebayes/multi/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -119,7 +119,7 @@ workflow RESEQUENCING_MEM {
   multiqc_config = multiqc_config.collect()
 
   // calling MultiQC
-  MULTIQC(multiqc_input, multiqc_config)
+  MULTIQC(multiqc_input, multiqc_config, Channel.empty(), Channel.empty())
   ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
   // Trimming reads
@@ -140,7 +140,7 @@ workflow RESEQUENCING_MEM {
   // BAM file need to be sorted in order to mark duplicates. This was don in BWA_MEM
   // step. Markduplicates requires meta information + bam files, the same output of
   // SAMTOOLS_SORT step
-  PICARD_MARKDUPLICATES(BAMADDRG.out.bam)
+  PICARD_MARKDUPLICATES(BAMADDRG.out.bam, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
   ch_versions = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
 
   // bam need to be indexed before doing flagstat
