@@ -201,7 +201,9 @@ def check_samplesheet(file_in, file_out, has_header=False):
         # Validate the existence of the expected header columns.
         if not required_columns.issubset(reader.fieldnames):
             req_cols = ", ".join(required_columns)
-            logger.critical(f"The sample sheet **must** contain these column headers: {req_cols}.")
+            logger.critical(
+                f"The sample sheet **must** contain these column headers: {req_cols}."
+            )
             sys.exit(1)
         # Validate each row.
         checker = RowChecker()
@@ -248,9 +250,9 @@ def parse_args(argv=None):
         default="WARNING",
     )
     parser.add_argument(
-        '--has_header',
+        "--has_header",
         help="Don't search for header row, assume first row is header",
-        action='store_true'
+        action="store_true",
     )
     return parser.parse_args(argv)
 
