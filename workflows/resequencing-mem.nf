@@ -44,6 +44,7 @@ include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/samtools/flagstat/main'
 include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/samtools/coverage/main'
 include { FREEBAYES_MULTI } from '../modules/cnr-ibba/freebayes/multi/main'
 include { BCFTOOLS_NORM } from '../modules/nf-core/bcftools/norm/main'
+include { TABIX_TABIX } from '../modules/nf-core/tabix/tabix/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 // A workflow definition which does not declare any name is assumed to be the
@@ -181,6 +182,9 @@ workflow RESEQUENCING_MEM {
     bcftools_ch,
     PREPARE_GENOME.out.genome_fasta
   )
+
+  // index normalized VCF file
+  TABIX_TABIX(BCFTOOLS_NORM.out.vcf)
 
   // return software version
   CUSTOM_DUMPSOFTWAREVERSIONS (
