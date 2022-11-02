@@ -92,12 +92,12 @@ example the `conf/modules.config` file keeps the configuration for each module
 used within this pipeline: you can affect a module behavior without modifying the
 proper module simply changing the proper process configuration section.
 
-### params scope
+### Params scope
 
 The params scope let you to define parameters to the pipeline. You can set those
 params directly in config file or passing those from command line.
 
-### profiles scope
+### Profiles scope
 
 By default, this pipeline is supposed to work in an environment with all required softwares
 already installed. You could install and manage all required software in a conda
@@ -120,7 +120,7 @@ Three profiles are currently defined:
   this profile without any permissions. `singularity` software need to be installed
   and available in your `$PATH` bash environment variable
 
-### process scope
+### Process scope
 
 The process configuration scope allows you to provide the default configuration
 for all the processes. You can specify here any property described in the process
@@ -224,3 +224,26 @@ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch \
 Please see the [Amazon Cloud](https://www.nextflow.io/docs/latest/awscloud.html#)
 section of nextflow documentation to get other information on nextflow and AWS
 usage.
+
+## Known issues
+
+### Ignore sample sheet check
+
+Rarely this pipeline could fail at `INPUT_CHECK:SAMPLESHEET_CHECK`
+claiming that `given sample sheet does not appear to contain a header`,
+even if your sample sheet starts with `sample,fastq_1,fastq_2` header
+section. This behavior is very uncommon and described in `nf-core/tools`
+issue [#1539](https://github.com/nf-core/tools/issues/1539). There's a way
+to overcome this issue by providing `--has_header` parameter to
+`bin/check_samplesheet.py` which let to skip the header check sections. However,
+you have to ensure your samplesheet have the required `sample,fastq_1,fastq_2`
+header section. You can do it by customizing the `SAMPLESHEET_CHECK` step
+in the process scope, for example
+
+```text
+process {
+    withName: SAMPLESHEET_CHECK {
+        ext.args = '--has_header'
+    }
+}
+```
