@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Solve linting issues ([#32](https://github.com/cnr-ibba/nf-resequencing-mem/issues/27))
 - Force `check_samplesheet.py` assuming header present ([#31](https://github.com/cnr-ibba/nf-resequencing-mem/issues/31))
 
+### `Added`
+
+- Add `bcftools/norm` module
+
 ### `Fixed`
 
 - Force samplesheet having header in `INPUT_CHECK:SAMPLESHEET_CHECK` workflow
