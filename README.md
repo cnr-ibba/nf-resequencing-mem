@@ -50,6 +50,7 @@ There are also additional pipeline parameters that can be provided:
 - `--save_trimmed`: (bool, def. false) save trimmed reads in results folder
 - `--save_fasta_index`: (bool, def. false) save fasta index (for reuse with this pipeline)
 - `--save_bwa_index`: (bool, def. false) save bwa index (for reuse with this pipeline)
+- `--save_freebayes`: (bool, def. false) save freebayes output file (not normalized!)
 
 ### Provide parameters as a config file
 
