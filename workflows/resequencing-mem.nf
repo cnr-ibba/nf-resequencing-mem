@@ -162,7 +162,7 @@ workflow RESEQUENCING_MEM {
 
   // calculate sample coverage
   SAMTOOLS_COVERAGE(PICARD_MARKDUPLICATES.out.bam)
-  ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
+  ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
   freebayes_input_bam = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect().map{ it -> [[id: "all-samples"], it]}
@@ -182,9 +182,11 @@ workflow RESEQUENCING_MEM {
     bcftools_ch,
     PREPARE_GENOME.out.genome_fasta
   )
+  ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
 
   // index normalized VCF file
   TABIX_TABIX(BCFTOOLS_NORM.out.vcf)
+  ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
 
   // return software version
   CUSTOM_DUMPSOFTWAREVERSIONS (
