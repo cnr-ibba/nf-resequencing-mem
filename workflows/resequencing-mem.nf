@@ -32,18 +32,20 @@ include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { CAT_FASTQ } from '../modules/nf-core/modules/cat/fastq/main'
-include { FASTQC } from '../modules/nf-core/modules/fastqc/main'
-include { MULTIQC } from '../modules/nf-core/modules/multiqc/main'
-include { TRIMGALORE } from '../modules/nf-core/modules/trimgalore/main'
-include { BWA_MEM } from '../modules/nf-core/modules/bwa/mem/main'
-include { BAMADDRG } from '../modules/cnr-ibba/nf-modules/bamaddrg/main'
-include { PICARD_MARKDUPLICATES } from '../modules/nf-core/modules/picard/markduplicates/main'
-include { SAMTOOLS_INDEX } from '../modules/nf-core/modules/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/modules/samtools/flagstat/main'
-include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/nf-modules/samtools/coverage/main'
-include { FREEBAYES_MULTI } from '../modules/cnr-ibba/nf-modules/freebayes/multi/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
+include { CAT_FASTQ } from '../modules/nf-core/cat/fastq/main'
+include { FASTQC } from '../modules/nf-core/fastqc/main'
+include { MULTIQC } from '../modules/nf-core/multiqc/main'
+include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
+include { BWA_MEM } from '../modules/nf-core/bwa/mem/main'
+include { BAMADDRG } from '../modules/cnr-ibba/bamaddrg/main'
+include { PICARD_MARKDUPLICATES } from '../modules/nf-core/picard/markduplicates/main'
+include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/samtools/flagstat/main'
+include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/samtools/coverage/main'
+include { FREEBAYES_MULTI } from '../modules/cnr-ibba/freebayes/multi/main'
+include { BCFTOOLS_NORM } from '../modules/nf-core/bcftools/norm/main'
+include { TABIX_TABIX } from '../modules/nf-core/tabix/tabix/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -119,7 +121,7 @@ workflow RESEQUENCING_MEM {
   multiqc_config = multiqc_config.collect()
 
   // calling MultiQC
-  MULTIQC(multiqc_input, multiqc_config)
+  MULTIQC(multiqc_input, multiqc_config, Channel.empty(), Channel.empty())
   ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
   // Trimming reads
@@ -140,7 +142,7 @@ workflow RESEQUENCING_MEM {
   // BAM file need to be sorted in order to mark duplicates. This was don in BWA_MEM
   // step. Markduplicates requires meta information + bam files, the same output of
   // SAMTOOLS_SORT step
-  PICARD_MARKDUPLICATES(BAMADDRG.out.bam)
+  PICARD_MARKDUPLICATES(BAMADDRG.out.bam, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
   ch_versions = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
 
   // bam need to be indexed before doing flagstat
@@ -160,15 +162,31 @@ workflow RESEQUENCING_MEM {
 
   // calculate sample coverage
   SAMTOOLS_COVERAGE(PICARD_MARKDUPLICATES.out.bam)
-  ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
+  ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
-  freebayes_input_bam = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect()
-  freebayes_input_bai = SAMTOOLS_INDEX.out.bai.map{ meta, bai -> [bai] }.collect()
+  freebayes_input_bam = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_bai = SAMTOOLS_INDEX.out.bai.map{ meta, bai -> [bai] }.collect().map{ it -> [[id: "all-samples"], it]}
 
   // call freebayes multi
   FREEBAYES_MULTI(freebayes_input_bam, freebayes_input_bai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
   ch_versions = ch_versions.mix(FREEBAYES_MULTI.out.versions)
+
+  // create bcftools channel. Freebayes multi will emit a single value for vcf and indexes.
+  // join it and then change meta key to avoid file name collisions (meta is used to
+  // determine output files)
+  bcftools_ch = FREEBAYES_MULTI.out.vcf.join(FREEBAYES_MULTI.out.index).map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
+
+  // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
+  BCFTOOLS_NORM(
+    bcftools_ch,
+    PREPARE_GENOME.out.genome_fasta
+  )
+  ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
+
+  // index normalized VCF file
+  TABIX_TABIX(BCFTOOLS_NORM.out.vcf)
+  ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
 
   // return software version
   CUSTOM_DUMPSOFTWAREVERSIONS (

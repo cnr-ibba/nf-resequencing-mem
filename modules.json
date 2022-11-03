@@ -2,53 +2,84 @@
   "name": "nf-resequencing-mem",
   "homePage": "https://github.com/cnr-ibba/nf-resequencing-mem",
   "repos": {
-    "cnr-ibba/nf-modules": {
-      "bamaddrg": {
-        "git_sha": "6c9a5926ad259c73317500a2374d3aca7ae24e32"
-      },
-      "freebayes/multi": {
-        "git_sha": "7978bcfedc6828719a726a764ef7593643612f83"
-      },
-      "samtools/coverage": {
-        "git_sha": "3b90d33722e0862f1bfa901f21644a5e23567fc0"
+    "https://github.com/cnr-ibba/nf-modules.git": {
+      "modules": {
+        "cnr-ibba": {
+          "bamaddrg": {
+            "branch": "master",
+            "git_sha": "603030624cc426e58d6f2d6a44ff8c7d5cb047b1"
+          },
+          "freebayes/multi": {
+            "branch": "master",
+            "git_sha": "25adcb726b7585a5a2e602ecac68531d9667b839"
+          },
+          "samtools/coverage": {
+            "branch": "master",
+            "git_sha": "603030624cc426e58d6f2d6a44ff8c7d5cb047b1"
+          }
+        }
       }
     },
-    "nf-core/modules": {
-      "bwa/index": {
-        "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-      },
-      "bwa/mem": {
-        "git_sha": "4f5274c3de0c9521f5033893ff61057a74c45ba9"
-      },
-      "cat/fastq": {
-        "git_sha": "9aadd9a6d3f5964476582319b3a1c54a3e3fe7c9"
-      },
-      "custom/dumpsoftwareversions": {
-        "git_sha": "e5b44499efcf6f7fb24874886bac60591c5d94dd"
-      },
-      "fastqc": {
-        "git_sha": "49b18b1639f4f7104187058866a8fab33332bdfe"
-      },
-      "multiqc": {
-        "git_sha": "5138acca0985ca01c38a1c4fba917d83772b1106"
-      },
-      "picard/markduplicates": {
-        "git_sha": "682f789f93070bd047868300dd018faf3d434e7c"
-      },
-      "samtools/faidx": {
-        "git_sha": "ce06694af8ca2f7453206aa974c2c9a2b99ec093"
-      },
-      "samtools/flagstat": {
-        "git_sha": "ecece498f10b47b7c9d06f53a310cea5811b4c5f"
-      },
-      "samtools/index": {
-        "git_sha": "897c33d5da084b61109500ee44c01da2d3e4e773"
-      },
-      "tabix/bgzip": {
-        "git_sha": "37bf3936f3665483d070a5e0e0b314311032af7c"
-      },
-      "trimgalore": {
-        "git_sha": "85ec13ff1fc2196c5a507ea497de468101baabed"
+    "https://github.com/nf-core/modules.git": {
+      "modules": {
+        "nf-core": {
+          "bcftools/norm": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
+          "bwa/index": {
+            "branch": "master",
+            "git_sha": "9518fa4f65f3fb8cde24fde7d40333b39ec8fd65"
+          },
+          "bwa/mem": {
+            "branch": "master",
+            "git_sha": "277f4d693a00471690b66598d167bbca78bbe232"
+          },
+          "cat/fastq": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
+          "custom/dumpsoftwareversions": {
+            "branch": "master",
+            "git_sha": "8022c68e7403eecbd8ba9c49496f69f8c49d50f0"
+          },
+          "fastqc": {
+            "branch": "master",
+            "git_sha": "f6a11408536fbee6cbea1f5977605011873de3ca"
+          },
+          "multiqc": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
+          "picard/markduplicates": {
+            "branch": "master",
+            "git_sha": "eca65aa4a5e2e192ac44d6962c8f9260f314ffb8"
+          },
+          "samtools/faidx": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
+          "samtools/flagstat": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
+          "samtools/index": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
+          "tabix/bgzip": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
+          "tabix/tabix": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
+          "trimgalore": {
+            "branch": "master",
+            "git_sha": "b51a69e30973c71950225c817ad07a3337d22c40"
+          }
+        }
       }
     }
   }

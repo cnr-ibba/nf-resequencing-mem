@@ -11,7 +11,6 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-
 logger = logging.getLogger()
 
 
@@ -79,13 +78,15 @@ class RowChecker:
 
     def _validate_sample(self, row):
         """Assert that the sample name exists and convert spaces to underscores."""
-        assert len(row[self._sample_col]) > 0, "Sample input is required."
+        if len(row[self._sample_col]) <= 0:
+            raise AssertionError("Sample input is required.")
         # Sanitize samples slightly.
         row[self._sample_col] = row[self._sample_col].replace(" ", "_")
 
     def _validate_first(self, row):
         """Assert that the first FASTQ entry is non-empty and has the right format."""
-        assert len(row[self._first_col]) > 0, "At least the first FASTQ file is required."
+        if len(row[self._first_col]) <= 0:
+            raise AssertionError("At least the first FASTQ file is required.")
         self._validate_fastq_format(row[self._first_col])
 
     def _validate_second(self, row):
@@ -97,36 +98,36 @@ class RowChecker:
         """Assert that read pairs have the same file extension. Report pair status."""
         if row[self._first_col] and row[self._second_col]:
             row[self._single_col] = False
-            assert (
-                Path(row[self._first_col]).suffixes[-2:] == Path(row[self._second_col]).suffixes[-2:]
-            ), "FASTQ pairs must have the same file extensions."
+            first_col_suffix = Path(row[self._first_col]).suffixes[-2:]
+            second_col_suffix = Path(row[self._second_col]).suffixes[-2:]
+            if first_col_suffix != second_col_suffix:
+                raise AssertionError("FASTQ pairs must have the same file extensions.")
         else:
             row[self._single_col] = True
 
     def _validate_fastq_format(self, filename):
         """Assert that a given filename has one of the expected FASTQ extensions."""
-        assert any(filename.endswith(extension) for extension in self.VALID_FORMATS), (
-            f"The FASTQ file has an unrecognized extension: {filename}\n"
-            f"It should be one of: {', '.join(self.VALID_FORMATS)}"
-        )
+        if not any(filename.endswith(extension) for extension in self.VALID_FORMATS):
+            raise AssertionError(
+                f"The FASTQ file has an unrecognized extension: {filename}\n"
+                f"It should be one of: {', '.join(self.VALID_FORMATS)}"
+            )
 
     def validate_unique_samples(self):
         """
         Assert that the combination of sample name and FASTQ filename is unique.
 
-        In addition to the validation, also rename the sample if more than one sample,
-        FASTQ file combination exists.
+        In addition to the validation, also rename all samples to have a suffix of _T{n}, where n is the
+        number of times the same sample exist, but with different FASTQ files, e.g., multiple runs per experiment.
 
         """
-        assert len(self._seen) == len(self.modified), "The pair of sample name and FASTQ must be unique."
-        if len({pair[0] for pair in self._seen}) < len(self._seen):
-            counts = Counter(pair[0] for pair in self._seen)
-            seen = Counter()
-            for row in self.modified:
-                sample = row[self._sample_col]
-                seen[sample] += 1
-                if counts[sample] > 1:
-                    row[self._sample_col] = f"{sample}_T{seen[sample]}"
+        if len(self._seen) != len(self.modified):
+            raise AssertionError("The pair of sample name and FASTQ must be unique.")
+        seen = Counter()
+        for row in self.modified:
+            sample = row[self._sample_col]
+            seen[sample] += 1
+            row[self._sample_col] = f"{sample}_T{seen[sample]}"
 
 
 def read_head(handle, num_lines=10):
@@ -139,13 +140,15 @@ def read_head(handle, num_lines=10):
     return "".join(lines)
 
 
-def sniff_format(handle):
+def sniff_format(handle, has_header=False):
     """
     Detect the tabular format.
 
     Args:
         handle (text file): A handle to a `text file`_ object. The read position is
         expected to be at the beginning (index 0).
+        has_header (bool): Assume first row is header (don't test with
+        `csv.Sniffer.has_header()`)
 
     Returns:
         csv.Dialect: The detected tabular format.
@@ -157,14 +160,14 @@ def sniff_format(handle):
     peek = read_head(handle)
     handle.seek(0)
     sniffer = csv.Sniffer()
-    if not sniffer.has_header(peek):
-        logger.critical(f"The given sample sheet does not appear to contain a header.")
+    if not has_header and not sniffer.has_header(peek):
+        logger.critical("The given sample sheet does not appear to contain a header.")
         sys.exit(1)
     dialect = sniffer.sniff(peek)
     return dialect
 
 
-def check_samplesheet(file_in, file_out):
+def check_samplesheet(file_in, file_out, has_header=False):
     """
     Check that the tabular samplesheet has the structure expected by nf-core pipelines.
 
@@ -176,6 +179,7 @@ def check_samplesheet(file_in, file_out):
             CSV, TSV, or any other format automatically recognized by ``csv.Sniffer``.
         file_out (pathlib.Path): Where the validated and transformed samplesheet should
             be created; always in CSV format.
+        has_header (bool): Assume first row is header (default "False")
 
     Example:
         This function checks that the samplesheet follows the following structure,
@@ -193,10 +197,13 @@ def check_samplesheet(file_in, file_out):
     required_columns = {"sample", "fastq_1", "fastq_2"}
     # See https://docs.python.org/3.9/library/csv.html#id3 to read up on `newline=""`.
     with file_in.open(newline="") as in_handle:
-        reader = csv.DictReader(in_handle, dialect=sniff_format(in_handle))
+        reader = csv.DictReader(in_handle, dialect=sniff_format(in_handle, has_header))
         # Validate the existence of the expected header columns.
         if not required_columns.issubset(reader.fieldnames):
-            logger.critical(f"The sample sheet **must** contain the column headers: {', '.join(required_columns)}.")
+            req_cols = ", ".join(required_columns)
+            logger.critical(
+                f"The sample sheet **must** contain these column headers: {req_cols}."
+            )
             sys.exit(1)
         # Validate each row.
         checker = RowChecker()
@@ -242,6 +249,11 @@ def parse_args(argv=None):
         choices=("CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"),
         default="WARNING",
     )
+    parser.add_argument(
+        "--has_header",
+        help="Don't search for header row, assume first row is header",
+        action="store_true",
+    )
     return parser.parse_args(argv)
 
 
@@ -253,7 +265,7 @@ def main(argv=None):
         logger.error(f"The given input file {args.file_in} was not found!")
         sys.exit(2)
     args.file_out.parent.mkdir(parents=True, exist_ok=True)
-    check_samplesheet(args.file_in, args.file_out)
+    check_samplesheet(args.file_in, args.file_out, args.has_header)
 
 
 if __name__ == "__main__":

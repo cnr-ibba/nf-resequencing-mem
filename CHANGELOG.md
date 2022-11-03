@@ -1,0 +1,88 @@
+# cnr-ibba/nf-resequencing-mem: Changelog
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## v0.4.3dev - [2022-11-02]
+
+- Upgrade modules ([#34](https://github.com/cnr-ibba/nf-resequencing-mem/issues/34))
+- Solve linting issues ([#32](https://github.com/cnr-ibba/nf-resequencing-mem/issues/27))
+- Force `check_samplesheet.py` assuming header present ([#31](https://github.com/cnr-ibba/nf-resequencing-mem/issues/31))
+- Normalize VCF file ([#33](https://github.com/cnr-ibba/nf-resequencing-mem/issues/33))
+
+### `Added`
+
+- Add `bcftools/norm` module
+- Add `tabix/tabix` module
+
+### `Fixed`
+
+- Force samplesheet having header in `INPUT_CHECK:SAMPLESHEET_CHECK` workflow
+- Fix software dump version
+- Support for `--help` option
+- Fix resource limits
+
+### `Removed`
+
+- Freebayes result is not more published by default
+- Removed unused params
+
+## v0.4.2 - [2022-07-29]
+
+- Improved coverage step with `samtools/coverage` ([#27](https://github.com/cnr-ibba/nf-resequencing-mem/issues/27))
+- Saving indexed files as outputs
+
+### `Added`
+
+- Add `samtools/coverage` module
+
+### `Removed`
+
+- Remove `BEDTOOLS_GENOMECOV` local process
+
+## v0.4.1 - [2022-07-28]
+
+- Calling `freebayes` on all samples ([#11](https://github.com/cnr-ibba/nf-resequencing-mem/issues/11))
+- Deal with compressed genomes ([#14](https://github.com/cnr-ibba/nf-resequencing-mem/issues/14))
+- Calculate sample coverage ([#17](https://github.com/cnr-ibba/nf-resequencing-mem/issues/17))
+- Provide _indexes_ as parameters and save them as results
+
+### `Added`
+
+- Add `freebayes/multi` process
+- Add `BEDTOOLS_GENOMECOV` local process
+
+### `Removed`
+
+- Remove `freebayes/single` module
+
+## v0.4.0 - [2022-07-27]
+
+- Updating modules ([#20](https://github.com/cnr-ibba/nf-resequencing-mem/issues/20), [#4](https://github.com/cnr-ibba/nf-resequencing-mem/issues/4))
+- Name samples within bam ([#18](https://github.com/cnr-ibba/nf-resequencing-mem/issues/18))
+- Export _BAM_ and _trimmed fastq_ ([#16](https://github.com/cnr-ibba/nf-resequencing-mem/issues/16))
+- Add _module_ and _base_ config files ([#10](https://github.com/cnr-ibba/nf-resequencing-mem/issues/10))
+- Get input from _samplesheet_ ([#15](https://github.com/cnr-ibba/nf-resequencing-mem/issues/15))
+
+### `Added`
+
+- Add `INPUT_CHECK:SAMPLESHEET_CHECK` workflow
+- Add `bamaddrg` module
+
+### `Removed`
+
+- Remove `samtools/sort` module (now sorting is done in `bwa/mem`)
+
+### `Fixed`
+
+- Track sample names in `.bam` files
+
+## v0.3.0 - [2021-11-08]
+
+- Support _AWS_ environment ([#2](https://github.com/cnr-ibba/nf-resequencing-mem/issues/2))
+- Structure pipeline with the new nextflow template ([#7](https://github.com/cnr-ibba/nf-resequencing-mem/issues/7))
+
+## v1.0dev - [2020-11-24]
+
+Initial release of `cnr-ibba/nf-resequencing-mem` as nexflow implementation of
+_resequencing-mem_ pipeline

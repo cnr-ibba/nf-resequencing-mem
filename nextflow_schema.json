@@ -10,12 +10,137 @@
       "type": "object",
       "fa_icon": "fas fa-terminal",
       "description": "Define where the pipeline should find input data and save output data.",
+      "required": ["input", "genome_fasta"],
       "properties": {
+        "input": {
+          "type": "string",
+          "format": "file-path",
+          "mimetype": "text/csv",
+          "pattern": "^\\S+\\.csv$",
+          "schema": "assets/schema_input.json",
+          "description": "Path to comma-separated file containing information about the samples in the experiment.",
+          "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/test/usage#samplesheet-input).",
+          "fa_icon": "fas fa-file-csv"
+        },
+        "genome_fasta": {
+          "type": "string",
+          "format": "file-path",
+          "mimetype": "text/plain",
+          "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+          "description": "Path to FASTA genome file (compression is supported).",
+          "help_text": "This parameter is *mandatory* if `--genome_fasta` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_fasta_index` and `--save_bwa_index` to save indexes for future runs.",
+          "fa_icon": "far fa-file-code"
+        },
+        "genome_fasta_fai": {
+          "type": "string",
+          "description": "Path to genome fasta index (skip index calculation)"
+        },
+        "genome_bwa_index": {
+          "type": "string",
+          "description": "Path to genome fasta BWA index (skip index calculation)"
+        },
         "outdir": {
           "type": "string",
-          "description": "Path to the output directory where the results will be saved.",
-          "default": "./results",
+          "format": "directory-path",
+          "description": "The output directory where the results will be saved",
           "fa_icon": "fas fa-folder-open"
+        }
+      }
+    },
+    "multiqc_params": {
+      "title": "MultiQC params",
+      "type": "object",
+      "description": "",
+      "default": "",
+      "properties": {
+        "multiqc_config": {
+          "type": "string",
+          "description": "Custom config file to supply to MultiQC.",
+          "fa_icon": "fas fa-cog",
+          "hidden": true
+        },
+        "multiqc_title": {
+          "type": "string",
+          "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
+          "fa_icon": "fas fa-file-signature"
+        },
+        "multiqc_logo": {
+          "type": "string",
+          "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
+          "fa_icon": "fas fa-image",
+          "hidden": true
+        },
+        "max_multiqc_email_size": {
+          "type": "string",
+          "description": "File size limit when attaching MultiQC reports to summary emails.",
+          "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
+          "default": "25.MB",
+          "fa_icon": "fas fa-file-upload",
+          "hidden": true
+        }
+      }
+    },
+    "save_additional_results": {
+      "title": "Save Additional Results",
+      "type": "object",
+      "description": "",
+      "default": "",
+      "properties": {
+        "save_bwa_index": {
+          "type": "boolean",
+          "description": "Save BWA index in $outdir"
+        },
+        "save_fasta_index": {
+          "type": "boolean",
+          "description": "Save FASTA index in $outdir"
+        },
+        "save_trimmed": {
+          "type": "boolean",
+          "description": "Save trimmed sequences in $outdir"
+        },
+        "save_freebayes": {
+          "type": "boolean",
+          "description": "Save freebayes output (not-normalized)"
+        },
+        "save_bam": {
+          "type": "boolean",
+          "description": "Save aligned/sorted BAM files in $outdir"
+        }
+      },
+      "fa_icon": "fas fa-save"
+    },
+    "max_job_request_options": {
+      "title": "Max job request options",
+      "type": "object",
+      "fa_icon": "fas fa-microchip",
+      "description": "Set the top limit for requested resources for any single job.",
+      "help_text": "If you are running on a smaller system, a pipeline step requesting more resources than are available may cause the Nextflow to stop the run with an error. These options allow you to cap the maximum resources requested by any single job so that the pipeline will run on your system.\n\nNote that you can not _increase_ the resources requested by any job using these options. For that you will need your own configuration file. See [the nf-core website](https://nf-co.re/usage/configuration) for details.",
+      "properties": {
+        "max_cpus": {
+          "type": "integer",
+          "description": "Maximum number of CPUs that can be requested for any single job.",
+          "default": 16,
+          "fa_icon": "fas fa-microchip",
+          "hidden": true,
+          "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
+        },
+        "max_memory": {
+          "type": "string",
+          "description": "Maximum amount of memory that can be requested for any single job.",
+          "default": "128.GB",
+          "fa_icon": "fas fa-memory",
+          "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
+          "hidden": true,
+          "help_text": "Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`"
+        },
+        "max_time": {
+          "type": "string",
+          "description": "Maximum amount of time that can be requested for any single job.",
+          "default": "240.h",
+          "fa_icon": "far fa-clock",
+          "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
+          "hidden": true,
+          "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
         }
       }
     },
@@ -26,6 +151,19 @@
       "description": "Less common options for the pipeline, typically set in a config file.",
       "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
       "properties": {
+        "enable_conda": {
+          "type": "boolean",
+          "description": "Run this workflow with Conda. You can also use '-profile conda' instead of providing this parameter.",
+          "hidden": true,
+          "fa_icon": "fas fa-bacon"
+        },
+        "tracedir": {
+          "type": "string",
+          "description": "Directory to keep pipeline Nextflow logs and reports.",
+          "default": "${params.outdir}/pipeline_info",
+          "fa_icon": "fas fa-cogs",
+          "hidden": true
+        },
         "publish_dir_mode": {
           "type": "string",
           "default": "copy",
@@ -35,11 +173,59 @@
           "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
           "hidden": true
         },
-        "enable_conda": {
+        "email_on_fail": {
+          "type": "string",
+          "description": "Email address for completion summary, only when pipeline fails.",
+          "fa_icon": "fas fa-exclamation-triangle",
+          "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
+          "help_text": "An email address to send a summary email to when the pipeline is completed - ONLY sent if the pipeline does not exit successfully.",
+          "hidden": true
+        },
+        "plaintext_email": {
           "type": "boolean",
-          "description": "Run this workflow with Conda. You can also use '-profile conda' instead of providing this parameter.",
+          "description": "Send plain-text email instead of HTML.",
+          "fa_icon": "fas fa-remove-format",
+          "hidden": true
+        },
+        "monochrome_logs": {
+          "type": "boolean",
+          "description": "Do not use coloured log outputs.",
+          "fa_icon": "fas fa-palette",
+          "hidden": true
+        },
+        "hook_url": {
+          "type": "string",
+          "description": "Incoming hook URL for messaging service",
+          "fa_icon": "fas fa-people-group",
+          "help_text": "Incoming hook URL for messaging service. Currently, only MS Teams is supported.",
+          "hidden": true
+        },
+        "help": {
+          "type": "boolean",
+          "description": "Display help text.",
+          "fa_icon": "fas fa-question-circle",
+          "hidden": true
+        },
+        "validate_params": {
+          "type": "boolean",
+          "description": "Boolean whether to validate parameters against the schema at runtime",
+          "default": true,
+          "fa_icon": "fas fa-check-square",
+          "hidden": true
+        },
+        "show_hidden_params": {
+          "type": "boolean",
+          "fa_icon": "far fa-eye-slash",
+          "description": "Show all params when using `--help`",
           "hidden": true,
-          "fa_icon": "fas fa-bacon"
+          "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address for completion summary.",
+          "fa_icon": "fas fa-envelope",
+          "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
+          "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
         }
       }
     }
@@ -49,129 +235,16 @@
       "$ref": "#/definitions/input_output_options"
     },
     {
+      "$ref": "#/definitions/multiqc_params"
+    },
+    {
+      "$ref": "#/definitions/save_additional_results"
+    },
+    {
+      "$ref": "#/definitions/max_job_request_options"
+    },
+    {
       "$ref": "#/definitions/generic_options"
     }
-  ],
-  "properties": {
-    "input": {
-      "type": "string"
-    },
-    "genome_fasta": {
-      "type": "string"
-    },
-    "genome_fasta_fai": {
-      "type": "string"
-    },
-    "genome_bwa_index": {
-      "type": "string"
-    },
-    "clip_r1": {
-      "type": "string"
-    },
-    "clip_r2": {
-      "type": "string"
-    },
-    "three_prime_clip_r1": {
-      "type": "string"
-    },
-    "three_prime_clip_r2": {
-      "type": "string"
-    },
-    "multiqc_config": {
-      "type": "string"
-    },
-    "multiqc_title": {
-      "type": "string"
-    },
-    "multiqc_logo": {
-      "type": "string"
-    },
-    "max_multiqc_email_size": {
-      "type": "string",
-      "default": "25.MB"
-    },
-    "trim_nextseq": {
-      "type": "string"
-    },
-    "save_trimmed": {
-      "type": "boolean"
-    },
-    "save_bam": {
-      "type": "boolean"
-    },
-    "save_fasta_index": {
-      "type": "boolean"
-    },
-    "save_bwa_index": {
-      "type": "boolean"
-    },
-    "skip_trimming": {
-      "type": "boolean"
-    },
-    "tracedir": {
-      "type": "string",
-      "default": "./results/pipeline_info"
-    },
-    "email": {
-      "type": "string"
-    },
-    "email_on_fail": {
-      "type": "string"
-    },
-    "plaintext_email": {
-      "type": "boolean"
-    },
-    "monochrome_logs": {
-      "type": "boolean"
-    },
-    "help": {
-      "type": "boolean"
-    },
-    "validate_params": {
-      "type": "boolean",
-      "default": true
-    },
-    "show_hidden_params": {
-      "type": "boolean"
-    },
-    "singularity_pull_docker_container": {
-      "type": "boolean"
-    },
-    "custom_config_version": {
-      "type": "string",
-      "default": "master"
-    },
-    "custom_config_base": {
-      "type": "string",
-      "default": "https://raw.githubusercontent.com/nf-core/configs/master"
-    },
-    "hostnames": {
-      "type": "string",
-      "default": "[binac:['.binac.uni-tuebingen.de'], cbe:['.cbe.vbc.ac.at'], cfc:['.hpc.uni-tuebingen.de'], crick:['.thecrick.org'], genotoul:['.genologin1.toulouse.inra.fr', '.genologin2.toulouse.inra.fr'], genouest:['.genouest.org'], icr_davros:['.davros.compute.estate'], imperial:['.hpc.ic.ac.uk'], imperial_mb:['.hpc.ic.ac.uk'], uppmax:['.uppmax.uu.se'], utd_ganymede:['ganymede.utdallas.edu'], utd_sysbio:['sysbio.utdallas.edu']]"
-    },
-    "config_profile_description": {
-      "type": "string"
-    },
-    "config_profile_contact": {
-      "type": "string"
-    },
-    "config_profile_url": {
-      "type": "string"
-    },
-    "config_profile_name": {
-      "type": "string"
-    },
-    "max_memory": {
-      "type": "string",
-      "default": "128.GB"
-    },
-    "max_cpus": {
-      "type": "integer",
-      "default": 16
-    },
-    "max_time": {
-      "type": "string",
-      "default": "240.h"
-    }
-  }
+  ]
 }
