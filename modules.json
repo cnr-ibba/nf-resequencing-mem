@@ -11,7 +11,7 @@
           },
           "freebayes/multi": {
             "branch": "master",
-            "git_sha": "603030624cc426e58d6f2d6a44ff8c7d5cb047b1"
+            "git_sha": "25adcb726b7585a5a2e602ecac68531d9667b839"
           },
           "samtools/coverage": {
             "branch": "master",
@@ -23,6 +23,10 @@
     "https://github.com/nf-core/modules.git": {
       "modules": {
         "nf-core": {
+          "bcftools/norm": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
           "bwa/index": {
             "branch": "master",
             "git_sha": "9518fa4f65f3fb8cde24fde7d40333b39ec8fd65"
@@ -64,6 +68,10 @@
             "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
           },
           "tabix/bgzip": {
+            "branch": "master",
+            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+          },
+          "tabix/tabix": {
             "branch": "master",
             "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
           },

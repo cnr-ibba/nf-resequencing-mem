@@ -8,10 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgrade modules ([#34](https://github.com/cnr-ibba/nf-resequencing-mem/issues/34))
 - Solve linting issues ([#32](https://github.com/cnr-ibba/nf-resequencing-mem/issues/27))
 - Force `check_samplesheet.py` assuming header present ([#31](https://github.com/cnr-ibba/nf-resequencing-mem/issues/31))
+- Normalize VCF file ([#33](https://github.com/cnr-ibba/nf-resequencing-mem/issues/33))
+
+### `Added`
+
+- Add `bcftools/norm` module
+- Add `tabix/tabix` module
 
 ### `Fixed`
 
 - Force samplesheet having header in `INPUT_CHECK:SAMPLESHEET_CHECK` workflow
+- Fix software dump version
+
+### `Removed`
+
+- Freebayes result is not more published by default
 
 ## v0.4.2 - [2022-07-29]
 

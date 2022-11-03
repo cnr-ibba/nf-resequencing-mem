@@ -9,21 +9,22 @@ process FREEBAYES_MULTI {
         'quay.io/biocontainers/freebayes:1.3.6--hb089aa1_0' }"
 
     input:
-    path(bam)
-    path(bai)
+    tuple val(meta), path(bam)
+    tuple val(meta), path(bai)
     path(genome_fasta)
     path(genome_fasta_fai)
 
     output:
-    path "all.fb.vcf.gz"          , emit: vcf
-    path "all.fb.vcf.gz.tbi"      , emit: index
-    path "versions.yml"           , emit: versions
+    tuple val(meta), path("*.vcf.gz")    , emit: vcf
+    tuple val(meta), path("*.vcf.gz.tbi"), emit: index
+    path "versions.yml"                       , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
+    def prefix = prefix = task.ext.prefix ?: "${meta.id}"
     """
     ls $bam | xargs -n1 > bam_list.txt
 
@@ -35,9 +36,9 @@ process FREEBAYES_MULTI {
         -f $genome_fasta \\
     | bgzip \\
         --threads $task.cpus \\
-        --stdout > all.fb.vcf.gz
+        --stdout > ${prefix}.vcf.gz
 
-    tabix all.fb.vcf.gz
+    tabix ${prefix}.vcf.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

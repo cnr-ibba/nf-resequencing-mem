@@ -54,16 +54,20 @@
   ],
   "properties": {
     "input": {
-      "type": "string"
+      "type": "string",
+      "description": "Path of samplesheet file"
     },
     "genome_fasta": {
-      "type": "string"
+      "type": "string",
+      "description": "Path to genome fasta (even compressed)"
     },
     "genome_fasta_fai": {
-      "type": "string"
+      "type": "string",
+      "description": "Path to genome fasta index (skip index calculation)"
     },
     "genome_bwa_index": {
-      "type": "string"
+      "type": "string",
+      "description": "Path to genome fasta BWA index (skip index calculation)"
     },
     "clip_r1": {
       "type": "string"
@@ -94,16 +98,20 @@
       "type": "string"
     },
     "save_trimmed": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Save trimmed sequences in $outdir"
     },
     "save_bam": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Save aligned/sorted BAM files in $outdir"
     },
     "save_fasta_index": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Save FASTA index in $outdir"
     },
     "save_bwa_index": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Save BWA index in $outdir"
     },
     "skip_trimming": {
       "type": "boolean"
@@ -167,11 +175,17 @@
     },
     "max_cpus": {
       "type": "integer",
-      "default": 16
+      "default": 32
     },
     "max_time": {
       "type": "string",
       "default": "240.h"
+    },
+    "save_freebayes": {
+      "type": "boolean",
+      "default": false,
+      "description": "Save freebayes output (not-normalized)"
     }
-  }
+  },
+  "required": ["input", "genome_fasta"]
 }
