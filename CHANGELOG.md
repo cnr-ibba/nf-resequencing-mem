@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Removed`
 
 - Freebayes result is not more published by default
+- Removed unused params
 
 ## v0.4.2 - [2022-07-29]
 
