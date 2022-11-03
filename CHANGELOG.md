@@ -19,10 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Force samplesheet having header in `INPUT_CHECK:SAMPLESHEET_CHECK` workflow
 - Fix software dump version
+- Support for `--help` option
+- Fix resource limits
 
 ### `Removed`
 
 - Freebayes result is not more published by default
+- Removed unused params
 
 ## v0.4.2 - [2022-07-29]
 
