@@ -248,3 +248,19 @@ process {
     }
 }
 ```
+
+### Increase freebayes resource usage
+
+If you try to collect a lot of samples in a single freebayes file, is possible that
+you exceed freebayes resource limits. To avoid this, simply add a custom configuration
+for freebayes process, for example:
+
+```text
+process {
+    withName: FREEBAYES_MULTI {
+        cpus   = 16
+        memory = 32.GB
+        time   = 72.h
+    }
+}
+```

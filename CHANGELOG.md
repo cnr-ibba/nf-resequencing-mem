@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Force samplesheet having header in `INPUT_CHECK:SAMPLESHEET_CHECK` workflow
 - Fix software dump version
 - Support for `--help` option
+- Fix resource limits
 
 ### `Removed`
 
