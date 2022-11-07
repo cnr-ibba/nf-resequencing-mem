@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Fixed`
 
 - `CAT_FASTQ` result is not saved by default
+- lower `TRINGALORE` resources usage
 
 ## v0.4.3 - [2022-11-03]
 
