@@ -6,7 +6,7 @@ keywords:
 tools:
   - freebayes:
       description: Bayesian haplotype-based polymorphism discovery and genotyping
-      homepage: None
+      homepage: https://github.com/freebayes/freebayes
       documentation: None
       tool_dev_url: None
       doi: ""
@@ -49,7 +49,6 @@ output:
       type: path
       description: |
         VCF indexed with tabix (always all.fb.vcf.gz.tbi)
-
   - version:
       type: file
       description: File containing software version

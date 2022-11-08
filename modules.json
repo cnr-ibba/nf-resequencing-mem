@@ -11,7 +11,7 @@
           },
           "freebayes/multi": {
             "branch": "master",
-            "git_sha": "25adcb726b7585a5a2e602ecac68531d9667b839"
+            "git_sha": "81aa440f34811d10e57110867fa5d383bbd8e7d4"
           },
           "samtools/coverage": {
             "branch": "master",
