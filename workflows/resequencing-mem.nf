@@ -117,11 +117,10 @@ workflow RESEQUENCING_MEM {
 
   // prepare multiqc_config file
   multiqc_config = Channel.fromPath(params.multiqc_config)
-  multiqc_config = multiqc_config.concat(Channel.fromPath(params.multiqc_logo))
-  multiqc_config = multiqc_config.collect()
+  multiqc_logo = Channel.fromPath(params.multiqc_logo)
 
   // calling MultiQC
-  MULTIQC(multiqc_input, multiqc_config, Channel.empty(), Channel.empty())
+  MULTIQC(multiqc_input, multiqc_config, [], multiqc_logo)
   ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
   // Trimming reads
