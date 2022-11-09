@@ -147,7 +147,7 @@ to freebayes:
 
 ```text
 process {
-    withName: FREEBAYES_MULTI {
+    withName: FREEBAYES_CHUNK {
         ext.args = '--ploidy 4'
     }
 }
@@ -257,7 +257,7 @@ for freebayes process, for example:
 
 ```text
 process {
-    withName: FREEBAYES_MULTI {
+    withName: FREEBAYES_CHUNK {
         cpus   = 16
         memory = 32.GB
         time   = 72.h
