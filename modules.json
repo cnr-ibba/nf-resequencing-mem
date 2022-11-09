@@ -13,10 +13,6 @@
             "branch": "issue-19",
             "git_sha": "7cd76354e6fb172c57a4fb4a8f1cdb83acbd046b"
           },
-          "freebayes/merge": {
-            "branch": "issue-19",
-            "git_sha": "7cd76354e6fb172c57a4fb4a8f1cdb83acbd046b"
-          },
           "freebayes/splitbam": {
             "branch": "issue-19",
             "git_sha": "fa93794d74e9508fb856b35c5826a7e93fbae990"
