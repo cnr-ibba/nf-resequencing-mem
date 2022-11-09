@@ -175,7 +175,9 @@ workflow RESEQUENCING_MEM {
   // create bcftools channel. Freebayes multi will emit a single value for vcf and indexes.
   // join it and then change meta key to avoid file name collisions (meta is used to
   // determine output files)
-  bcftools_ch = FREEBAYES_PARALLEL.out.vcf.join(FREEBAYES_PARALLEL.out.index).map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
+  bcftools_ch = FREEBAYES_PARALLEL.out.vcf
+    .join(FREEBAYES_PARALLEL.out.tbi)
+    .map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
   BCFTOOLS_NORM(
