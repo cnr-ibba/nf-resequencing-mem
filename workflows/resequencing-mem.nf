@@ -42,7 +42,7 @@ include { PICARD_MARKDUPLICATES } from '../modules/nf-core/picard/markduplicates
 include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/samtools/flagstat/main'
 include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/samtools/coverage/main'
-include { FREEBAYES_MULTI } from '../modules/cnr-ibba/freebayes/multi/main'
+include { FREEBAYES_PARALLEL } from '../subworkflows/cnr-ibba/freebayes_parallel'
 include { BCFTOOLS_NORM } from '../modules/nf-core/bcftools/norm/main'
 include { TABIX_TABIX } from '../modules/nf-core/tabix/tabix/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -168,14 +168,14 @@ workflow RESEQUENCING_MEM {
   freebayes_input_bam = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect().map{ it -> [[id: "all-samples"], it]}
   freebayes_input_bai = SAMTOOLS_INDEX.out.bai.map{ meta, bai -> [bai] }.collect().map{ it -> [[id: "all-samples"], it]}
 
-  // call freebayes multi
-  FREEBAYES_MULTI(freebayes_input_bam, freebayes_input_bai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
-  ch_versions = ch_versions.mix(FREEBAYES_MULTI.out.versions)
+  // call freebayes paralle
+  FREEBAYES_PARALLEL(freebayes_input_bam, freebayes_input_bai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
+  ch_versions = ch_versions.mix(FREEBAYES_PARALLEL.out.versions)
 
   // create bcftools channel. Freebayes multi will emit a single value for vcf and indexes.
   // join it and then change meta key to avoid file name collisions (meta is used to
   // determine output files)
-  bcftools_ch = FREEBAYES_MULTI.out.vcf.join(FREEBAYES_MULTI.out.index).map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
+  bcftools_ch = FREEBAYES_PARALLEL.out.vcf.join(FREEBAYES_PARALLEL.out.index).map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
   BCFTOOLS_NORM(

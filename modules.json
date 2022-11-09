@@ -9,9 +9,17 @@
             "branch": "master",
             "git_sha": "603030624cc426e58d6f2d6a44ff8c7d5cb047b1"
           },
-          "freebayes/multi": {
-            "branch": "master",
-            "git_sha": "81aa440f34811d10e57110867fa5d383bbd8e7d4"
+          "freebayes/chunk": {
+            "branch": "issue-19",
+            "git_sha": "7cd76354e6fb172c57a4fb4a8f1cdb83acbd046b"
+          },
+          "freebayes/merge": {
+            "branch": "issue-19",
+            "git_sha": "7cd76354e6fb172c57a4fb4a8f1cdb83acbd046b"
+          },
+          "freebayes/splitbam": {
+            "branch": "issue-19",
+            "git_sha": "fa93794d74e9508fb856b35c5826a7e93fbae990"
           },
           "samtools/coverage": {
             "branch": "master",
