@@ -1,16 +1,17 @@
-name: freebayes_multi
-description: Run freebayes on multiple BAM files
+name: "freebayes_splitbam"
+description: Create a list of regions by splitting a reference based on the amount of data in bam files
 keywords:
   - freebayes
-  - multi
+  - splitbam
+  - split_ref_by_bai_datasize
 tools:
-  - freebayes:
-      description: Bayesian haplotype-based polymorphism discovery and genotyping
-      homepage: https://github.com/freebayes/freebayes
-      documentation: None
-      tool_dev_url: None
+  - "freebayes":
+      description: "Bayesian haplotype-based polymorphism discovery and genotyping"
+      homepage: "https://github.com/freebayes/freebayes"
+      documentation: "None"
+      tool_dev_url: "None"
       doi: ""
-      licence: ["MIT"]
+      licence: "['MIT']"
 
 input:
   - meta:
@@ -41,18 +42,18 @@ output:
       description: |
         Groovy Map containing sample information
         e.g. [ id:'test', single_end:false ]
-  - vcf:
-      type: path
-      description: |
-        VCF compressed with bgzip (always all.fb.vcf.gz)
-  - index:
-      type: path
-      description: |
-        VCF indexed with tabix (always all.fb.vcf.gz.tbi)
-  - version:
+  - versions:
       type: file
-      description: File containing software version
-      pattern: "*.{version.txt}"
+      description: File containing software versions
+      pattern: "versions.yml"
+  - bam_list:
+      type: file
+      description: A list of each bam files
+      pattern: "*.list.txt"
+  - regions:
+      type: file
+      description: The regions file
+      pattern: "*.regions.txt"
 
 authors:
   - "@bunop"

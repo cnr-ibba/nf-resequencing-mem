@@ -2,34 +2,68 @@
 
 <!-- markdownlint-disable MD014 -->
 
+## Overview
+
+This pipeline will execute a resequencing analysis by calling
+[freebayes](https://github.com/freebayes/freebayes)
+on reads aligned to genome using [bwa](https://bio-bwa.sourceforge.net/bwa.shtml)
+_mem_. Genotypes will be called from all samples, and the resulting _VCF_
+file will be normalized using [bcftools](https://samtools.github.io/bcftools/bcftools.html#norm),
+which is the final output of this pipeline.
+
 ## Setting up
 
 In order to execute this pipeline, you will need `nextflow` installed and one of this
 different executors: `conda`, `singularity` and `docker`. You can choose to clone
 this repository if you plan to change this pipeline according your needs:
 
-```text
-$ git clone https://github.com/cnr-ibba/nf-resequencing-mem
+```bash
+git clone https://github.com/cnr-ibba/nf-resequencing-mem
 ```
 
 The other way to running this pipeline is described in
 [pipeline sharing](https://www.nextflow.io/docs/latest/sharing.html#pipeline-sharing)
-nextflow manual. You will need also to define your credentials for private
-repositories. See [SCM configuration file](https://www.nextflow.io/docs/latest/sharing.html#scm-configuration-file)
-for more details. After that, call this pipeline with:
+nextflow manual, and lets nextflow to download and execute the pipeline, for example:
 
 ```bash
-nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
-  --input <samplesheet.csv> --genome_fasta <genome_fasta> --outdir <results dir>
+nextflow pull cnr-ibba/nf-resequencing-mem
 ```
 
-where the following are `nextflow` specific parameters:
+You will need also to define your credentials for private
+repositories. See [SCM configuration file](https://www.nextflow.io/docs/latest/sharing.html#scm-configuration-file)
+for more details.
 
-- `-resume`: recover previous attempt
-- `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
-  is the recommended profile in a HPC environment
+## Customize configuration
 
-these are pipeline parameters which are _mandatory_:
+When running Nextflow, Nextflow looks for a file named `nextflow.config` in the
+current directory and in the script base directory (if it is not the same as the
+current directory). Finally it checks for the file `$HOME/.nextflow/config`.
+Additionally, you can provide a custom config file using the `-config` option,
+which has an higher priority respect to the other configuration files.
+There are tree different _scopes_, which can be used to customize this
+pipeline according your needs:
+
+- The `params` scope defines variables which applies to the whole pipeline:
+  those _params_ could be the _input samplesheet_ or the genome to be used
+- The `profiles` scope defines variables which apply to the particular profile
+  invoked with the `-profile` Nextflow parameter
+- The `process` scope can define parameters applied to a single process (for example
+  the number of CPUs used or the required RAM)
+
+All this configuration scopes can be customized in each configuration file,
+and configuring a value in an higher priority file will override values
+defined in lower priority configuration files.
+There are also configuration files in the `conf` folder of this repository, for
+example the `conf/modules.config` file keeps the configuration for each module
+used within this pipeline: you can affect a module behavior without modifying the
+proper module simply changing the proper process configuration section.
+
+### Params scope
+
+The params scope let you to define pipeline parameters. You can set those
+params directly in config file or pass those from command line (which have
+the highest priority and override each parameter defined in other configuration
+files). These are pipeline parameters which are _mandatory_:
 
 - `--input`: (required) specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
   columns are described (see `assets/samplesheet.csv` for an example). In the
@@ -37,31 +71,39 @@ these are pipeline parameters which are _mandatory_:
   files respectively. If you have single paired reads, leave `fastq_2` column empty.
   if you have more file for the same sample, specify all the single/pair files using
   the same _sample name_: this pipeline will append all reads belonging to the
-  same sample before calling _trimgalore_
+  same sample before calling _trimgalore_ in the `CAT_FASTQ` process.
 - `--genome_fasta`: (required) path to genome (FASTA) file. If file is compressed,
   index calculation will be forced even if provided by CLI
 
-There are also additional pipeline parameters that can be provided:
+There are also additional pipeline parameters that can be provided and can be
+used to save _intermediate results_ or to skip a particular step:
 
 - `--genome_fasta_fai`: path to fasta index file (skip fasta index step)
 - `--genome_bwa_index`: path to genome bwa index directory (skip bwa index step)
-- `--save_bam`: (bool, def. false) save markduplicated bam files with their indexes
+- `--save_bam`: (bool, def. false) save _markduplicated_ bam files with their indexes
   in results folder
 - `--save_trimmed`: (bool, def. false) save trimmed reads in results folder
-- `--save_fasta_index`: (bool, def. false) save fasta index (for reuse with this pipeline)
+- `--save_fasta_index`: (bool, def. false) save fasta index (for reusing with this pipeline)
 - `--save_bwa_index`: (bool, def. false) save bwa index (for reuse with this pipeline)
 - `--save_freebayes`: (bool, def. false) save freebayes output file (not normalized!)
 
-### Provide parameters as a config file
+You can have a list of available parameters by calling:
 
-In alternative (for reproducibility purpose) you can create a custom configuration
-file and provide it when calling nextflow. For example if you create a file like this
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem --help
+```
+
+In addition, instead of passing parameters using CLI, you can create a custom configuration
+file and define each params in the _params scope_. Parameters have the same name
+used within the CLI, but without the `--` prefix. For example if you create a
+`custom.config` file like this
 
 ```conf
 params {
   input = "<samplesheet.csv>"
   genome_fasta = "<genome_fasta>"
   outdir = "<results dir>"
+  save_fasta_index = true
 }
 ```
 
@@ -75,41 +117,12 @@ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
 See Nextflow [Configuration](https://www.nextflow.io/docs/latest/config.html)
 documentation for more information.
 
-## Customize configuration
-
-When running Nextflow, Nextflow looks for a file named `nextflow.config` in the
-current directory and in the script base directory (if it is not the same as the
-current directory). Finally it checks for the file `$HOME/.nextflow/config`.
-Please modify `params` in `nextflow.config` according your needs:
-
-- The `params` scope defines variables which applies to the whole pipeline.
-- The `profiles` scope defines variables which apply to the particular profile
-  invoked with the `-profile` Nextflow parameter
-- The `process` scope can define parameters applied to a single process (for example
-  the number of CPUs used or the required RAM)
-
-There are also configuration files in the `conf` folder of this repository, for
-example the `conf/modules.config` file keeps the configuration for each module
-used within this pipeline: you can affect a module behavior without modifying the
-proper module simply changing the proper process configuration section.
-
-### Params scope
-
-The params scope let you to define parameters to the pipeline. You can set those
-params directly in config file or passing those from command line.
-
 ### Profiles scope
 
-By default, this pipeline is supposed to work in an environment with all required softwares
-already installed. You could install and manage all required software in a conda
-environment, for example, and then run the pipeline inside this environment:
-**this is not the recommended way to call this pipeline**.
-
-To better manage softwares
-dependencies is better to let **nextflow manage dependencies** for you, by calling
-the pipeline with a [custom profile](https://www.nextflow.io/docs/edge/config.html#config-profiles).
-Nextflow profiles let nextflow to manage software dependencies and custom parameters.
-Three profiles are currently defined:
+The profile scope is used to define configuration attributes that can be activated
+in different environment or context when providing the profile _name_ using the
+`-profile` option. For example, pipeline dependencies are managed using nextflow
+by defining three different profiles:
 
 - **conda**: every pipeline step will manage its requirements using conda in a
   specific environment. Conda environments are created inside `work` directory
@@ -121,10 +134,20 @@ Three profiles are currently defined:
   this profile without any permissions. `singularity` software need to be installed
   and available in your `$PATH` bash environment variable
 
+Then there are also profiles which define the _executor_ used to submit/collect a
+job, that can be customized in order to affect the pipeline in a particular environment.
+Profiles can be combined when calling nextflow, for example:
+
+```bash
+nextflow run -profile singularity,slurm ...
+```
+
+will enable all the configuration to be applied on slurm executor using singularity
+
 ### Process scope
 
-The process configuration scope allows you to provide the default configuration
-for all the processes. You can specify here any property described in the process
+The process configuration scope allows you to provide a specific configuration
+for a specific process. You can specify here any property described in the process
 directive and the executor sections and override them.
 With the `withLabel` selector, you can configure of all processes annotated with
 such label selector. For example:
@@ -139,7 +162,7 @@ process {
 }
 ```
 
-Will affect all the processes annotated with `process_high` label. Similarly, you
+will affect all the processes annotated with `process_high` label. Similarly, you
 can provide additional parameters to a certain step. For example, supposing to
 change the `freebayes` _ploidy_ since you are dealing with a non-diploid sample
 (default): you can provide a `custom.config` file in which pass extra parameters
@@ -147,13 +170,23 @@ to freebayes:
 
 ```text
 process {
-    withName: FREEBAYES_MULTI {
+    withName: FREEBAYES_CHUNK {
         ext.args = '--ploidy 4'
     }
 }
 ```
 
-Then call `nextflow` with `-config` parameter
+## Nextflow specific parameters
+
+There are parameters which are nextflow specific. They start all with a single
+`-` before the parameter name and need to be provided using the nextflow CLI.
+Here are the most used parameters:
+
+- `-resume`: recover previous attempt
+- `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
+  is the recommended profile in a HPC environment
+- `-work-dir`: save temporary files in a default temporary directory
+  (def. `$projectDir/work`)
 
 ## Calling this pipeline with local executor
 
@@ -164,13 +197,18 @@ for local executor:
 
 ```text
 executor {
-  // for the local executer, I will set the maximum values of CPU and MEMORY
+  // for the local executor, I will set the maximum values of CPU and MEMORY
   $local {
     cpus = 8
     memory = '16 GB'
   }
 }
 ```
+
+Using the `$` symbol before the executor name, let you to specify different
+configuration in the same _executor_ scope. See
+[scope executor](https://www.nextflow.io/docs/latest/config.html?highlight=configuration#scope-executor)
+documentation page for more informations.
 
 ## Calling this pipeline using pbs executor
 
@@ -179,7 +217,7 @@ such profile to your command line, for example:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile pbs,singularity \
-  --input "<samplesheet.csv>" --genome_fasta <genome_fasta> --outdir <results dir>
+  --input <samplesheet.csv> --genome_fasta <genome.fasta> --outdir <results dir>
 ```
 
 In alternative, you can export this environment variable:
@@ -194,7 +232,7 @@ Like `pbs` executor, simply add such profile to your command line, for example:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile slurm,singularity \
-  --input "<samplesheet.csv>" --genome_fasta <genome_fasta> --outdir <results dir>
+  --input <samplesheet.csv> --genome_fasta <genome.fasta> --outdir <results dir>
 ```
 
 In alternative, you can export this environment variable:
@@ -238,8 +276,9 @@ issue [#1539](https://github.com/nf-core/tools/issues/1539). There's a way
 to overcome this issue by providing `--has_header` parameter to
 `bin/check_samplesheet.py` which let to skip the header check sections. However,
 you have to ensure your samplesheet have the required `sample,fastq_1,fastq_2`
-header section. You can do it by customizing the `SAMPLESHEET_CHECK` step
-in the process scope, for example
+header section, otherwise you will loose a sample.
+You can do it by customizing the `SAMPLESHEET_CHECK` step
+in the process scope, for example:
 
 ```text
 process {
@@ -249,18 +288,31 @@ process {
 }
 ```
 
-### Increase freebayes resource usage
+### Tuning freebayes resources usage
 
-If you try to collect a lot of samples in a single freebayes file, is possible that
-you exceed freebayes resource limits. To avoid this, simply add a custom configuration
-for freebayes process, for example:
+The freebayes step can take a lot of time when calculating SNP with a lot of data.
+This process is calculated on single process by splitting the whole genome in
+regions, and calling SNP on each region before collect all results in a unique file.
+You can customize the region splitting, for example by using a smaller file size
+in the split process like this:
 
 ```text
 process {
-    withName: FREEBAYES_MULTI {
-        cpus   = 16
-        memory = 32.GB
-        time   = 72.h
+    withName: FREEBAYES_SPLITBAM {
+        ext.args = '--target-data-size 10e6'
+    }
+}
+```
+
+Then there are some freebayes process that can fail by reaching time or memory
+limits. Nextflow can resubmit such process increasing the required resources at
+each step until `maxRetries` attempts are reached: you could increase the retry
+attempts like this:
+
+```text
+process {
+    withName: FREEBAYES_CHUNK {
+        maxRetries = 5
     }
 }
 ```
