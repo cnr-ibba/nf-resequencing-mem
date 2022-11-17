@@ -17,7 +17,7 @@ process SAMPLESHEET_CHECK {
     when:
     task.ext.when == null || task.ext.when
 
-    script: // This script is bundled with the pipeline, in nf-core/test/bin/
+    script: // This script is bundled with the pipeline, in cnr-ibba/nf-resequencing-mem/bin/
     def args = task.ext.args ?: ''
     """
     check_samplesheet.py \\

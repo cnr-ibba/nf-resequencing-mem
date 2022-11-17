@@ -1,11 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/test
+    cnr-ibba/nf-resequencing-mem
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/test
-    Website: https://nf-co.re/test
-    Slack  : https://nfcore.slack.com/channels/test
+    Github : https://github.com/cnr-ibba/nf-resequencing-mem
 ----------------------------------------------------------------------------------------
 */
 
