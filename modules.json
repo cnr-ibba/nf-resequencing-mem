@@ -10,11 +10,11 @@
             "git_sha": "603030624cc426e58d6f2d6a44ff8c7d5cb047b1"
           },
           "freebayes/chunk": {
-            "branch": "issue-19",
-            "git_sha": "7cd76354e6fb172c57a4fb4a8f1cdb83acbd046b"
+            "branch": "master",
+            "git_sha": "e28cb1426b148bd8e5459910cf3354fe2b5f8d19"
           },
           "freebayes/splitbam": {
-            "branch": "issue-19",
+            "branch": "master",
             "git_sha": "fa93794d74e9508fb856b35c5826a7e93fbae990"
           },
           "samtools/coverage": {
@@ -29,11 +29,11 @@
         "nf-core": {
           "bcftools/concat": {
             "branch": "master",
-            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+            "git_sha": "78cf39939fbe160a1410c44a6c5946f9a4c56e7e"
           },
           "bcftools/norm": {
             "branch": "master",
-            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+            "git_sha": "78cf39939fbe160a1410c44a6c5946f9a4c56e7e"
           },
           "bwa/index": {
             "branch": "master",
@@ -41,7 +41,7 @@
           },
           "bwa/mem": {
             "branch": "master",
-            "git_sha": "277f4d693a00471690b66598d167bbca78bbe232"
+            "git_sha": "cf5b9c30a2adacc581793afb79fae5f5b50bed01"
           },
           "cat/fastq": {
             "branch": "master",
@@ -65,15 +65,15 @@
           },
           "samtools/faidx": {
             "branch": "master",
-            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+            "git_sha": "cf5b9c30a2adacc581793afb79fae5f5b50bed01"
           },
           "samtools/flagstat": {
             "branch": "master",
-            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+            "git_sha": "cf5b9c30a2adacc581793afb79fae5f5b50bed01"
           },
           "samtools/index": {
             "branch": "master",
-            "git_sha": "5e34754d42cd2d5d248ca8673c0a53cdf5624905"
+            "git_sha": "cf5b9c30a2adacc581793afb79fae5f5b50bed01"
           },
           "tabix/bgzip": {
             "branch": "master",
