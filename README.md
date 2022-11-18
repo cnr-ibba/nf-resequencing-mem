@@ -276,7 +276,7 @@ issue [#1539](https://github.com/nf-core/tools/issues/1539). There's a way
 to overcome this issue by providing `--has_header` parameter to
 `bin/check_samplesheet.py` which let to skip the header check sections. However,
 you have to ensure your samplesheet have the required `sample,fastq_1,fastq_2`
-header section, otherwise you will loose a sample.
+header section, otherwise this pipeline will not work as intended.
 You can do it by customizing the `SAMPLESHEET_CHECK` step
 in the process scope, for example:
 
@@ -290,11 +290,14 @@ process {
 
 ### Tuning freebayes resources usage
 
-The freebayes step can take a lot of time when calculating SNP with a lot of data.
-This process is calculated on single process by splitting the whole genome in
-regions, and calling SNP on each region before collect all results in a unique file.
+The freebayes step can take a lot of time when calculating SNPs with a lot of data.
+This process is calculated using multiple processes by splitting the whole genome in
+regions (relying on BAM alignment sizes), and then by calling SNPs on each region
+on a single process.
+In the last step, all results are collected and sorted to produce the final VCF file
+(see `subworkflows/cnr-ibba/freebayes_parallel.nf` subworkflow for more informations).
 You can customize the region splitting, for example by using a smaller file size
-in the split process like this:
+(def. is `100e6`) in the split process like this:
 
 ```text
 process {
@@ -304,18 +307,41 @@ process {
 }
 ```
 
-Then there are some freebayes process that can fail by reaching time or memory
-limits. Nextflow can resubmit such process increasing the required resources at
+however, having a lot of smaller regions could be problematic if the overlapping
+region shared by segments become larger than the unique region.
+
+There are some freebayes processes that can fail by reaching time or memory
+limits. According to freebayes creators (see issues
+[#465](https://github.com/freebayes/freebayes/issues/465)
+and [#626](https://github.com/freebayes/freebayes/issues/626)) this is unpredictable
+and may depends on _coverage_, _allelic complexity_ and _sample_ or _ploidy_
+number. Nextflow can resubmit such process increasing the required resources at
 each step until `maxRetries` attempts are reached: you could increase the retry
 attempts like this:
 
 ```text
 process {
     withName: FREEBAYES_CHUNK {
-        maxRetries = 5
+        maxRetries = 10
     }
 }
 ```
+
+If this is not sufficient and jobs continue to fail for memory and time requirements,
+you could think to skip regions with a very high coverage (`-g` option) or
+try to sub-sample regions with high coverage with the `--limit-coverage` option,
+like this:
+
+```text
+process {
+    withName: FREEBAYES_CHUNK {
+        ext.args = '--limit-coverage 25'
+    }
+}
+```
+
+This pipeline compute a _coverage_ step before calling freebayes, so you could
+try to determine which value make sense to be used for filtering.
 
 ## Acknowledgments
 

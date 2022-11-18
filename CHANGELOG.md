@@ -6,12 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v0.4.4-dev
 
 - Improved freebayes performances ([#41](https://github.com/cnr-ibba/nf-resequencing-mem/issues/41))
+- Calling freebayes in different processes ([#44](https://github.com/cnr-ibba/nf-resequencing-mem/issues/44))
 
 ### `Fixed`
 
 - `CAT_FASTQ` result is not saved by default
-- lower `TRIMGALORE` resources usage
 - split chromosome relying on BAM size while running freebayes
+- call freebayes in distinct process for each chromosome chunk
 
 ## v0.4.3 - [2022-11-03]
 
