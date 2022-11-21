@@ -1,0 +1,65 @@
+name: "freebayes_chunk"
+description: Run freebayes on sample
+keywords:
+  - freebayes
+  - single
+tools:
+  - "freebayes":
+      description: "Bayesian haplotype-based polymorphism discovery and genotyping"
+      homepage: "https://github.com/freebayes/freebayes"
+      documentation: "None"
+      tool_dev_url: "None"
+      doi: ""
+      licence: "['MIT']"
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - region:
+      type: value
+      description: A region in which genotypes will be called (chrom:start-end)
+  - bam:
+      type: path
+      description: a BAM file
+      pattern: "*.{bam}"
+  - bai:
+      type: file
+      description: Index for BAM file
+      pattern: "*.{bai}"
+  - bam_list:
+      type: path
+      description: A txt file in which all bam file names are described
+      pattern: "*.list.txt"
+  - genome_fasta:
+      type: file
+      description: The genome fasta file (not compressed)
+      pattern: "*.{fa,fasta}"
+  - genome_fasta_fai:
+      type: file
+      description: reference fasta file index
+      pattern: "*.{fa,fasta}.fai"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - vcf:
+      type: path
+      description: VCF compressed with bgzip
+      pattern: "*.{vcf.gz}"
+  - index:
+      type: path
+      description: VCF indexed with tabix
+      pattern: "*.{vcf.gz.tbi}"
+  - version:
+      type: file
+      description: File containing software version
+      pattern: "*.{version.txt}"
+
+authors:
+  - "@bunop"
