@@ -1,0 +1,56 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/yaml-schema.json
+name: "seqkit_rmdup"
+description: Remove duplicated sequences by ID/name/sequence
+keywords:
+  - filter
+  - set
+  - seqkit
+  - remove
+  - duplicates
+tools:
+  - "seqkit":
+      description: Cross-platform and ultrafast toolkit for FASTA/Q file manipulation, written by Wei Shen.
+      homepage: https://bioinf.shenwei.me/seqkit/usage/
+      documentation: https://bioinf.shenwei.me/seqkit/usage/
+      tool_dev_url: https://github.com/shenwei356/seqkit/
+      doi: "10.1371/journal.pone.0163962"
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: >
+        Groovy Map containing sample information e.g. [ id:'test', single_end:false ]
+
+  - sequence:
+      type: file
+      description: >
+        Fasta or fastq file containing sequences to be filtered
+
+      pattern: "*.{fa,fna,faa,fasta,fq,fastq}[.gz]"
+output:
+  - meta:
+      type: map
+      description: >
+        Groovy Map containing sample information e.g. [ id:'test', single_end:false ]
+
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - unique:
+      type: file
+      description: >
+        Fasta or fastq file containing unique sequences
+
+      pattern: "*.{fa,fq}[.gz]"
+  - detail:
+      type: file
+      description: >
+        number and list of duplicated seqs
+
+      pattern: "*.duplicated.detail.txt"
+authors:
+  - "@bunop"
+maintainers:
+  - "@bunop"
