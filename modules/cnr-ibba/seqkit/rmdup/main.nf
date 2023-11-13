@@ -1,6 +1,6 @@
 process SEQKIT_RMDUP {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -46,6 +46,7 @@ process SEQKIT_RMDUP {
     def suffix = task.ext.suffix ?: "${sequence}" ==~ /(.*f[astn]*a(.gz)?$)/ ? "fa" : "fq"
     """
     touch ${prefix}.${suffix}.gz
+    touch ${prefix}.duplicated.detail.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
