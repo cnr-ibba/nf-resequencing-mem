@@ -27,7 +27,7 @@
           },
           "seqkit/rmdup": {
             "branch": "issue-23",
-            "git_sha": "237d66c61bb52c9e3b954b8352682c67aed3fc2a",
+            "git_sha": "b5aa10b12f5c7ae0c6c315727de086393c6dc733",
             "installed_by": ["modules"]
           }
         }
