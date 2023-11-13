@@ -254,6 +254,11 @@
           "fa_icon": "fas fa-image",
           "hidden": true
         },
+        "multiqc_methods_description": {
+          "type": "string",
+          "description": "Custom MultiQC yaml file containing HTML including a methods description.",
+          "fa_icon": "fas fa-cog"
+        },
         "validate_params": {
           "type": "boolean",
           "description": "Boolean whether to validate parameters against the schema at runtime",
@@ -261,25 +266,26 @@
           "fa_icon": "fas fa-check-square",
           "hidden": true
         },
-        "tracedir": {
-          "type": "string",
-          "description": "Directory to keep pipeline Nextflow logs and reports.",
-          "default": "${params.outdir}/pipeline_info",
-          "fa_icon": "fas fa-cogs",
-          "hidden": true
+        "validationFailUnrecognisedParams": {
+          "type": "boolean",
+          "fa_icon": "far fa-check-circle",
+          "description": "Validation of parameters fails when an unrecognised parameter is found.",
+          "hidden": true,
+          "help_text": "By default, when an unrecognised parameter is found, it returns a warinig."
         },
-        "show_hidden_params": {
+        "validationLenientMode": {
+          "type": "boolean",
+          "fa_icon": "far fa-check-circle",
+          "description": "Validation of parameters in lenient more.",
+          "hidden": true,
+          "help_text": "Allows string values that are parseable as numbers or booleans. For further information see [JSONSchema docs](https://github.com/everit-org/json-schema#lenient-mode)."
+        },
+        "validationShowHiddenParams": {
           "type": "boolean",
           "fa_icon": "far fa-eye-slash",
           "description": "Show all params when using `--help`",
           "hidden": true,
           "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
-        },
-        "enable_conda": {
-          "type": "boolean",
-          "description": "Run this workflow with Conda. You can also use '-profile conda' instead of providing this parameter.",
-          "hidden": true,
-          "fa_icon": "fas fa-bacon"
         }
       }
     }
