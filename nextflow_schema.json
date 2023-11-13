@@ -22,6 +22,23 @@
           "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
           "fa_icon": "fas fa-file-csv"
         },
+        "genome_fasta": {
+          "type": "string",
+          "format": "file-path",
+          "mimetype": "text/plain",
+          "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+          "description": "Path to FASTA genome file (compression is supported).",
+          "help_text": "This parameter is *mandatory* if `--genome_fasta` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_fasta_index` and `--save_bwa_index` to save indexes for future runs.",
+          "fa_icon": "far fa-file-code"
+        },
+        "genome_fasta_fai": {
+          "type": "string",
+          "description": "Path to genome fasta index (skip index calculation)"
+        },
+        "genome_bwa_index": {
+          "type": "string",
+          "description": "Path to genome fasta BWA index (skip index calculation)"
+        },
         "outdir": {
           "type": "string",
           "format": "directory-path",
@@ -39,15 +56,42 @@
           "type": "string",
           "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
           "fa_icon": "fas fa-file-signature"
+        }
+      }
+    },
+    "pipeline_custom_parameters": {
+      "title": "Pipeline custom parameters",
+      "type": "object",
+      "description": "Modify pipeline run",
+      "default": "",
+      "properties": {
+        "remove_fastq_duplicates": {
+          "type": "boolean",
+          "description": "Remove FASTQ duplicates by IDs"
         },
-        "genome_fasta": {
-          "type": "string"
+        "save_trimmed": {
+          "type": "boolean",
+          "description": "Save trimmed sequences in $outdir"
         },
-        "genome_fasta_fai": {
-          "type": "string"
+        "save_bam": {
+          "type": "boolean",
+          "description": "Save aligned/sorted BAM files in $outdir"
         },
-        "genome_bwa_index": {
-          "type": "string"
+        "save_fasta_index": {
+          "type": "boolean",
+          "description": "Save FASTA index in $outdir"
+        },
+        "save_bwa_index": {
+          "type": "boolean",
+          "description": "Save BWA index in $outdir"
+        },
+        "save_freebayes": {
+          "type": "boolean",
+          "description": "Save freebayes output (not-normalized)"
+        },
+        "save_unique_fastq": {
+          "type": "boolean",
+          "description": "Save purget FASTQ in ${results_dir}"
         }
       }
     },
@@ -216,6 +260,26 @@
           "default": true,
           "fa_icon": "fas fa-check-square",
           "hidden": true
+        },
+        "tracedir": {
+          "type": "string",
+          "description": "Directory to keep pipeline Nextflow logs and reports.",
+          "default": "${params.outdir}/pipeline_info",
+          "fa_icon": "fas fa-cogs",
+          "hidden": true
+        },
+        "show_hidden_params": {
+          "type": "boolean",
+          "fa_icon": "far fa-eye-slash",
+          "description": "Show all params when using `--help`",
+          "hidden": true,
+          "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+        },
+        "enable_conda": {
+          "type": "boolean",
+          "description": "Run this workflow with Conda. You can also use '-profile conda' instead of providing this parameter.",
+          "hidden": true,
+          "fa_icon": "fas fa-bacon"
         }
       }
     }
@@ -223,6 +287,9 @@
   "allOf": [
     {
       "$ref": "#/definitions/input_output_options"
+    },
+    {
+      "$ref": "#/definitions/pipeline_custom_parameters"
     },
     {
       "$ref": "#/definitions/institutional_config_options"
@@ -233,38 +300,5 @@
     {
       "$ref": "#/definitions/generic_options"
     }
-  ],
-  "properties": {
-    "remove_fastq_duplicates": {
-      "type": "boolean"
-    },
-    "save_trimmed": {
-      "type": "boolean"
-    },
-    "save_bam": {
-      "type": "boolean"
-    },
-    "save_fasta_index": {
-      "type": "boolean"
-    },
-    "save_bwa_index": {
-      "type": "boolean"
-    },
-    "save_freebayes": {
-      "type": "boolean"
-    },
-    "save_unique_fastq": {
-      "type": "boolean"
-    },
-    "tracedir": {
-      "type": "string",
-      "default": "./results/pipeline_info"
-    },
-    "show_hidden_params": {
-      "type": "boolean"
-    },
-    "enable_conda": {
-      "type": "boolean"
-    }
-  }
+  ]
 }
