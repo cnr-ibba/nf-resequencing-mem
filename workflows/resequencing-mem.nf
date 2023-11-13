@@ -130,18 +130,24 @@ workflow RESEQUENCING_MEM {
         r2: [meta, reads[1]]
     }.set{ ch_seqkit_input }
 
-  // remove duplicates
-  SEQKIT_RMDUP_R1(ch_seqkit_input.r1)
-  SEQKIT_RMDUP_R2(ch_seqkit_input.r2)
-  ch_versions = ch_versions.mix(SEQKIT_RMDUP_R1.out.versions)
+  // remove duplicates (if necessary)
+  if (params.remove_fastq_duplicates) {
+    SEQKIT_RMDUP_R1(ch_seqkit_input.r1)
+    SEQKIT_RMDUP_R2(ch_seqkit_input.r2)
+    ch_versions = ch_versions.mix(SEQKIT_RMDUP_R1.out.versions)
 
-  ch_trimgalore_input = SEQKIT_RMDUP_R1.out.unique
-    .join(SEQKIT_RMDUP_R2.out.unique)
-    .map{ meta, r1, r2 -> [meta, [r1, r2]]}
+    ch_trimgalore_input = SEQKIT_RMDUP_R1.out.unique
+      .join(SEQKIT_RMDUP_R2.out.unique)
+      .map{ meta, r1, r2 -> [meta, [r1, r2]]}
 
-  // Trimming reads
-  TRIMGALORE(ch_trimgalore_input)
-  ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
+    // Trimming reads
+    TRIMGALORE(ch_trimgalore_input)
+    ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
+  } else {
+    // Trimming reads
+    TRIMGALORE(ch_cat_fastq)
+    ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
+  }
 
   // aligning with bwa: need reads in the same format used with FASTQC, a index file
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
