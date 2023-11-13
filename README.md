@@ -2,6 +2,8 @@
 
 <!-- markdownlint-disable MD014 -->
 
+[![Nextflow](https://img.shields.io/badge/nextflow_DSL2-%E2%89%A521.10.6-green)](https://www.nextflow.io/)
+
 ## Overview
 
 This pipeline will execute a resequencing analysis by calling
