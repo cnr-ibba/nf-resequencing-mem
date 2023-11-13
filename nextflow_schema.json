@@ -274,6 +274,12 @@
           "fa_icon": "fas fa-envelope",
           "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
           "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+        },
+        "version": {
+          "type": "boolean",
+          "description": "Display version and exit.",
+          "fa_icon": "fas fa-code-branch",
+          "help_text": ""
         }
       }
     }
@@ -289,10 +295,10 @@
       "$ref": "#/definitions/save_additional_results"
     },
     {
-      "$ref": "#/definitions/max_job_request_options"
+      "$ref": "#/definitions/institutional_config_options"
     },
     {
-      "$ref": "#/definitions/institutional_config_options"
+      "$ref": "#/definitions/max_job_request_options"
     },
     {
       "$ref": "#/definitions/generic_options"
