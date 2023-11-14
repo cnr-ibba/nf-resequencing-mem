@@ -371,7 +371,7 @@ Exception in thread "main" htsjdk.samtools.SAMException: Value was put into Pair
 
 This is a not an issue with `MarkDuplicates` (as discussed
 [here](https://gatk.broadinstitute.org/hc/en-us/community/posts/4408717387803-SAMException-Value-was-put-into-PairInfoMap-more-than-once))
-but an issue at _demultiplexing* step: the only way to deal with this problem is
+but an issue at _demultiplexing_ step: the only way to deal with this problem is
 to make rid of duplicated IDs using [seqkit/rmdup](https://bioinf.shenwei.me/seqkit/usage/#rmdup)
 by providing the `--remove_fastq_duplicates` option.
 
