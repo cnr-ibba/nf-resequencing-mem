@@ -4,7 +4,7 @@ process FREEBAYES_SPLITBAM {
     label 'process_single'
 
     conda (params.enable_conda ? "bioconda::freebayes=1.3.6 main::numpy main::scipy" : null)
-    container "docker://bunop/freebayes:v0.1"
+    container "bunop/freebayes:v0.1"
 
     input:
     tuple val(meta), path(bam)
