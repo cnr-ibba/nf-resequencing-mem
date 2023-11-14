@@ -35,6 +35,7 @@ include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 include { CAT_FASTQ } from '../modules/nf-core/cat/fastq/main'
 include { FASTQC } from '../modules/nf-core/fastqc/main'
 include { MULTIQC } from '../modules/nf-core/multiqc/main'
+include { SEQKIT_RMDUP as SEQKIT_RMDUP_R1; SEQKIT_RMDUP as SEQKIT_RMDUP_R2 } from '../modules/cnr-ibba/seqkit/rmdup/main'
 include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
 include { BWA_MEM } from '../modules/nf-core/bwa/mem/main'
 include { BAMADDRG } from '../modules/cnr-ibba/bamaddrg/main'
@@ -123,9 +124,30 @@ workflow RESEQUENCING_MEM {
   MULTIQC(multiqc_input, multiqc_config, [], multiqc_logo)
   ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
-  // Trimming reads
-  TRIMGALORE(ch_cat_fastq)
-  ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
+  ch_cat_fastq
+    .multiMap { meta, reads ->
+        r1: [meta, reads[0]]
+        r2: [meta, reads[1]]
+    }.set{ ch_seqkit_input }
+
+  // remove duplicates (if necessary)
+  if (params.remove_fastq_duplicates) {
+    SEQKIT_RMDUP_R1(ch_seqkit_input.r1)
+    SEQKIT_RMDUP_R2(ch_seqkit_input.r2)
+    ch_versions = ch_versions.mix(SEQKIT_RMDUP_R1.out.versions)
+
+    ch_trimgalore_input = SEQKIT_RMDUP_R1.out.unique
+      .join(SEQKIT_RMDUP_R2.out.unique)
+      .map{ meta, r1, r2 -> [meta, [r1, r2]]}
+
+    // Trimming reads
+    TRIMGALORE(ch_trimgalore_input)
+    ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
+  } else {
+    // Trimming reads
+    TRIMGALORE(ch_cat_fastq)
+    ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
+  }
 
   // aligning with bwa: need reads in the same format used with FASTQC, a index file
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)

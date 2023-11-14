@@ -1,16 +1,30 @@
 {
     "cSpell.words": [
         "awsbatch",
+        "awsqueue",
+        "awsregion",
+        "bcftools",
+        "bioinformatics",
         "conda",
         "coverage",
+        "cpus",
+        "demultiplexing",
+        "downsampling",
         "fasta",
+        "fastq",
         "freebayes",
         "ibba",
+        "markduplicate",
+        "markduplicated",
         "nextflow",
         "outdir",
         "ploidy",
         "resequencing",
         "samplesheet",
-        "slurm"
+        "slurm",
+        "SPLITBAM",
+        "subworkflow",
+        "subworkflows",
+        "trimgalore"
     ]
 }

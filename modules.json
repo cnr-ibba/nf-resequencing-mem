@@ -24,6 +24,11 @@
             "branch": "master",
             "git_sha": "603030624cc426e58d6f2d6a44ff8c7d5cb047b1",
             "installed_by": ["modules"]
+          },
+          "seqkit/rmdup": {
+            "branch": "master",
+            "git_sha": "f4c847049adcd3135e6e67fb469af12e05952791",
+            "installed_by": ["modules"]
           }
         }
       }
