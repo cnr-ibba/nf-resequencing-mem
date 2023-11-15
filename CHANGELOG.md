@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.5.1 - [2023-11-15]
+
+- Updated pipeline to support the latest version of `nf-core/tools` ([#46](https://github.com/cnr-ibba/nf-resequencing-mem/issues/46))
+
+### `Added`
+
+- Check that reads IDs are unique (using `seqkit/rmdup` - [#47](https://github.com/cnr-ibba/nf-resequencing-mem/issues/47))
+
 ## v0.5.0 - [2022-11-21]
 
 - Improved freebayes performances ([#41](https://github.com/cnr-ibba/nf-resequencing-mem/issues/41))
