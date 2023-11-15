@@ -2,6 +2,8 @@
 
 <!-- markdownlint-disable MD014 -->
 
+[![Nextflow](https://img.shields.io/badge/nextflow_DSL2-%E2%89%A521.10.6-green)](https://www.nextflow.io/)
+
 ## Overview
 
 This pipeline will execute a resequencing analysis by calling
@@ -86,6 +88,9 @@ used to save _intermediate results_ or to skip a particular step:
 - `--save_fasta_index`: (bool, def. false) save fasta index (for reusing with this pipeline)
 - `--save_bwa_index`: (bool, def. false) save bwa index (for reuse with this pipeline)
 - `--save_freebayes`: (bool, def. false) save freebayes output file (not normalized!)
+- `--remove_fastq_duplicates`: (bool, def. false) remove FASTQ duplicates by IDs
+- `--save_unique_fastq`: (bool, def. false) write de-duplicated FASTQ files (require
+  `--remove_fastq_duplicates` option)
 
 You can have a list of available parameters by calling:
 
@@ -126,7 +131,7 @@ by defining three different profiles:
 
 - **conda**: every pipeline step will manage its requirements using conda in a
   specific environment. Conda environments are created inside `work` directory
-  (but you can change this behaviour using `cacheDir` option within the conda
+  (but you can change this behavior using `cacheDir` option within the conda
   scope).
 - **docker**: manage requirements using docker images. You will need to be part of
   the `docker` group in order to use this profile
@@ -208,7 +213,7 @@ executor {
 Using the `$` symbol before the executor name, let you to specify different
 configuration in the same _executor_ scope. See
 [scope executor](https://www.nextflow.io/docs/latest/config.html?highlight=configuration#scope-executor)
-documentation page for more informations.
+documentation page for more information.
 
 ## Calling this pipeline using pbs executor
 
@@ -246,7 +251,7 @@ export NXF_EXECUTOR=slurm
 This pipeline could run using the [AWS batch queue system](https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html).
 In order to do so, you need to configure your credentials with [aws cli](https://docs.aws.amazon.com/translate/latest/dg/setup-awscli.html):
 you require to configure a _IAM_ account with permission to run _batch_, _EC2_ and _S3_.
-You require also a s3 bucket in which nextflow could store and retrive data (nextflow
+You require also a s3 bucket in which nextflow could store and retrieve data (nextflow
 will make a copy of the input data and will retrieve the results from here) and
 a AWS batch queue with _EC2 spot instances_ as recommended compute environment.
 After that, you could launch this pipeline by providing only _awsbatch_ as profile
@@ -295,7 +300,7 @@ This process is calculated using multiple processes by splitting the whole genom
 regions (relying on BAM alignment sizes), and then by calling SNPs on each region
 on a single process.
 In the last step, all results are collected and sorted to produce the final VCF file
-(see `subworkflows/cnr-ibba/freebayes_parallel.nf` subworkflow for more informations).
+(see `subworkflows/cnr-ibba/freebayes_parallel.nf` subworkflow for more information).
 You can customize the region splitting, for example by using a smaller file size
 (def. is `100e6`) in the split process like this:
 
@@ -344,8 +349,31 @@ This pipeline compute a _coverage_ step before calling freebayes, so you could
 try to determine which value make sense to be used for filtering.
 
 **N.B.** Even with downsampling this step could require a lot of time, and time
-required for each step will be inpredictable. Using a very low coverage limit
+required for each step will be unpredictable. Using a very low coverage limit
 could affect the SNP calling process. Use this option with caution.
+
+### FASTQ has duplicated IDs
+
+When a `FASTQ` file have duplicated IDs, the `MarkDuplicates` fails with an error
+message like this:
+
+```text
+Exception in thread "main" htsjdk.samtools.SAMException: Value was put into PairInfoMap more than once.  11: RGE200002173L1C027R02800999933
+  at htsjdk.samtools.CoordinateSortedPairInfoMap.ensureSequenceLoaded(CoordinateSortedPairInfoMap.java:133)
+  at htsjdk.samtools.CoordinateSortedPairInfoMap.remove(CoordinateSortedPairInfoMap.java:86)
+  at picard.sam.markduplicates.util.DiskBasedReadEndsForMarkDuplicatesMap.remove(DiskBasedReadEndsForMarkDuplicatesMap.java:61)
+  at picard.sam.markduplicates.MarkDuplicates.buildSortedReadEndLists(MarkDuplicates.java:571)
+  at picard.sam.markduplicates.MarkDuplicates.doWork(MarkDuplicates.java:270)
+  at picard.cmdline.CommandLineProgram.instanceMain(CommandLineProgram.java:308)
+  at picard.cmdline.PicardCommandLine.instanceMain(PicardCommandLine.java:103)
+  at picard.cmdline.PicardCommandLine.main(PicardCommandLine.java:113)
+```
+
+This is a not an issue with `MarkDuplicates` (as discussed
+[here](https://gatk.broadinstitute.org/hc/en-us/community/posts/4408717387803-SAMException-Value-was-put-into-PairInfoMap-more-than-once))
+but an issue at _demultiplexing_ step: the only way to deal with this problem is
+to make rid of duplicated IDs using [seqkit/rmdup](https://bioinf.shenwei.me/seqkit/usage/#rmdup)
+by providing the `--remove_fastq_duplicates` option.
 
 ## Acknowledgments
 
