@@ -1,28 +1,37 @@
 name: "freebayes_chunk"
-description: Run freebayes on sample
+description: Run freebayes on a sample chunk
 keywords:
   - freebayes
-  - single
+  - chunk
+  - variant caller
+  - SNP
+  - genotyping
+  - bayesian
 tools:
-  - "freebayes":
-      description: "Bayesian haplotype-based polymorphism discovery and genotyping"
-      homepage: "https://github.com/freebayes/freebayes"
-      documentation: "None"
-      tool_dev_url: "None"
-      doi: ""
-      licence: "['MIT']"
+  - freebayes:
+      description: Bayesian haplotype-based polymorphism discovery and genotyping
+      homepage: https://github.com/freebayes/freebayes
+      documentation: https://github.com/freebayes/freebayes
+      tool_dev_url: https://github.com/freebayes/freebayes
+      doi: "10.48550/arXiv.1207.3907"
+      license: ["MIT"]
 
 input:
   - meta:
       type: map
       description: |
+        Groovy Map containing information on a region
+        e.g. [ id:'test', single_end:false ]
+  - sample_meta:
+      type: map
+      description: |
         Groovy Map containing sample information
         e.g. [ id:'test', single_end:false ]
   - region:
-      type: value
+      type: string
       description: A region in which genotypes will be called (chrom:start-end)
   - bam:
-      type: path
+      type: file
       description: a BAM file
       pattern: "*.{bam}"
   - bai:
@@ -30,7 +39,7 @@ input:
       description: Index for BAM file
       pattern: "*.{bai}"
   - bam_list:
-      type: path
+      type: file
       description: A txt file in which all bam file names are described
       pattern: "*.list.txt"
   - genome_fasta:
@@ -49,14 +58,14 @@ output:
         Groovy Map containing sample information
         e.g. [ id:'test', single_end:false ]
   - vcf:
-      type: path
+      type: file
       description: VCF compressed with bgzip
       pattern: "*.{vcf.gz}"
   - index:
-      type: path
+      type: file
       description: VCF indexed with tabix
       pattern: "*.{vcf.gz.tbi}"
-  - version:
+  - versions:
       type: file
       description: File containing software version
       pattern: "*.{version.txt}"

@@ -1,4 +1,4 @@
-process SAMTOOLS_FLAGSTAT {
+process SAMTOOLS_COVERAGE {
     tag "$meta.id"
     label 'process_single'
 
@@ -8,39 +8,40 @@ process SAMTOOLS_FLAGSTAT {
         'biocontainers/samtools:1.18--h50ea8bc_1' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(input), path(input_index)
 
     output:
-    tuple val(meta), path("*.flagstat"), emit: flagstat
-    path  "versions.yml"               , emit: versions
+    tuple val(meta), path("*.txt"), emit: coverage
+    path "versions.yml"           , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def args   = task.ext.args   ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     samtools \\
-        flagstat \\
-        --threads ${task.cpus} \\
-        $bam \\
-        > ${prefix}.flagstat
+        coverage \\
+        $args \\
+        -o ${prefix}.txt \\
+        $input
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' )
     END_VERSIONS
     """
 
     stub:
+    def args   = task.ext.args   ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.flagstat
+    touch ${prefix}.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//' )
     END_VERSIONS
     """
 }

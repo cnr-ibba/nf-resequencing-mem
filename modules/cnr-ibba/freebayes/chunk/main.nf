@@ -4,10 +4,10 @@ process FREEBAYES_CHUNK {
     label 'process_low'
     label 'error_retry'
 
-    conda (params.enable_conda ? "bioconda::freebayes=1.3.6" : null)
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/freebayes:1.3.6--hb089aa1_0':
-        'quay.io/biocontainers/freebayes:1.3.6--hb089aa1_0' }"
+        'biocontainers/freebayes:1.3.6--hb089aa1_0' }"
 
     input:
     tuple val(meta), val(region)

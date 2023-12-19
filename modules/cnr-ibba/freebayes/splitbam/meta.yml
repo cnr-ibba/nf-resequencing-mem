@@ -5,13 +5,13 @@ keywords:
   - splitbam
   - split_ref_by_bai_datasize
 tools:
-  - "freebayes":
-      description: "Bayesian haplotype-based polymorphism discovery and genotyping"
-      homepage: "https://github.com/freebayes/freebayes"
-      documentation: "None"
-      tool_dev_url: "None"
-      doi: ""
-      licence: "['MIT']"
+  - freebayes:
+      description: Bayesian haplotype-based polymorphism discovery and genotyping
+      homepage: https://github.com/freebayes/freebayes
+      documentation: https://github.com/freebayes/freebayes
+      tool_dev_url: https://github.com/freebayes/freebayes
+      doi: "10.48550/arXiv.1207.3907"
+      license: ["MIT"]
 
 input:
   - meta:
@@ -20,15 +20,15 @@ input:
         Groovy Map containing sample information
         e.g. [ id:'test', single_end:false ]
   - bam:
-      type: path
+      type: file
       description: A list of BAM files
       pattern: "*.{bam}"
   - bai:
-      type: path
+      type: file
       description: A list of BAM index files
       pattern: "*.{bai}"
   - genome_fasta:
-      type: path
+      type: file
       description: The genome fasta file (not compressed)
       pattern: "*.{fa,fasta}"
   - genome_fasta_fai:
