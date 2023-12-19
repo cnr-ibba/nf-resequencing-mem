@@ -30,7 +30,11 @@
 
 - [samtools](http://www.htslib.org/)
 
-  > https://doi.org/10.1093/bioinformatics/btp352
+  > <https://doi.org/10.1093/bioinformatics/btp352>
+
+- [seqkit](https://bioinf.shenwei.me/seqkit/)
+
+  > <https://doi.org/10.1371/journal.pone.0163962>
 
 - [tabix](https://www.htslib.org/doc/tabix.html)
 
