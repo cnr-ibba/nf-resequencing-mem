@@ -10,12 +10,12 @@ process FREEBAYES_CHUNK {
         'biocontainers/freebayes:1.3.6--hb089aa1_0' }"
 
     input:
-    tuple val(meta), val(region)
-    tuple val(sample_meta), path(bam)
-    tuple val(sample_meta), path(bai)
-    tuple val(sample_meta), path(bam_list)
-    path(genome_fasta)
-    path(genome_fasta_fai)
+    tuple val(meta),  val(region)
+    tuple val(meta2), path(bam)
+    tuple val(meta2), path(bai)
+    tuple val(meta2), path(bam_list)
+    tuple val(meta3), path(genome_fasta)
+    tuple val(meta3), path(genome_fasta_fai)
 
     output:
     tuple val(meta), path("*.vcf.gz")     , emit: vcf

@@ -27,6 +27,11 @@ input:
       type: file
       description: A list of BAM index files
       pattern: "*.{bai}"
+  - meta2:
+      type: map
+      description: |
+        Groovy Map containing reference information
+        e.g. [ id:'genome' ]
   - genome_fasta:
       type: file
       description: The genome fasta file (not compressed)

@@ -14,14 +14,14 @@
                     },
                     "freebayes/chunk": {
                         "branch": "master",
-                        "git_sha": "abc517f0113fa941f2f9d02758b0206739651e4f",
+                        "git_sha": "03189b5139b1112cc869e8b78b3b6f82c595d4df",
                         "installed_by": [
                             "modules"
                         ]
                     },
                     "freebayes/splitbam": {
                         "branch": "master",
-                        "git_sha": "9628bce6557b64669ac50b9c3d6e090c4cd6d0bb",
+                        "git_sha": "03189b5139b1112cc869e8b78b3b6f82c595d4df",
                         "installed_by": [
                             "modules"
                         ]

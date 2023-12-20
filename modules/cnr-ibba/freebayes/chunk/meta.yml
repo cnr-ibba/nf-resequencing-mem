@@ -22,7 +22,7 @@ input:
       description: |
         Groovy Map containing information on a region
         e.g. [ id:'test', single_end:false ]
-  - sample_meta:
+  - meta2:
       type: map
       description: |
         Groovy Map containing sample information
@@ -42,6 +42,11 @@ input:
       type: file
       description: A txt file in which all bam file names are described
       pattern: "*.list.txt"
+  - meta3:
+      type: map
+      description: |
+        Groovy Map containing reference information
+        e.g. [ id:'genome' ]
   - genome_fasta:
       type: file
       description: The genome fasta file (not compressed)
@@ -55,7 +60,7 @@ output:
   - meta:
       type: map
       description: |
-        Groovy Map containing sample information
+        Groovy Map containing information on a region
         e.g. [ id:'test', single_end:false ]
   - vcf:
       type: file
