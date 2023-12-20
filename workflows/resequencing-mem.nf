@@ -181,8 +181,15 @@ workflow RESEQUENCING_MEM {
   SAMTOOLS_FLAGSTAT(flagstat_input)
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
+  // prepare input for samtools coverage
+  samtools_coverage_input = PICARD_MARKDUPLICATES.out.bam.join(
+      PICARD_MARKDUPLICATES.out.bai,
+      failOnMismatch: true,
+      failOnDuplicate: true)
+    // .view()
+
   // calculate sample coverage
-  SAMTOOLS_COVERAGE(PICARD_MARKDUPLICATES.out.bam)
+  SAMTOOLS_COVERAGE(samtools_coverage_input)
   ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
