@@ -45,6 +45,7 @@ include { BAMADDRG                          } from '../modules/cnr-ibba/bamaddrg
 include { PICARD_MARKDUPLICATES             } from '../modules/nf-core/picard/markduplicates/main'
 include { SAMTOOLS_INDEX                    } from '../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_STATS                    } from '../modules/nf-core/samtools/stats/main'
+include { SAMTOOLS_IDXSTATS                 } from '../modules/nf-core/samtools/idxstats/main'
 include { SAMTOOLS_FLAGSTAT                 } from '../modules/nf-core/samtools/flagstat/main'
 include { SAMTOOLS_COVERAGE                 } from '../modules/nf-core/samtools/coverage/main'
 include { FREEBAYES_PARALLEL                } from '../subworkflows/cnr-ibba/freebayes_parallel/main'
@@ -172,6 +173,10 @@ workflow RESEQUENCING_MEM {
   SAMTOOLS_STATS(samtools_input, PREPARE_GENOME.out.genome_fasta)
   ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
 
+  // call samtools idxstats
+  SAMTOOLS_IDXSTATS(samtools_input)
+  ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions)
+
   // time to call flagstat
   SAMTOOLS_FLAGSTAT(samtools_input)
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
@@ -234,6 +239,7 @@ workflow RESEQUENCING_MEM {
         .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
         .concat(PICARD_MARKDUPLICATES.out.metrics.map{it[1]}.ifEmpty([]))
         .concat(SAMTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
+        .concat(SAMTOOLS_IDXSTATS.out.idxstats.map{it[1]}.ifEmpty([]))
         .concat(SAMTOOLS_FLAGSTAT.out.flagstat.map{it[1]}.ifEmpty([]))
         .concat(BCFTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
         .collect()
