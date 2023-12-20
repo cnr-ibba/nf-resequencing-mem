@@ -3,14 +3,14 @@ process FREEBAYES_SPLITBAM {
     tag "$meta.id"
     label 'process_single'
 
-    conda (params.enable_conda ? "bioconda::freebayes=1.3.6 main::numpy main::scipy" : null)
-    container "bunop/freebayes:v0.1"
+    conda "${moduleDir}/environment.yml"
+    container "docker.io/bunop/freebayes:v0.1"
 
     input:
     tuple val(meta), path(bam)
     tuple val(meta), path(bai)
-    path(genome_fasta)
-    path(genome_fasta_fai)
+    tuple val(meta2), path(genome_fasta)
+    tuple val(meta2), path(genome_fasta_fai)
 
     output:
     tuple val(meta), path("*.list.txt"), emit: bam_list

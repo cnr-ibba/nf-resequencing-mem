@@ -42,8 +42,8 @@ include { BAMADDRG } from '../modules/cnr-ibba/bamaddrg/main'
 include { PICARD_MARKDUPLICATES } from '../modules/nf-core/picard/markduplicates/main'
 include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/samtools/flagstat/main'
-include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/samtools/coverage/main'
-include { FREEBAYES_PARALLEL } from '../subworkflows/cnr-ibba/freebayes_parallel'
+include { SAMTOOLS_COVERAGE } from '../modules/nf-core/samtools/coverage/main'
+include { FREEBAYES_PARALLEL } from '../subworkflows/cnr-ibba/freebayes_parallel/main'
 include { BCFTOOLS_NORM } from '../modules/nf-core/bcftools/norm/main'
 include { TABIX_TABIX } from '../modules/nf-core/tabix/tabix/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -181,8 +181,15 @@ workflow RESEQUENCING_MEM {
   SAMTOOLS_FLAGSTAT(flagstat_input)
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
+  // prepare input for samtools coverage
+  samtools_coverage_input = PICARD_MARKDUPLICATES.out.bam.join(
+      PICARD_MARKDUPLICATES.out.bai,
+      failOnMismatch: true,
+      failOnDuplicate: true)
+    // .view()
+
   // calculate sample coverage
-  SAMTOOLS_COVERAGE(PICARD_MARKDUPLICATES.out.bam)
+  SAMTOOLS_COVERAGE(samtools_coverage_input)
   ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id

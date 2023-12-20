@@ -3,10 +3,10 @@ process BAMADDRG {
     tag "$meta.id"
     label 'process_low'
 
-    conda (params.enable_conda ? "bioconda::bamaddrg=9baba65f88228e55639689a3cea38dd150e6284f" : null)
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bamaddrg:9baba65f88228e55639689a3cea38dd150e6284f--ha89c123_1':
-        'quay.io/biocontainers/bamaddrg:9baba65f88228e55639689a3cea38dd150e6284f--ha89c123_1' }"
+        'biocontainers/bamaddrg:9baba65f88228e55639689a3cea38dd150e6284f--ha89c123_1' }"
 
     input:
     tuple val(meta), path(bam)
