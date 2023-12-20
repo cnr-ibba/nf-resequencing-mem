@@ -43,7 +43,7 @@ include { PICARD_MARKDUPLICATES } from '../modules/nf-core/picard/markduplicates
 include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/samtools/flagstat/main'
 include { SAMTOOLS_COVERAGE } from '../modules/nf-core/samtools/coverage/main'
-include { FREEBAYES_PARALLEL } from '../subworkflows/cnr-ibba/freebayes_parallel'
+include { FREEBAYES_PARALLEL } from '../subworkflows/cnr-ibba/freebayes_parallel/main'
 include { BCFTOOLS_NORM } from '../modules/nf-core/bcftools/norm/main'
 include { TABIX_TABIX } from '../modules/nf-core/tabix/tabix/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'

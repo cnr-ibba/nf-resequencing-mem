@@ -1,0 +1,56 @@
+name: freebayes_parallel
+description: Launch freebayes on multiple process
+keywords:
+  - freebayes
+  - parallel
+modules:
+  - freebayes/splitbam
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - bam:
+      type: path
+      description: A list of BAM files
+      pattern: "*.{bam}"
+  - bai:
+      type: path
+      description: A list of BAM index files
+      pattern: "*.{bai}"
+  - meta2:
+      type: map
+      description: |
+        Groovy Map containing reference information
+        e.g. [ id:'genome' ]
+  - genome_fasta:
+      type: path
+      description: The genome fasta file (not compressed)
+      pattern: "*.{fa,fasta}"
+  - genome_fasta_fai:
+      type: file
+      description: reference fasta file index
+      pattern: "*.{fa,fasta}.fai"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - vcf:
+      type: path
+      description: |
+        VCF compressed with bgzip (always all.fb.vcf.gz)
+  - index:
+      type: path
+      description: |
+        VCF indexed with tabix (always all.fb.vcf.gz.tbi)
+  - version:
+      type: file
+      description: File containing software version
+      pattern: "*.{version.txt}"
+
+authors:
+  - "@bunop"
