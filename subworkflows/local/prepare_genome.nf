@@ -21,11 +21,17 @@ workflow PREPARE_GENOME {
     // this flag force index calculation
     force_index = false
 
+    // need to add meta information to fasta and fai
+    genome_fasta = genome_fasta.map{ it -> [[id:it[0].baseName], it] }
+    genome_fasta_fai = genome_fasta_fai.map{ it -> [[id:it[0].baseName], it] }
+
     // check if reference genome is compressed or not
     if (params.genome_fasta.endsWith('.gz')) {
       // unpack genome
-      TABIX_BGZIP(genome_fasta.map{ it -> [[id:it[0].baseName], it] })
-      genome_fasta = TABIX_BGZIP.out.output.map{ meta, fasta -> [fasta] }
+      TABIX_BGZIP(genome_fasta)
+
+      // overvrite fasta channel
+      genome_fasta = TABIX_BGZIP.out.output
 
       // force index calculation on uncompressed file
       force_index = true
@@ -33,8 +39,10 @@ workflow PREPARE_GENOME {
 
     // create fasta index if necessary
     if (! params.genome_fasta_fai || force_index) {
-      SAMTOOLS_FAIDX(genome_fasta.map{ it -> [[id:it[0].getName()], it] })
-      genome_fasta_fai = SAMTOOLS_FAIDX.out.fai.map{ meta, fai -> [fai] }
+      SAMTOOLS_FAIDX(genome_fasta, [[],[]])
+
+      // overvrite fasta_fai channel
+      genome_fasta_fai = SAMTOOLS_FAIDX.out.fai
 
       // track version
       ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
@@ -42,7 +50,7 @@ workflow PREPARE_GENOME {
 
     // indexing genome if necessary
     if (! params.genome_bwa_index || force_index) {
-      BWA_INDEX(genome_fasta.map{ it -> [[id:it[0].baseName], it] })
+      BWA_INDEX(genome_fasta)
       genome_bwa_index = BWA_INDEX.out.index
       ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
     }
