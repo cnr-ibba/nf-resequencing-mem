@@ -27,6 +27,15 @@ workflow PREPARE_GENOME {
 
     // check if reference genome is compressed or not
     if (params.genome_fasta.endsWith('.gz')) {
+      genome_fasta = genome_fasta.map{
+          meta, fasta -> {
+            in_fasta = ["fa", "fasta"].contains(meta.id.tokenize(".")[-1])
+            id = in_fasta ? meta.id.tokenize(".")[0..-2].join(".") : meta.id
+            [ [id:id], fasta ]
+          }
+        }
+        // .view()
+
       // unpack genome
       TABIX_BGZIP(genome_fasta)
 
