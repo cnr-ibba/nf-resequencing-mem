@@ -44,6 +44,7 @@ include { BWA_MEM                           } from '../modules/nf-core/bwa/mem/m
 include { BAMADDRG                          } from '../modules/cnr-ibba/bamaddrg/main'
 include { PICARD_MARKDUPLICATES             } from '../modules/nf-core/picard/markduplicates/main'
 include { SAMTOOLS_INDEX                    } from '../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_STATS                    } from '../modules/nf-core/samtools/stats/main'
 include { SAMTOOLS_FLAGSTAT                 } from '../modules/nf-core/samtools/flagstat/main'
 include { SAMTOOLS_COVERAGE                 } from '../modules/nf-core/samtools/coverage/main'
 include { FREEBAYES_PARALLEL                } from '../subworkflows/cnr-ibba/freebayes_parallel/main'
@@ -160,15 +161,19 @@ workflow RESEQUENCING_MEM {
   SAMTOOLS_INDEX(PICARD_MARKDUPLICATES.out.bam)
   ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
-  // now I can do the flagstat step. I need bam and bai files from markduplicates and
+  // now I can do the samtools steps. I need bam and bai files from markduplicates and
   // samtools index and the meta informations as three different input. From both channels,
   // I have an output like 'val(meta), path("*.bam")' and 'val(meta), path("*.bai")'
   // I can join two channels with the same key (https://www.nextflow.io/docs/latest/operator.html#join)
   // two options to check to have exactly the same keys with no duplications
-  flagstat_input = PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX.out.bai, failOnMismatch: true, failOnDuplicate: true)//.view()
+  samtools_input = PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX.out.bai, failOnMismatch: true, failOnDuplicate: true)//.view()
+
+  // call samtools stats
+  SAMTOOLS_STATS(samtools_input, PREPARE_GENOME.out.genome_fasta)
+  ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
 
   // time to call flagstat
-  SAMTOOLS_FLAGSTAT(flagstat_input)
+  SAMTOOLS_FLAGSTAT(samtools_input)
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
   // prepare input for samtools coverage
@@ -228,6 +233,7 @@ workflow RESEQUENCING_MEM {
         .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
         .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
         .concat(PICARD_MARKDUPLICATES.out.metrics.map{it[1]}.ifEmpty([]))
+        .concat(SAMTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
         .concat(SAMTOOLS_FLAGSTAT.out.flagstat.map{it[1]}.ifEmpty([]))
         .concat(BCFTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
         .collect()
