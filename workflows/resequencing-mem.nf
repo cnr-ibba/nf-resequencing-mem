@@ -109,29 +109,15 @@ workflow RESEQUENCING_MEM {
   FASTQC(INPUT_CHECK.out.reads)
   ch_versions = ch_versions.mix(FASTQC.out.versions)
 
-  // get only the data I need for a MultiQC step
-  html_report = FASTQC.out.html.map( sample -> sample[1] )
-  zip_report = FASTQC.out.zip.map( sample -> sample[1] )
-
-  // combine two channel (mix) and the get only one emission
-  multiqc_input = html_report.mix(zip_report).collect()//.view()
-
-  // prepare multiqc_config file
-  multiqc_config = Channel.fromPath(params.multiqc_config)
-  multiqc_logo = Channel.fromPath(params.multiqc_logo)
-
-  // calling MultiQC
-  MULTIQC(multiqc_input, multiqc_config, [], multiqc_logo)
-  ch_versions = ch_versions.mix(MULTIQC.out.versions)
-
-  ch_cat_fastq
-    .multiMap { meta, reads ->
-        r1: [meta, reads[0]]
-        r2: [meta, reads[1]]
-    }.set{ ch_seqkit_input }
-
   // remove duplicates (if necessary)
   if (params.remove_fastq_duplicates) {
+    // collect multiple files in one
+    ch_cat_fastq
+      .multiMap { meta, reads ->
+          r1: [meta, reads[0]]
+          r2: [meta, reads[1]]
+      }.set{ ch_seqkit_input }
+
     SEQKIT_RMDUP_R1(ch_seqkit_input.r1)
     SEQKIT_RMDUP_R2(ch_seqkit_input.r2)
     ch_versions = ch_versions.mix(SEQKIT_RMDUP_R1.out.versions)
@@ -217,6 +203,23 @@ workflow RESEQUENCING_MEM {
   // index normalized VCF file
   TABIX_TABIX(BCFTOOLS_NORM.out.vcf)
   ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
+
+  // get only the data I need for a MultiQC step
+  multiqc_input = FASTQC.out.html.map{it[1]}.ifEmpty([])
+        .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
+        .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
+        .concat(PICARD_MARKDUPLICATES.out.metrics.map{it[1]}.ifEmpty([]))
+        .concat(SAMTOOLS_FLAGSTAT.out.flagstat.map{it[1]}.ifEmpty([]))
+        .collect()
+        // .view()
+
+  // prepare multiqc_config file
+  multiqc_config = Channel.fromPath(params.multiqc_config)
+  multiqc_logo = Channel.fromPath(params.multiqc_logo)
+
+  // calling MultiQC
+  MULTIQC(multiqc_input, multiqc_config, [], multiqc_logo)
+  ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
   // return software version
   CUSTOM_DUMPSOFTWAREVERSIONS (
