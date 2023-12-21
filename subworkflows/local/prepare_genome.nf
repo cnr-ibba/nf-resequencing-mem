@@ -29,7 +29,7 @@ workflow PREPARE_GENOME {
     if (params.genome_fasta.endsWith('.gz')) {
       genome_fasta = genome_fasta.map{
           meta, fasta -> {
-            in_fasta = ["fa", "fasta"].contains(meta.id.tokenize(".")[-1])
+            in_fasta = ["fa", "fna", "fasta"].contains(meta.id.tokenize(".")[-1])
             id = in_fasta ? meta.id.tokenize(".")[0..-2].join(".") : meta.id
             [ [id:id], fasta ]
           }
