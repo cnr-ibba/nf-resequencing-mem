@@ -32,21 +32,27 @@ include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { CAT_FASTQ } from '../modules/nf-core/cat/fastq/main'
-include { FASTQC } from '../modules/nf-core/fastqc/main'
-include { MULTIQC } from '../modules/nf-core/multiqc/main'
-include { SEQKIT_RMDUP as SEQKIT_RMDUP_R1; SEQKIT_RMDUP as SEQKIT_RMDUP_R2 } from '../modules/cnr-ibba/seqkit/rmdup/main'
-include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
-include { BWA_MEM } from '../modules/nf-core/bwa/mem/main'
-include { BAMADDRG } from '../modules/cnr-ibba/bamaddrg/main'
-include { PICARD_MARKDUPLICATES } from '../modules/nf-core/picard/markduplicates/main'
-include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT } from '../modules/nf-core/samtools/flagstat/main'
-include { SAMTOOLS_COVERAGE } from '../modules/cnr-ibba/samtools/coverage/main'
-include { FREEBAYES_PARALLEL } from '../subworkflows/cnr-ibba/freebayes_parallel'
-include { BCFTOOLS_NORM } from '../modules/nf-core/bcftools/norm/main'
-include { TABIX_TABIX } from '../modules/nf-core/tabix/tabix/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { CAT_FASTQ                         } from '../modules/nf-core/cat/fastq/main'
+include { FASTQC                            } from '../modules/nf-core/fastqc/main'
+include { MULTIQC                           } from '../modules/nf-core/multiqc/main'
+include {
+          SEQKIT_RMDUP as SEQKIT_RMDUP_R1;
+          SEQKIT_RMDUP as SEQKIT_RMDUP_R2;
+                                            } from '../modules/cnr-ibba/seqkit/rmdup/main'
+include { TRIMGALORE                        } from '../modules/nf-core/trimgalore/main'
+include { BWA_MEM                           } from '../modules/nf-core/bwa/mem/main'
+include { BAMADDRG                          } from '../modules/cnr-ibba/bamaddrg/main'
+include { PICARD_MARKDUPLICATES             } from '../modules/nf-core/picard/markduplicates/main'
+include { SAMTOOLS_INDEX                    } from '../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_STATS                    } from '../modules/nf-core/samtools/stats/main'
+include { SAMTOOLS_IDXSTATS                 } from '../modules/nf-core/samtools/idxstats/main'
+include { SAMTOOLS_FLAGSTAT                 } from '../modules/nf-core/samtools/flagstat/main'
+include { SAMTOOLS_COVERAGE                 } from '../modules/nf-core/samtools/coverage/main'
+include { FREEBAYES_PARALLEL                } from '../subworkflows/cnr-ibba/freebayes_parallel/main'
+include { BCFTOOLS_NORM                     } from '../modules/nf-core/bcftools/norm/main'
+include { TABIX_TABIX                       } from '../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_STATS                    } from '../modules/nf-core/bcftools/stats/main'
+include { CUSTOM_DUMPSOFTWAREVERSIONS       } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -109,29 +115,15 @@ workflow RESEQUENCING_MEM {
   FASTQC(INPUT_CHECK.out.reads)
   ch_versions = ch_versions.mix(FASTQC.out.versions)
 
-  // get only the data I need for a MultiQC step
-  html_report = FASTQC.out.html.map( sample -> sample[1] )
-  zip_report = FASTQC.out.zip.map( sample -> sample[1] )
-
-  // combine two channel (mix) and the get only one emission
-  multiqc_input = html_report.mix(zip_report).collect()//.view()
-
-  // prepare multiqc_config file
-  multiqc_config = Channel.fromPath(params.multiqc_config)
-  multiqc_logo = Channel.fromPath(params.multiqc_logo)
-
-  // calling MultiQC
-  MULTIQC(multiqc_input, multiqc_config, [], multiqc_logo)
-  ch_versions = ch_versions.mix(MULTIQC.out.versions)
-
-  ch_cat_fastq
-    .multiMap { meta, reads ->
-        r1: [meta, reads[0]]
-        r2: [meta, reads[1]]
-    }.set{ ch_seqkit_input }
-
   // remove duplicates (if necessary)
   if (params.remove_fastq_duplicates) {
+    // collect multiple files in one
+    ch_cat_fastq
+      .multiMap { meta, reads ->
+          r1: [meta, reads[0]]
+          r2: [meta, reads[1]]
+      }.set{ ch_seqkit_input }
+
     SEQKIT_RMDUP_R1(ch_seqkit_input.r1)
     SEQKIT_RMDUP_R2(ch_seqkit_input.r2)
     ch_versions = ch_versions.mix(SEQKIT_RMDUP_R1.out.versions)
@@ -170,19 +162,34 @@ workflow RESEQUENCING_MEM {
   SAMTOOLS_INDEX(PICARD_MARKDUPLICATES.out.bam)
   ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
-  // now I can do the flagstat step. I need bam and bai files from markduplicates and
+  // now I can do the samtools steps. I need bam and bai files from markduplicates and
   // samtools index and the meta informations as three different input. From both channels,
   // I have an output like 'val(meta), path("*.bam")' and 'val(meta), path("*.bai")'
   // I can join two channels with the same key (https://www.nextflow.io/docs/latest/operator.html#join)
   // two options to check to have exactly the same keys with no duplications
-  flagstat_input = PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX.out.bai, failOnMismatch: true, failOnDuplicate: true)//.view()
+  samtools_input = PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX.out.bai, failOnMismatch: true, failOnDuplicate: true)//.view()
+
+  // call samtools stats
+  SAMTOOLS_STATS(samtools_input, PREPARE_GENOME.out.genome_fasta)
+  ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
+
+  // call samtools idxstats
+  SAMTOOLS_IDXSTATS(samtools_input)
+  ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions)
 
   // time to call flagstat
-  SAMTOOLS_FLAGSTAT(flagstat_input)
+  SAMTOOLS_FLAGSTAT(samtools_input)
   ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
+  // prepare input for samtools coverage
+  samtools_coverage_input = PICARD_MARKDUPLICATES.out.bam.join(
+      PICARD_MARKDUPLICATES.out.bai,
+      failOnMismatch: true,
+      failOnDuplicate: true)
+    // .view()
+
   // calculate sample coverage
-  SAMTOOLS_COVERAGE(PICARD_MARKDUPLICATES.out.bam)
+  SAMTOOLS_COVERAGE(samtools_coverage_input)
   ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
@@ -210,6 +217,41 @@ workflow RESEQUENCING_MEM {
   // index normalized VCF file
   TABIX_TABIX(BCFTOOLS_NORM.out.vcf)
   ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
+
+  // prepare input for bcftools stats
+  bcftools_in_ch = BCFTOOLS_NORM.out.vcf
+    .join(TABIX_TABIX.out.tbi)
+    // .view()
+
+  BCFTOOLS_STATS(
+    bcftools_in_ch,
+    [[], []],
+    [[], []],
+    [[], []],
+    [[], []],
+    [[], []]
+  )
+  ch_versions = ch_versions.mix(BCFTOOLS_STATS.out.versions)
+
+  // get only the data I need for a MultiQC step
+  multiqc_input = FASTQC.out.html.map{it[1]}.ifEmpty([])
+        .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
+        .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
+        .concat(PICARD_MARKDUPLICATES.out.metrics.map{it[1]}.ifEmpty([]))
+        .concat(SAMTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
+        .concat(SAMTOOLS_IDXSTATS.out.idxstats.map{it[1]}.ifEmpty([]))
+        .concat(SAMTOOLS_FLAGSTAT.out.flagstat.map{it[1]}.ifEmpty([]))
+        .concat(BCFTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
+        .collect()
+        // .view()
+
+  // prepare multiqc_config file
+  multiqc_config = Channel.fromPath(params.multiqc_config)
+  multiqc_logo = Channel.fromPath(params.multiqc_logo)
+
+  // calling MultiQC
+  MULTIQC(multiqc_input, multiqc_config, [], multiqc_logo)
+  ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
   // return software version
   CUSTOM_DUMPSOFTWAREVERSIONS (

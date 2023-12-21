@@ -2,14 +2,17 @@ name: "bamaddrg"
 description: adds read groups to input BAM files
 keywords:
   - sort
+  - add
+  - read
+  - group
+  - bam
 tools:
   - "bamaddrg":
       description: "Add read group to BAM files"
       homepage: "https://github.com/ekg/bamaddrg"
       documentation: "https://github.com/ekg/bamaddrg"
       tool_dev_url: "https://github.com/ekg/bamaddrg"
-      doi: ""
-      licence: "['MIT']"
+      licence: ["MIT"]
 
 input:
   # Only when we have meta
