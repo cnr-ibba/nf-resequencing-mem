@@ -79,7 +79,7 @@
           "picard/markduplicates": {
             "branch": "master",
             "git_sha": "20b0918591d4ba20047d7e13e5094bcceba81447",
-            "installed_by": ["modules"]
+            "installed_by": ["bam_markduplicates_picard", "modules"]
           },
           "samtools/coverage": {
             "branch": "master",
@@ -94,22 +94,22 @@
           "samtools/flagstat": {
             "branch": "master",
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
-            "installed_by": ["modules"]
+            "installed_by": ["bam_stats_samtools", "modules"]
           },
           "samtools/idxstats": {
             "branch": "master",
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
-            "installed_by": ["modules"]
+            "installed_by": ["bam_stats_samtools", "modules"]
           },
           "samtools/index": {
             "branch": "master",
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
-            "installed_by": ["modules"]
+            "installed_by": ["bam_markduplicates_picard", "modules"]
           },
           "samtools/stats": {
             "branch": "master",
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
-            "installed_by": ["modules"]
+            "installed_by": ["bam_stats_samtools", "modules"]
           },
           "tabix/bgzip": {
             "branch": "master",
@@ -125,6 +125,20 @@
             "branch": "master",
             "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
             "installed_by": ["modules"]
+          }
+        }
+      },
+      "subworkflows": {
+        "nf-core": {
+          "bam_markduplicates_picard": {
+            "branch": "master",
+            "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
+            "installed_by": ["subworkflows"]
+          },
+          "bam_stats_samtools": {
+            "branch": "master",
+            "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
+            "installed_by": ["bam_markduplicates_picard"]
           }
         }
       }

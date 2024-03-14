@@ -1,7 +1,7 @@
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     VALIDATE INPUTS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 // Check input path parameters to see if they exist
@@ -12,9 +12,9 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
 
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 //
@@ -24,9 +24,9 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 //
@@ -53,6 +53,8 @@ include { BCFTOOLS_NORM                     } from '../modules/nf-core/bcftools/
 include { TABIX_TABIX                       } from '../modules/nf-core/tabix/tabix/main'
 include { BCFTOOLS_STATS                    } from '../modules/nf-core/bcftools/stats/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS       } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { BAM_MARKDUPLICATES_PICARD         } from '../subworkflows/nf-core/bam_markduplicates_picard/main'
+include { BAM_STATS_SAMTOOLS                } from '../subworkflows/nf-core/bam_stats_samtools/main'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -148,56 +150,17 @@ workflow RESEQUENCING_MEM {
   BWA_MEM(TRIMGALORE.out.reads, PREPARE_GENOME.out.bwa_index, true)
   ch_versions = ch_versions.mix(BWA_MEM.out.versions)
 
-  // add sample names to BAM files. Required to name samples with freebayes
-  BAMADDRG(BWA_MEM.out.bam)
-  ch_versions = ch_versions.mix(BAMADDRG.out.versions)
-
-  // BAM file need to be sorted in order to mark duplicates. This was don in BWA_MEM
-  // step. Markduplicates requires meta information + bam files, the same output of
-  // SAMTOOLS_SORT step
-  PICARD_MARKDUPLICATES(BAMADDRG.out.bam, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
-  ch_versions = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
-
-  // bam need to be indexed before doing flagstat
-  SAMTOOLS_INDEX(PICARD_MARKDUPLICATES.out.bam)
-  ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
-
-  // now I can do the samtools steps. I need bam and bai files from markduplicates and
-  // samtools index and the meta informations as three different input. From both channels,
-  // I have an output like 'val(meta), path("*.bam")' and 'val(meta), path("*.bai")'
-  // I can join two channels with the same key (https://www.nextflow.io/docs/latest/operator.html#join)
-  // two options to check to have exactly the same keys with no duplications
-  samtools_input = PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX.out.bai, failOnMismatch: true, failOnDuplicate: true)//.view()
-
-  // call samtools stats
-  SAMTOOLS_STATS(samtools_input, PREPARE_GENOME.out.genome_fasta)
-  ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
-
-  // call samtools idxstats
-  SAMTOOLS_IDXSTATS(samtools_input)
-  ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions)
-
-  // time to call flagstat
-  SAMTOOLS_FLAGSTAT(samtools_input)
-  ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
-
-  // prepare input for samtools coverage
-  samtools_coverage_input = PICARD_MARKDUPLICATES.out.bam.join(
-      PICARD_MARKDUPLICATES.out.bai,
-      failOnMismatch: true,
-      failOnDuplicate: true)
-    // .view()
-
-  // calculate sample coverage
-  SAMTOOLS_COVERAGE(samtools_coverage_input)
-  ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE.out.versions)
+  // Perform Picard MarkDuplicates, index CRAM file and run samtools stats, flagstat and idxstats
+  BAM_MARKDUPLICATES_PICARD(BWA_MEM.out.cram, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
+  ch_versions = ch_versions.mix(BAM_MARKDUPLICATES_PICARD.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
-  freebayes_input_bam = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect().map{ it -> [[id: "all-samples"], it]}
-  freebayes_input_bai = SAMTOOLS_INDEX.out.bai.map{ meta, bai -> [bai] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_bam = BAM_MARKDUPLICATES_PICARD.out.bam.map{ meta, bam -> [bam] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_bai = BAM_MARKDUPLICATES_PICARD.out.bai.map{ meta, bai -> [bai] }.collect().map{ it -> [[id: "all-samples"], it]}
 
   // call freebayes paralle
-  FREEBAYES_PARALLEL(freebayes_input_bam, freebayes_input_bai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
+  FREEBAYES_PARALLEL(freebayes_input_bam, freebayes_input_bai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai
+)
   ch_versions = ch_versions.mix(FREEBAYES_PARALLEL.out.versions)
 
   // create bcftools channel. Freebayes multi will emit a single value for vcf and indexes.
@@ -237,11 +200,11 @@ workflow RESEQUENCING_MEM {
   multiqc_input = FASTQC.out.html.map{it[1]}.ifEmpty([])
         .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
         .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
-        .concat(PICARD_MARKDUPLICATES.out.metrics.map{it[1]}.ifEmpty([]))
-        .concat(SAMTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
-        .concat(SAMTOOLS_IDXSTATS.out.idxstats.map{it[1]}.ifEmpty([]))
-        .concat(SAMTOOLS_FLAGSTAT.out.flagstat.map{it[1]}.ifEmpty([]))
-        .concat(BCFTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
+        .concat(BAM_MARKDUPLICATES_PICARD.out.metrics.map{it[1]}.ifEmpty([]))
+        .concat(BAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
+        .concat(BAM_MARKDUPLICATES_PICARD.out.idxstats.map{it[1]}.ifEmpty([]))
+        .concat(BAM_MARKDUPLICATES_PICARD.out.flagstat.map{it[1]}.ifEmpty([]))
+        .concat(BAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
         .collect()
         // .view()
 
