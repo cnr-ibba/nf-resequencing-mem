@@ -88,7 +88,7 @@
           "picard/markduplicates": {
             "branch": "master",
             "git_sha": "20b0918591d4ba20047d7e13e5094bcceba81447",
-            "installed_by": ["bam_markduplicates_picard", "modules"]
+            "installed_by": ["bam_markduplicates_picard"]
           },
           "samtools/coverage": {
             "branch": "master",
@@ -103,22 +103,22 @@
           "samtools/flagstat": {
             "branch": "master",
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
-            "installed_by": ["bam_stats_samtools", "modules"]
+            "installed_by": ["bam_stats_samtools"]
           },
           "samtools/idxstats": {
             "branch": "master",
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
-            "installed_by": ["bam_stats_samtools", "modules"]
+            "installed_by": ["bam_stats_samtools"]
           },
           "samtools/index": {
             "branch": "master",
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
-            "installed_by": ["bam_markduplicates_picard", "modules"]
+            "installed_by": ["bam_markduplicates_picard"]
           },
           "samtools/stats": {
             "branch": "master",
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
-            "installed_by": ["bam_stats_samtools", "modules"]
+            "installed_by": ["bam_stats_samtools"]
           },
           "tabix/bgzip": {
             "branch": "master",
