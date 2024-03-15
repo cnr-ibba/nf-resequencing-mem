@@ -4,8 +4,8 @@
 
 include { FREEBAYES_SPLITBAM }                  from '../../../modules/cnr-ibba/freebayes/splitbam/main'
 include { FREEBAYES_CHUNK }                     from '../../../modules/cnr-ibba/freebayes/chunk/main'
-include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT } from '../../../modules/nf-core/bcftools/concat/main'
-include { TABIX_TABIX as FREEBAYES_TABIX }      from '../../../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT } from '../../../modules/cnr-ibba/bcftools/concat/main'
+include { TABIX_TABIX as FREEBAYES_TABIX }      from '../../../modules/cnr-ibba/tabix/tabix/main'
 
 workflow FREEBAYES_PARALLEL {
     take:
