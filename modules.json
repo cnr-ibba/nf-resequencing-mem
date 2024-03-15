@@ -5,11 +5,6 @@
     "https://github.com/cnr-ibba/nf-modules.git": {
       "modules": {
         "cnr-ibba": {
-          "bamaddrg": {
-            "branch": "master",
-            "git_sha": "0df6dad6fccf03d5bf452766dd1ea9795654338b",
-            "installed_by": ["modules"]
-          },
           "bcftools/concat": {
             "branch": "master",
             "git_sha": "4405d06441e7a1afc1f0ddd1b337e564e404c0ca",

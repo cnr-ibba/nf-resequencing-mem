@@ -41,7 +41,6 @@ include {
                                             } from '../modules/cnr-ibba/seqkit/rmdup/main'
 include { TRIMGALORE                        } from '../modules/nf-core/trimgalore/main'
 include { BWA_MEM                           } from '../modules/nf-core/bwa/mem/main'
-include { BAMADDRG                          } from '../modules/cnr-ibba/bamaddrg/main'
 include { PICARD_MARKDUPLICATES             } from '../modules/nf-core/picard/markduplicates/main'
 include { SAMTOOLS_INDEX                    } from '../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_STATS                    } from '../modules/nf-core/samtools/stats/main'
