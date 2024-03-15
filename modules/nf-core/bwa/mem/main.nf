@@ -30,7 +30,7 @@ process BWA_MEM {
     bwa mem \\
         $args \\
         -t $task.cpus \\
-        -R "@RG\\tID:$prefix\\tSM:bar" \\
+        -R "@RG\\tID:${prefix}\\tSM:${prefix}" \\
         \$INDEX \\
         $reads \\
         | samtools $samtools_command $args2 --threads $task.cpus -O cram -o ${prefix}.cram -
