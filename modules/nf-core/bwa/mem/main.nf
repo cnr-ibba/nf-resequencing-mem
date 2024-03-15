@@ -13,8 +13,8 @@ process BWA_MEM {
     val   sort_bam
 
     output:
-    tuple val(meta), path("*.cram"), emit: cram
-    path  "versions.yml", emit: versions
+    tuple val(meta), path("*.cram"),    emit: cram
+    path  "versions.yml",               emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,7 +22,7 @@ process BWA_MEM {
     script:
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}.bwa"
+    def prefix = task.ext.prefix ?: "${meta.id}"
     def samtools_command = sort_bam ? 'sort' : 'view'
     """
     INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
@@ -43,7 +43,7 @@ process BWA_MEM {
     """
 
     stub:
-    def prefix = task.ext.prefix ?: "${meta.id}.bwa"
+    def prefix = task.ext.prefix ?: "${meta.id}"
     """
     touch ${prefix}.cram
 
