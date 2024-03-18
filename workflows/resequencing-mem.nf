@@ -148,11 +148,11 @@ workflow RESEQUENCING_MEM {
   ch_versions = ch_versions.mix(BAM_MARKDUPLICATES_PICARD.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
-  freebayes_input_bam = BAM_MARKDUPLICATES_PICARD.out.bam.map{ meta, bam -> [bam] }.collect().map{ it -> [[id: "all-samples"], it]}
-  freebayes_input_bai = BAM_MARKDUPLICATES_PICARD.out.bai.map{ meta, bai -> [bai] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_cram = BAM_MARKDUPLICATES_PICARD.out.cram.map{ meta, cram -> [cram] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_crai = BAM_MARKDUPLICATES_PICARD.out.crai.map{ meta, crai -> [crai] }.collect().map{ it -> [[id: "all-samples"], it]}
 
   // call freebayes paralle
-  FREEBAYES_PARALLEL(freebayes_input_bam, freebayes_input_bai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai
+  FREEBAYES_PARALLEL(freebayes_input_cram, freebayes_input_crai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai
 )
   ch_versions = ch_versions.mix(FREEBAYES_PARALLEL.out.versions)
 
