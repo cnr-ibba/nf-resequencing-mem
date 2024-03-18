@@ -89,7 +89,8 @@
           "picard/markduplicates": {
             "branch": "master",
             "git_sha": "20b0918591d4ba20047d7e13e5094bcceba81447",
-            "installed_by": ["bam_markduplicates_picard"]
+            "installed_by": ["bam_markduplicates_picard"],
+            "patch": "modules/nf-core/picard/markduplicates/picard-markduplicates.diff"
           },
           "samtools/coverage": {
             "branch": "master",
