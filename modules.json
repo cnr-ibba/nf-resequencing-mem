@@ -15,11 +15,6 @@
             "git_sha": "03189b5139b1112cc869e8b78b3b6f82c595d4df",
             "installed_by": ["modules"]
           },
-          "freebayes/splitbam": {
-            "branch": "master",
-            "git_sha": "03189b5139b1112cc869e8b78b3b6f82c595d4df",
-            "installed_by": ["modules"]
-          },
           "seqkit/rmdup": {
             "branch": "master",
             "git_sha": "c101f87859323fe184912c12a17404149a2a9ddd",

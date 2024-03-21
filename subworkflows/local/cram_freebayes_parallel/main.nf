@@ -3,7 +3,7 @@
 //
 
 include { SAMTOOLS_DEPTH }                      from '../../../modules/nf-core/samtools/depth/main'
-include { FREEBAYES_SPLITBAM }                  from '../../../modules/cnr-ibba/freebayes/splitbam/main'
+include { FREEBAYES_SPLITBAM }                  from '../../../modules/local/freebayes_splitbam'
 include { FREEBAYES_CHUNK }                     from '../../../modules/cnr-ibba/freebayes/chunk/main'
 include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT } from '../../../modules/cnr-ibba/bcftools/concat/main'
 include { TABIX_TABIX as FREEBAYES_TABIX }      from '../../../modules/nf-core/tabix/tabix/main'
@@ -23,7 +23,7 @@ workflow CRAM_FREEBAYES_PARALLEL {
     ch_versions = ch_versions.mix(SAMTOOLS_DEPTH.out.versions)
 
     // split fasta in chunks relying BAM size
-    FREEBAYES_SPLITBAM ( bam, bai, fasta, fai )
+    FREEBAYES_SPLITBAM ( SAMTOOLS_DEPTH.out.depth )
     ch_versions = ch_versions.mix(FREEBAYES_SPLITBAM.out.versions)
 
     // create a channel from region list file
@@ -33,7 +33,7 @@ workflow CRAM_FREEBAYES_PARALLEL {
         .map{ it -> [[id: it.trim()], it.trim()]}
 
     // call freebayes on each region
-    FREEBAYES_CHUNK ( regions_ch, bam, bai, FREEBAYES_SPLITBAM.out.bam_list, fasta, fai )
+    FREEBAYES_CHUNK ( regions_ch, bam, bai, SAMTOOLS_DEPTH.out.bam_list, fasta, fai )
     ch_versions = ch_versions.mix(FREEBAYES_CHUNK.out.versions)
 
     // merge freebayes chunks
