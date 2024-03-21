@@ -12,15 +12,15 @@ process SAMTOOLS_DEPTH {
     tuple val(meta2), path(intervals)
 
     output:
-    tuple val(meta1), path("*.tsv"), emit: tsv
-    path "versions.yml"           , emit: versions
+    tuple val(meta1), path("*.tsv.gz"), emit: tsv
+    path "versions.yml",                emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta1.id}"
+    def prefix = task.ext.prefix ?: "${meta1.id}.depth"
     def positions = intervals ? "-b ${intervals}" : ""
     """
     samtools \\
@@ -28,8 +28,9 @@ process SAMTOOLS_DEPTH {
         --threads ${task.cpus-1} \\
         $args \\
         $positions \\
-        -o ${prefix}.tsv \\
-        $bam
+        -H -a \\
+        $bam \\
+        | gzip -c > ${prefix}.tsv.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

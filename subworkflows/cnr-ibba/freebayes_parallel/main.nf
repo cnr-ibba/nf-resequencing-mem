@@ -2,6 +2,7 @@
 // Prepare and run freebayes paralle
 //
 
+include { SAMTOOLS_DEPTH }                      from '../../../modules/nf-core/samtools/depth/main'
 include { FREEBAYES_SPLITBAM }                  from '../../../modules/cnr-ibba/freebayes/splitbam/main'
 include { FREEBAYES_CHUNK }                     from '../../../modules/cnr-ibba/freebayes/chunk/main'
 include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT } from '../../../modules/cnr-ibba/bcftools/concat/main'
@@ -16,6 +17,9 @@ workflow FREEBAYES_PARALLEL {
 
     main:
     ch_versions = Channel.empty()
+
+    // calculate total coverage depth for all samples
+    SAMTOOLS_DEPTH( bam, [[], []] )
 
     // split fasta in chunks relying BAM size
     FREEBAYES_SPLITBAM ( bam, bai, fasta, fai )
