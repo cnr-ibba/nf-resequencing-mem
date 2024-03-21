@@ -8,36 +8,22 @@
           "bcftools/concat": {
             "branch": "master",
             "git_sha": "4405d06441e7a1afc1f0ddd1b337e564e404c0ca",
-            "installed_by": ["freebayes_parallel"]
+            "installed_by": ["modules"]
           },
           "freebayes/chunk": {
             "branch": "master",
             "git_sha": "03189b5139b1112cc869e8b78b3b6f82c595d4df",
-            "installed_by": ["freebayes_parallel"]
+            "installed_by": ["modules"]
           },
           "freebayes/splitbam": {
             "branch": "master",
             "git_sha": "03189b5139b1112cc869e8b78b3b6f82c595d4df",
-            "installed_by": ["freebayes_parallel"]
+            "installed_by": ["modules"]
           },
           "seqkit/rmdup": {
             "branch": "master",
             "git_sha": "c101f87859323fe184912c12a17404149a2a9ddd",
             "installed_by": ["modules"]
-          },
-          "tabix/tabix": {
-            "branch": "master",
-            "git_sha": "4405d06441e7a1afc1f0ddd1b337e564e404c0ca",
-            "installed_by": ["freebayes_parallel"]
-          }
-        }
-      },
-      "subworkflows": {
-        "cnr-ibba": {
-          "freebayes_parallel": {
-            "branch": "master",
-            "git_sha": "a182d0d16206a756877bd9d0260fa9fe22d46bb8",
-            "installed_by": ["subworkflows"]
           }
         }
       }

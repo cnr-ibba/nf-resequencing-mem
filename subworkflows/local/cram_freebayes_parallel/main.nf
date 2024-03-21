@@ -6,9 +6,9 @@ include { SAMTOOLS_DEPTH }                      from '../../../modules/nf-core/s
 include { FREEBAYES_SPLITBAM }                  from '../../../modules/cnr-ibba/freebayes/splitbam/main'
 include { FREEBAYES_CHUNK }                     from '../../../modules/cnr-ibba/freebayes/chunk/main'
 include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT } from '../../../modules/cnr-ibba/bcftools/concat/main'
-include { TABIX_TABIX as FREEBAYES_TABIX }      from '../../../modules/cnr-ibba/tabix/tabix/main'
+include { TABIX_TABIX as FREEBAYES_TABIX }      from '../../../modules/nf-core/tabix/tabix/main'
 
-workflow FREEBAYES_PARALLEL {
+workflow CRAM_FREEBAYES_PARALLEL {
     take:
     bam     // channel: [ val(meta), [ bam/cram ]]
     bai     // channel: [ val(meta), [ bai/crai ]]
@@ -20,6 +20,7 @@ workflow FREEBAYES_PARALLEL {
 
     // calculate total coverage depth for all samples
     SAMTOOLS_DEPTH( bam, [[], []] )
+    ch_versions = ch_versions.mix(SAMTOOLS_DEPTH.out.versions)
 
     // split fasta in chunks relying BAM size
     FREEBAYES_SPLITBAM ( bam, bai, fasta, fai )

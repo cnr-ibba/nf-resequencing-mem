@@ -41,7 +41,7 @@ include {
                                             } from '../modules/cnr-ibba/seqkit/rmdup/main'
 include { TRIMGALORE                        } from '../modules/nf-core/trimgalore/main'
 include { BWA_MEM                           } from '../modules/nf-core/bwa/mem/main'
-include { FREEBAYES_PARALLEL                } from '../subworkflows/cnr-ibba/freebayes_parallel/main'
+include { CRAM_FREEBAYES_PARALLEL           } from '../subworkflows/local/cram_freebayes_parallel/main'
 include { BCFTOOLS_NORM                     } from '../modules/nf-core/bcftools/norm/main'
 include { TABIX_TABIX                       } from '../modules/nf-core/tabix/tabix/main'
 include { BCFTOOLS_STATS                    } from '../modules/nf-core/bcftools/stats/main'
@@ -152,15 +152,19 @@ workflow RESEQUENCING_MEM {
   freebayes_input_crai = BAM_MARKDUPLICATES_PICARD.out.crai.map{ meta, crai -> [crai] }.collect().map{ it -> [[id: "all-samples"], it]}
 
   // call freebayes paralle
-  FREEBAYES_PARALLEL(freebayes_input_cram, freebayes_input_crai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai
-)
-  ch_versions = ch_versions.mix(FREEBAYES_PARALLEL.out.versions)
+  CRAM_FREEBAYES_PARALLEL(
+    freebayes_input_cram,
+    freebayes_input_crai,
+    PREPARE_GENOME.out.genome_fasta,
+    PREPARE_GENOME.out.genome_fasta_fai
+  )
+  ch_versions = ch_versions.mix(CRAM_FREEBAYES_PARALLEL.out.versions)
 
   // create bcftools channel. Freebayes multi will emit a single value for vcf and indexes.
   // join it and then change meta key to avoid file name collisions (meta is used to
   // determine output files)
-  bcftools_ch = FREEBAYES_PARALLEL.out.vcf
-    .join(FREEBAYES_PARALLEL.out.tbi)
+  bcftools_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
+    .join(CRAM_FREEBAYES_PARALLEL.out.tbi)
     .map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
