@@ -4,9 +4,9 @@
 
 include { PICARD_MARKDUPLICATES } from '../../../modules/nf-core/picard/markduplicates/main'
 include { SAMTOOLS_INDEX        } from '../../../modules/nf-core/samtools/index/main'
-include { BAM_STATS_SAMTOOLS    } from '../bam_stats_samtools/main'
+include { CRAM_STATS_SAMTOOLS    } from '../cram_stats_samtools/main'
 
-workflow BAM_MARKDUPLICATES_PICARD {
+workflow CRAM_MARKDUPLICATES_PICARD {
 
     take:
     ch_cram  // channel: [ val(meta), path(cram) ]
@@ -31,19 +31,19 @@ workflow BAM_MARKDUPLICATES_PICARD {
             else [ meta, cram, csi ]
         }
 
-    BAM_STATS_SAMTOOLS ( ch_cram_crai, ch_fasta )
-    ch_versions = ch_versions.mix(BAM_STATS_SAMTOOLS.out.versions)
+    CRAM_STATS_SAMTOOLS ( ch_cram_crai, ch_fasta )
+    ch_versions = ch_versions.mix(CRAM_STATS_SAMTOOLS.out.versions)
 
     emit:
     cram     = PICARD_MARKDUPLICATES.out.cram    // channel: [ val(meta), path(cram) ]
     metrics  = PICARD_MARKDUPLICATES.out.metrics // channel: [ val(meta), path(cram) ]
-    crai      = SAMTOOLS_INDEX.out.crai          // channel: [ val(meta), path(crai) ]
+    crai     = SAMTOOLS_INDEX.out.crai          // channel: [ val(meta), path(crai) ]
     csi      = SAMTOOLS_INDEX.out.csi            // channel: [ val(meta), path(csi) ]
 
-    stats    = BAM_STATS_SAMTOOLS.out.stats      // channel: [ val(meta), path(stats) ]
-    flagstat = BAM_STATS_SAMTOOLS.out.flagstat   // channel: [ val(meta), path(flagstat) ]
-    idxstats = BAM_STATS_SAMTOOLS.out.idxstats   // channel: [ val(meta), path(idxstats) ]
-    coverage = BAM_STATS_SAMTOOLS.out.coverage   // channel: [ val(meta), path(coverage) ]
+    stats    = CRAM_STATS_SAMTOOLS.out.stats      // channel: [ val(meta), path(stats) ]
+    flagstat = CRAM_STATS_SAMTOOLS.out.flagstat   // channel: [ val(meta), path(flagstat) ]
+    idxstats = CRAM_STATS_SAMTOOLS.out.idxstats   // channel: [ val(meta), path(idxstats) ]
+    coverage = CRAM_STATS_SAMTOOLS.out.coverage   // channel: [ val(meta), path(coverage) ]
 
     versions = ch_versions                       // channel: [ versions.yml ]
 }

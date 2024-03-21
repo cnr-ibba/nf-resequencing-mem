@@ -7,7 +7,7 @@ include { SAMTOOLS_IDXSTATS } from '../../../modules/nf-core/samtools/idxstats/m
 include { SAMTOOLS_FLAGSTAT } from '../../../modules/nf-core/samtools/flagstat/main'
 include { SAMTOOLS_COVERAGE } from '../../../modules/nf-core/samtools/coverage/main'
 
-workflow BAM_STATS_SAMTOOLS {
+workflow CRAM_STATS_SAMTOOLS {
     take:
     ch_bam_crai // channel: [ val(meta), path(bam), path(crai) ]
     ch_fasta    // channel: [ val(meta), path(fasta) ]
