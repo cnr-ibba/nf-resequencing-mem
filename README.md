@@ -331,7 +331,7 @@ in the split process like this:
 
 ```config
 process {
-    withName: FREEBAYES_SPLITBAM {
+    withName: FREEBAYES_SPLITCRAM {
         ext.args = '--max_coverage 100_000_000 --min_length 20_000'
     }
 }

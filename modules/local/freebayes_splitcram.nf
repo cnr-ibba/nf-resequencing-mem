@@ -1,5 +1,5 @@
 
-process FREEBAYES_SPLITBAM {
+process FREEBAYES_SPLITCRAM {
     tag "$meta.id"
     label 'process_single'
 

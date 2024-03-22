@@ -3,7 +3,7 @@
 //
 
 include { SAMTOOLS_DEPTH }                      from '../../../modules/nf-core/samtools/depth/main'
-include { FREEBAYES_SPLITBAM }                  from '../../../modules/local/freebayes_splitbam'
+include { FREEBAYES_SPLITCRAM }                 from '../../../modules/local/freebayes_splitcram'
 include { FREEBAYES_CHUNK }                     from '../../../modules/cnr-ibba/freebayes/chunk/main'
 include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT } from '../../../modules/cnr-ibba/bcftools/concat/main'
 include { TABIX_TABIX as FREEBAYES_TABIX }      from '../../../modules/nf-core/tabix/tabix/main'
@@ -23,11 +23,11 @@ workflow CRAM_FREEBAYES_PARALLEL {
     ch_versions = ch_versions.mix(SAMTOOLS_DEPTH.out.versions)
 
     // split fasta in chunks relying BAM size
-    FREEBAYES_SPLITBAM ( SAMTOOLS_DEPTH.out.depth )
-    ch_versions = ch_versions.mix(FREEBAYES_SPLITBAM.out.versions)
+    FREEBAYES_SPLITCRAM ( SAMTOOLS_DEPTH.out.depth )
+    ch_versions = ch_versions.mix(FREEBAYES_SPLITCRAM.out.versions)
 
     // create a channel from region list file
-    regions_ch = FREEBAYES_SPLITBAM.out.regions
+    regions_ch = FREEBAYES_SPLITCRAM.out.regions
         .map{ it -> it[1]}
         .splitText()
         .map{ it -> [[id: it.trim()], it.trim()]}

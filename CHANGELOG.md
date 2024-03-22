@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Added`
 
 - Add `samtools/depth` process
-- Add `freebayes_splitbam` custom module to split genome in regions relying on
+- Add `freebayes_splitcram` custom module to split genome in regions relying on
   _total sample coverage_
 - Add `cram_markduplicates_picard` custom local subworkflow by modifying
   `bam_markduplicates_picard` to work with `*.cram` files by default
