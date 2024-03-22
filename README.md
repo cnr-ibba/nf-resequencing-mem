@@ -84,7 +84,7 @@ used to save _intermediate results_ or to skip a particular step:
 
 - `--genome_fasta_fai`: path to fasta index file (skip fasta index step)
 - `--genome_bwa_index`: path to genome bwa index directory (skip bwa index step)
-- `--save_bam`: (bool, def. false) save _markduplicated_ bam files with their indexes
+- `--save_cram`: (bool, def. false) save _markduplicated_ cram files with their indexes
   in results folder
 - `--save_trimmed`: (bool, def. false) save trimmed reads in results folder
 - `--save_fasta_index`: (bool, def. false) save fasta index (for reusing with this pipeline)

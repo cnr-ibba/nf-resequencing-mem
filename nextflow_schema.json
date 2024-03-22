@@ -73,9 +73,9 @@
           "type": "boolean",
           "description": "Save trimmed sequences in $outdir"
         },
-        "save_bam": {
+        "save_cram": {
           "type": "boolean",
-          "description": "Save aligned/sorted BAM files in $outdir"
+          "description": "Save aligned/sorted CRAM files in $outdir"
         },
         "save_fasta_index": {
           "type": "boolean",
