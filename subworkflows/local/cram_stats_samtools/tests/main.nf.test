@@ -1,18 +1,18 @@
 nextflow_workflow {
 
-    name "Test Workflow BAM_STATS_SAMTOOLS"
+    name "Test Workflow CRAM_STATS_SAMTOOLS"
     script "../main.nf"
-    workflow "BAM_STATS_SAMTOOLS"
+    workflow "CRAM_STATS_SAMTOOLS"
     tag "subworkflows"
     tag "subworkflows_nfcore"
-    tag "bam_stats_samtools"
-    tag "subworkflows/bam_stats_samtools"
+    tag "cram_stats_samtools"
+    tag "subworkflows/cram_stats_samtools"
     tag "samtools"
     tag "samtools/flagstat"
     tag "samtools/idxstats"
     tag "samtools/stats"
 
-    test("test_bam_stats_samtools_single_end") {
+    test("test_cram_stats_samtools_single_end") {
 
         when {
             params {
@@ -36,14 +36,14 @@ nextflow_workflow {
         then {
             assertAll(
                 { assert workflow.success},
-                { assert snapshot(workflow.out.stats).match("test_bam_stats_samtools_single_end_stats") },
-                { assert snapshot(workflow.out.flagstat).match("test_bam_stats_samtools_single_end_flagstats") },
-                { assert snapshot(workflow.out.idxstats).match("test_bam_stats_samtools_single_end_idxstats") }
+                { assert snapshot(workflow.out.stats).match("test_cram_stats_samtools_single_end_stats") },
+                { assert snapshot(workflow.out.flagstat).match("test_cram_stats_samtools_single_end_flagstats") },
+                { assert snapshot(workflow.out.idxstats).match("test_cram_stats_samtools_single_end_idxstats") }
             )
         }
     }
 
-    test("test_bam_stats_samtools_paired_end") {
+    test("test_cram_stats_samtools_paired_end") {
 
         when {
             params {
@@ -67,14 +67,14 @@ nextflow_workflow {
         then {
             assertAll(
                 { assert workflow.success },
-                { assert snapshot(workflow.out.stats).match("test_bam_stats_samtools_paired_end_stats") },
-                { assert snapshot(workflow.out.flagstat).match("test_bam_stats_samtools_paired_end_flagstats") },
-                { assert snapshot(workflow.out.idxstats).match("test_bam_stats_samtools_paired_end_idxstats") }
+                { assert snapshot(workflow.out.stats).match("test_cram_stats_samtools_paired_end_stats") },
+                { assert snapshot(workflow.out.flagstat).match("test_cram_stats_samtools_paired_end_flagstats") },
+                { assert snapshot(workflow.out.idxstats).match("test_cram_stats_samtools_paired_end_idxstats") }
             )
         }
     }
 
-    test("test_bam_stats_samtools_paired_end_cram") {
+    test("test_cram_stats_samtools_paired_end_cram") {
 
         when {
             params {
@@ -98,9 +98,9 @@ nextflow_workflow {
         then {
             assertAll(
                 { assert workflow.success},
-                { assert snapshot(workflow.out.stats).match("test_bam_stats_samtools_paired_end_cram_stats") },
-                { assert snapshot(workflow.out.flagstat).match("test_bam_stats_samtools_paired_end_cram_flagstats") },
-                { assert snapshot(workflow.out.idxstats).match("test_bam_stats_samtools_paired_end_cram_idxstats") }
+                { assert snapshot(workflow.out.stats).match("test_cram_stats_samtools_paired_end_cram_stats") },
+                { assert snapshot(workflow.out.flagstat).match("test_cram_stats_samtools_paired_end_cram_flagstats") },
+                { assert snapshot(workflow.out.idxstats).match("test_cram_stats_samtools_paired_end_cram_idxstats") }
             )
         }
     }

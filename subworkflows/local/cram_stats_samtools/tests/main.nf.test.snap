@@ -1,5 +1,5 @@
 {
-    "test_bam_stats_samtools_paired_end_cram_flagstats": {
+    "test_cram_stats_samtools_paired_end_cram_flagstats": {
         "content": [
             [
                 [
@@ -17,7 +17,7 @@
         },
         "timestamp": "2023-11-06T09:31:26.194017574"
     },
-    "test_bam_stats_samtools_paired_end_stats": {
+    "test_cram_stats_samtools_paired_end_stats": {
         "content": [
             [
                 [
@@ -35,7 +35,7 @@
         },
         "timestamp": "2024-02-13T16:45:06.230091746"
     },
-    "test_bam_stats_samtools_paired_end_flagstats": {
+    "test_cram_stats_samtools_paired_end_flagstats": {
         "content": [
             [
                 [
@@ -53,7 +53,7 @@
         },
         "timestamp": "2024-01-18T17:17:27.717482"
     },
-    "test_bam_stats_samtools_single_end_flagstats": {
+    "test_cram_stats_samtools_single_end_flagstats": {
         "content": [
             [
                 [
@@ -71,7 +71,7 @@
         },
         "timestamp": "2023-11-06T09:26:10.340046381"
     },
-    "test_bam_stats_samtools_paired_end_cram_idxstats": {
+    "test_cram_stats_samtools_paired_end_cram_idxstats": {
         "content": [
             [
                 [
@@ -89,7 +89,7 @@
         },
         "timestamp": "2023-11-06T09:31:26.207052003"
     },
-    "test_bam_stats_samtools_single_end_stats": {
+    "test_cram_stats_samtools_single_end_stats": {
         "content": [
             [
                 [
@@ -107,7 +107,7 @@
         },
         "timestamp": "2024-02-13T16:44:57.442208382"
     },
-    "test_bam_stats_samtools_paired_end_idxstats": {
+    "test_cram_stats_samtools_paired_end_idxstats": {
         "content": [
             [
                 [
@@ -125,7 +125,7 @@
         },
         "timestamp": "2024-01-18T17:17:27.726719"
     },
-    "test_bam_stats_samtools_single_end_idxstats": {
+    "test_cram_stats_samtools_single_end_idxstats": {
         "content": [
             [
                 [
@@ -143,7 +143,7 @@
         },
         "timestamp": "2023-11-06T09:26:10.349439801"
     },
-    "test_bam_stats_samtools_paired_end_cram_stats": {
+    "test_cram_stats_samtools_paired_end_cram_stats": {
         "content": [
             [
                 [

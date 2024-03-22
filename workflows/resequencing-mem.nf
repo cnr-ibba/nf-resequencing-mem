@@ -41,20 +41,12 @@ include {
                                             } from '../modules/cnr-ibba/seqkit/rmdup/main'
 include { TRIMGALORE                        } from '../modules/nf-core/trimgalore/main'
 include { BWA_MEM                           } from '../modules/nf-core/bwa/mem/main'
-include { BAMADDRG                          } from '../modules/cnr-ibba/bamaddrg/main'
-include { PICARD_MARKDUPLICATES             } from '../modules/nf-core/picard/markduplicates/main'
-include { SAMTOOLS_INDEX                    } from '../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_STATS                    } from '../modules/nf-core/samtools/stats/main'
-include { SAMTOOLS_IDXSTATS                 } from '../modules/nf-core/samtools/idxstats/main'
-include { SAMTOOLS_FLAGSTAT                 } from '../modules/nf-core/samtools/flagstat/main'
-include { SAMTOOLS_COVERAGE                 } from '../modules/nf-core/samtools/coverage/main'
-include { FREEBAYES_PARALLEL                } from '../subworkflows/cnr-ibba/freebayes_parallel/main'
+include { CRAM_FREEBAYES_PARALLEL           } from '../subworkflows/local/cram_freebayes_parallel/main'
 include { BCFTOOLS_NORM                     } from '../modules/nf-core/bcftools/norm/main'
 include { TABIX_TABIX                       } from '../modules/nf-core/tabix/tabix/main'
 include { BCFTOOLS_STATS                    } from '../modules/nf-core/bcftools/stats/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS       } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { BAM_MARKDUPLICATES_PICARD         } from '../subworkflows/nf-core/bam_markduplicates_picard/main'
-include { BAM_STATS_SAMTOOLS                } from '../subworkflows/nf-core/bam_stats_samtools/main'
+include { CRAM_MARKDUPLICATES_PICARD        } from '../subworkflows/local/cram_markduplicates_picard/main'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -151,23 +143,27 @@ workflow RESEQUENCING_MEM {
   ch_versions = ch_versions.mix(BWA_MEM.out.versions)
 
   // Perform Picard MarkDuplicates, index CRAM file and run samtools stats, flagstat and idxstats
-  BAM_MARKDUPLICATES_PICARD(BWA_MEM.out.cram, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
-  ch_versions = ch_versions.mix(BAM_MARKDUPLICATES_PICARD.out.versions)
+  CRAM_MARKDUPLICATES_PICARD(BWA_MEM.out.cram, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
+  ch_versions = ch_versions.mix(CRAM_MARKDUPLICATES_PICARD.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
-  freebayes_input_bam = BAM_MARKDUPLICATES_PICARD.out.bam.map{ meta, bam -> [bam] }.collect().map{ it -> [[id: "all-samples"], it]}
-  freebayes_input_bai = BAM_MARKDUPLICATES_PICARD.out.bai.map{ meta, bai -> [bai] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_cram = CRAM_MARKDUPLICATES_PICARD.out.cram.map{ meta, cram -> [cram] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_crai = CRAM_MARKDUPLICATES_PICARD.out.crai.map{ meta, crai -> [crai] }.collect().map{ it -> [[id: "all-samples"], it]}
 
   // call freebayes paralle
-  FREEBAYES_PARALLEL(freebayes_input_bam, freebayes_input_bai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai
-)
-  ch_versions = ch_versions.mix(FREEBAYES_PARALLEL.out.versions)
+  CRAM_FREEBAYES_PARALLEL(
+    freebayes_input_cram,
+    freebayes_input_crai,
+    PREPARE_GENOME.out.genome_fasta,
+    PREPARE_GENOME.out.genome_fasta_fai
+  )
+  ch_versions = ch_versions.mix(CRAM_FREEBAYES_PARALLEL.out.versions)
 
   // create bcftools channel. Freebayes multi will emit a single value for vcf and indexes.
   // join it and then change meta key to avoid file name collisions (meta is used to
   // determine output files)
-  bcftools_ch = FREEBAYES_PARALLEL.out.vcf
-    .join(FREEBAYES_PARALLEL.out.tbi)
+  bcftools_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
+    .join(CRAM_FREEBAYES_PARALLEL.out.tbi)
     .map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
@@ -200,11 +196,11 @@ workflow RESEQUENCING_MEM {
   multiqc_input = FASTQC.out.html.map{it[1]}.ifEmpty([])
         .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
         .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
-        .concat(BAM_MARKDUPLICATES_PICARD.out.metrics.map{it[1]}.ifEmpty([]))
-        .concat(BAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
-        .concat(BAM_MARKDUPLICATES_PICARD.out.idxstats.map{it[1]}.ifEmpty([]))
-        .concat(BAM_MARKDUPLICATES_PICARD.out.flagstat.map{it[1]}.ifEmpty([]))
-        .concat(BAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
+        .concat(CRAM_MARKDUPLICATES_PICARD.out.metrics.map{it[1]}.ifEmpty([]))
+        .concat(CRAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
+        .concat(CRAM_MARKDUPLICATES_PICARD.out.idxstats.map{it[1]}.ifEmpty([]))
+        .concat(CRAM_MARKDUPLICATES_PICARD.out.flagstat.map{it[1]}.ifEmpty([]))
+        .concat(CRAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
         .collect()
         // .view()
 

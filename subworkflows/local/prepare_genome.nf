@@ -40,6 +40,9 @@ workflow PREPARE_GENOME {
       // unpack genome
       TABIX_BGZIP(genome_fasta)
 
+      // track version
+      ch_versions = ch_versions.mix(TABIX_BGZIP.out.versions)
+
       // overvrite fasta channel
       genome_fasta = TABIX_BGZIP.out.output
 
