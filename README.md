@@ -2,7 +2,13 @@
 
 <!-- markdownlint-disable MD014 -->
 
-[![Nextflow](https://img.shields.io/badge/nextflow_DSL2-%E2%89%A521.10.6-green)](https://www.nextflow.io/)
+[![GitHub Actions CI Status](https://github.com/cnr-ibba/nf-resequencing-mem/actions/workflows/ci.yml/badge.svg)](https://github.com/cnr-ibba/nf-resequencing-mem/actions/workflows/ci.yml)
+[![GitHub Actions Linting Status](https://github.com/cnr-ibba/nf-resequencing-mem/actions/workflows/linting.yml/badge.svg)](https://github.com/cnr-ibba/nf-resequencing-mem/actions/workflows/linting.yml)
+[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
+
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
+[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
+[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
 ## Overview
 
@@ -30,10 +36,6 @@ nextflow manual, and lets nextflow to download and execute the pipeline, for exa
 ```bash
 nextflow pull cnr-ibba/nf-resequencing-mem
 ```
-
-You will need also to define your credentials for private
-repositories. See [SCM configuration file](https://www.nextflow.io/docs/latest/sharing.html#scm-configuration-file)
-for more details.
 
 ## Customize configuration
 
@@ -98,10 +100,29 @@ You can have a list of available parameters by calling:
 nextflow run cnr-ibba/nf-resequencing-mem --help
 ```
 
-In addition, instead of passing parameters using CLI, you can create a custom configuration
-file and define each params in the _params scope_. Parameters have the same name
-used within the CLI, but without the `--` prefix. For example if you create a
-`custom.config` file like this
+In addition, instead of passing parameters using CLI, you can create a custom
+configuration file and define each params in the _params scope_. According
+nextflow _best practices_, parameters defined in _params scope_ should be
+placed in a _json_ file, for example `params.json`:
+
+```json
+{
+  "input": "<samplesheet.csv>",
+  "genome_fasta": "<genome_fasta>",
+  "outdir": "<results dir>",
+  "save_fasta_index": true
+}
+```
+
+Parameters have the same name used within the CLI, but without the `--` prefix.
+Nextflow can be called like this:
+
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
+  -params-file params.json
+```
+
+In alternative, you can create `custom.config` file like this:
 
 ```conf
 params {
@@ -119,6 +140,9 @@ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
   -config custom.config
 ```
 
+However, the custom configuration file should be used to specify all the parameters
+that can't be specified using the command line, for example custom arguments
+to be passed to a certain module using `ext.args` option.
 See Nextflow [Configuration](https://www.nextflow.io/docs/latest/config.html)
 documentation for more information.
 
@@ -297,17 +321,18 @@ process {
 
 The freebayes step can take a lot of time when calculating SNPs with a lot of data.
 This process is calculated using multiple processes by splitting the whole genome in
-regions (relying on BAM alignment sizes), and then by calling SNPs on each region
+regions (relying on CRAM alignment sizes), and then by calling SNPs on each region
 on a single process.
 In the last step, all results are collected and sorted to produce the final VCF file
-(see `subworkflows/cnr-ibba/freebayes_parallel.nf` subworkflow for more information).
-You can customize the region splitting, for example by using a smaller file size
-(def. is `100e6`) in the split process like this:
+(see `subworkflows/local/cram_freebayes_parallel` subworkflow for more information).
+You can customize the region splitting, for example by using a greater cumulative
+coverage (def. is `500_000_000`) or the minimum fragment length (def. is `10_000`)
+in the split process like this:
 
-```text
+```config
 process {
     withName: FREEBAYES_SPLITBAM {
-        ext.args = '--target-data-size 10e6'
+        ext.args = '--max_coverage 100_000_000 --min_length 20_000'
     }
 }
 ```
@@ -324,7 +349,7 @@ number. Nextflow can resubmit such process increasing the required resources at
 each step until `maxRetries` attempts are reached: you could increase the retry
 attempts like this:
 
-```text
+```config
 process {
     withName: FREEBAYES_CHUNK {
         maxRetries = 10

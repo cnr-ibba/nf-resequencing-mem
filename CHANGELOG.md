@@ -3,6 +3,40 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.0-dev
+
+- Replace `*.bam` file format with `*.cram` ([#9](https://github.com/cnr-ibba/nf-resequencing-mem/issues/9))
+- Adding _Read Groups_ during the alignment step ([#57](https://github.com/cnr-ibba/nf-resequencing-mem/issues/57))
+
+### `Added`
+
+- Add `samtools/depth` process
+- Add `freebayes_splitbam` custom module to split genome in regions relying on
+  _total sample coverage_
+- Add `cram_markduplicates_picard` custom local subworkflow by modifying
+  `bam_markduplicates_picard` to work with `*.cram` files by default
+- Add `cram_stats_samtools` custom local subworkflow by modifying
+  `bam_stats_samtools` to work with `*.cram` files by default
+
+### `Fixed`
+
+- `freebayes_parallel` subworkflow was moved to `cram_freebayes_parallel` local
+  subworkflow and was modified to deal with _total sample coverage_ and to work
+  with `*.cram` files
+- `picard/markduplicates` was patched to start from a _mulled_ container with
+  `samtools` and `picard`, in order to save markduplicates output as `.*.cram`
+  files
+- `bwa/mem` was patched to write alignment files as `*.cram` files
+- `samtools/depth` was patched to write results with headers, with 0 coverage position
+  and to compress output with gzip
+- `resequencing-mem` workflow was modified in order to use local subworkflow, for
+  example to deal with `samtools` and `markduplicates`
+
+### `Removed`
+
+- Remove `cnr-ibba/bamaddrg` module
+- Remove `cnr-ibba/freebayes/splitbam` module
+
 ## 0.5.2 - [2023-12-21]
 
 - Use MultiQC with all supported tools ([#53](https://github.com/cnr-ibba/nf-resequencing-mem/issues/53))
