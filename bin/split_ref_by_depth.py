@@ -36,11 +36,30 @@ def setup_logger(verbose_level):
 
 
 def append_or_extend(regions: List[List], region: List, min_length: int):
+    """
+    Appends or extends a region based on the minimum length.
+
+    Args:
+        regions (List[List]): A list of regions.
+        region (List): The region to append or extend.
+        min_length (int): The minimum length required to append a new region.
+
+    Returns:
+        List[List]: The updated list of regions.
+
+    Raises:
+        AssertionError: If the current chromosome is different from the last chromosome.
+
+    """
+    # simply add a region if is the first one
     if len(regions) == 0:
-        # simply append the new region
+        logging.debug("Simply adding the first region")
+
         regions.append(region)
         return regions
 
+    logging.debug(f"Last region: {regions[-1]}")
+    logging.debug(f"Received region: {region}")
 
     # get the previous region and the current position
     last_region = regions[-1]
@@ -51,16 +70,23 @@ def append_or_extend(regions: List[List], region: List, min_length: int):
     current_chrom = region[0]
     current_end = region[2]
 
-    assert current_chrom == last_chrom, (
-        "You can only append or extend the same chromosome")
+    # if I changed chromosome, don't woryy
+    if current_chrom != last_chrom:
+        logging.debug(
+            f"Chromosome changed ({current_chrom} <"
+            f"> {last_chrom}) adding a new region")
+
+        regions.append(region)
+        return regions
 
     last_length = last_end - last_start
 
     if last_length >= min_length:
-        # append the new region to the regions list
+        logging.debug("append the new region to the regions list")
+
         regions.append(region)
     else:
-        # extend the last region with the new end position.
+        logging.debug("extend the last region with the new end position")
         last_region[2] = current_end
 
     # there are all memory references. However declare a value to return
@@ -86,11 +112,15 @@ def split_ref_by_coverage(depthfile: str, max_coverage: int, min_length: int):
 
         logging.debug(f"Starting from chrom: '{start_chrom}'")
 
-        for line in reader:
+        for i, line in enumerate(reader):
             chrom, pos = line[0], int(line[1])
 
             if chrom != start_chrom:
-                logging.debug(f"Got a new chromosome '{chrom}'")
+                logging.debug(f"{i}: Got a new chromosome '{chrom}'")
+                logging.debug(
+                    f"{i}: Test for a new region with: "
+                    f"{[start_chrom, start_pos, old_pos]}")
+
                 # add and open a new region
                 regions = append_or_extend(
                     regions, [start_chrom, start_pos, old_pos], min_length)
@@ -108,6 +138,10 @@ def split_ref_by_coverage(depthfile: str, max_coverage: int, min_length: int):
             total_sum += coverage_at_position
 
             if total_sum > max_coverage and length >= min_length:
+                logging.debug(
+                    f"{i}: Test for a new region with: "
+                    f"{[start_chrom, start_pos, old_pos]}")
+
                 # add and open a new region
                 regions = append_or_extend(
                     regions, [start_chrom, start_pos, old_pos], min_length)
