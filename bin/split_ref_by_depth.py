@@ -35,7 +35,42 @@ def setup_logger(verbose_level):
                         DEFAULT_LOGGING_LEVEL-(verbose_level*10))))))
 
 
-def append_or_extend(regions: List[List], region: List, min_length: int):
+def __append(regions: List[List], region: List, overlap_size: int):
+    """Resize the ending position of the last region and the starting position
+    of the current region in order to create an overlap"""
+
+    last_region = regions[-1]
+
+    logging.debug(f"extending last region {last_region}")
+
+    # this is the ending interval. If i extend both ending, I will get a
+    # double overlap region
+    last_region[2] += int(overlap_size / 2)
+
+    logging.debug(f"last region is now {last_region}")
+
+    # can this be greater than last region end?
+    if last_region[2] > region[2]:
+        last_region[2] = region[2]
+
+    logging.debug(f"extending current region {region}")
+
+    # this is the start position of the new interval
+    region[1] -= int(overlap_size / 2)
+
+    # check overlap sizes
+    if region[1] < 1:
+        region[1] = 1
+
+    logging.debug(f"current region is now {region}")
+
+    # this is a normal list extension
+    regions.append(region)
+    return regions
+
+
+def append_or_extend(
+        regions: List[List], region: List, min_length: int, overlap_size: int):
     """
     Appends or extends a region based on the minimum length.
 
@@ -43,6 +78,7 @@ def append_or_extend(regions: List[List], region: List, min_length: int):
         regions (List[List]): A list of regions.
         region (List): The region to append or extend.
         min_length (int): The minimum length required to append a new region.
+        overlap_size (int): overlap size between two regions
 
     Returns:
         List[List]: The updated list of regions.
@@ -50,7 +86,6 @@ def append_or_extend(regions: List[List], region: List, min_length: int):
     # simply add a region if is the first one
     if len(regions) == 0:
         logging.debug("Simply adding the current region")
-
         regions.append(region)
         return regions
 
@@ -68,7 +103,7 @@ def append_or_extend(regions: List[List], region: List, min_length: int):
 
     if current_length >= min_length:
         logging.debug("append the new region to the regions list")
-        regions.append(region)
+        regions = __append(regions, region, overlap_size)
     else:
         logging.debug("extend the last region with the new end position")
         last_region[2] = current_end
@@ -78,7 +113,8 @@ def append_or_extend(regions: List[List], region: List, min_length: int):
     return regions
 
 
-def split_ref_by_coverage(depthfile: str, max_coverage: int, min_length: int):
+def split_ref_by_coverage(
+        depthfile: str, max_coverage: int, min_length: int, overlap_size: int):
     with gzip.open(depthfile, "rt") as handle:
         reader = csv.reader(handle, delimiter="\t", lineterminator="\n")
         header = next(reader)
@@ -110,7 +146,11 @@ def split_ref_by_coverage(depthfile: str, max_coverage: int, min_length: int):
 
                 # add and open a new region
                 regions = append_or_extend(
-                    regions, [start_chrom, start_pos, old_pos], min_length)
+                    regions,
+                    [start_chrom, start_pos, old_pos],
+                    min_length,
+                    overlap_size
+                )
 
                 # reset variables
                 start_chrom = chrom
@@ -133,7 +173,11 @@ def split_ref_by_coverage(depthfile: str, max_coverage: int, min_length: int):
 
                 # add and open a new region
                 regions = append_or_extend(
-                    regions, [start_chrom, start_pos, old_pos], min_length)
+                    regions,
+                    [start_chrom, start_pos, old_pos],
+                    min_length,
+                    overlap_size
+                )
 
                 # reset variables
                 start_chrom = chrom
@@ -153,7 +197,11 @@ def split_ref_by_coverage(depthfile: str, max_coverage: int, min_length: int):
 
             # add and open a new region
             regions = append_or_extend(
-                regions, [start_chrom, start_pos, old_pos], min_length)
+                regions,
+                [start_chrom, start_pos, old_pos],
+                min_length,
+                overlap_size
+            )
 
     return regions
 
@@ -170,11 +218,18 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--min_length", default=10_000, type=int,
-        help="minimum fragment length"
+        help="minimum fragment length in bp"
     )
     parser.add_argument(
         "--max_coverage", default=500_000_000, type=int,
-        help="max cumulative coverage per region"
+        help=(
+            "max cumulative coverage per region "
+            "(the sum of all coverages for each positions)"
+        )
+    )
+    parser.add_argument(
+        "--overlap_size", default=1_000, type=int,
+        help="Overlapping size between two adjacent regions in bp"
     )
     parser.add_argument(
         '-v', '--verbose', action='count', default=0,
@@ -192,7 +247,7 @@ if __name__ == "__main__":
 
     # split reference by coverage depth
     regions = split_ref_by_coverage(
-        args.depth_file, args.max_coverage, args.min_length)
+        args.depth_file, args.max_coverage, args.min_length, args.overlap_size)
 
     logging.info(f"Number of regions: {len(regions)}")
 
