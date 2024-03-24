@@ -34,17 +34,17 @@ process PICARD_MARKDUPLICATES {
     if ("$cram" == "${prefix}.cram") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
 
     """
-    mkfifo picard_output
+    mkfifo picard_output.bam
 
     picard \\
         -Xmx${avail_mem}M \\
         MarkDuplicates \\
         $args \\
         --INPUT $cram \\
-        --OUTPUT picard_output \\
+        --OUTPUT picard_output.bam \\
         --REFERENCE_SEQUENCE $fasta \\
         --METRICS_FILE ${prefix}.MarkDuplicates.metrics.txt &
-    samtools view $args2 --threads $task.cpus -O cram -o ${prefix}.cram picard_output
+    samtools view $args2 --threads $task.cpus -O cram -o ${prefix}.cram picard_output.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
