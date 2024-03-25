@@ -89,14 +89,21 @@ def append_or_extend(
         regions.append(region)
         return regions
 
-    logging.debug(f"Last region: {regions[-1]}")
-    logging.debug(f"Received region: {region}")
-
     # get the previous region and the current position
     last_region = regions[-1]
+    last_chrom = last_region[0]
 
+    current_chrom = region[0]
     current_start = region[1]
     current_end = region[2]
+
+    logging.debug(f"Last region: {last_region}")
+    logging.debug(f"Received region: {region}")
+
+    if current_chrom != last_chrom:
+        logging.debug("New chromosome: adding the current region")
+        regions.append(region)
+        return regions
 
     # determine the current size of the last region
     current_length = current_end - current_start
