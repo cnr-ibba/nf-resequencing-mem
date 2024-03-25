@@ -35,7 +35,7 @@ def setup_logger(verbose_level):
                         DEFAULT_LOGGING_LEVEL-(verbose_level*10))))))
 
 
-def __append(regions: List[List], region: List, overlap_size: int):
+def extend_region(regions: List[List], region: List, overlap_size: int):
     """Resize the ending position of the last region and the starting position
     of the current region in order to create an overlap"""
 
@@ -69,7 +69,7 @@ def __append(regions: List[List], region: List, overlap_size: int):
     return regions
 
 
-def append_or_extend(
+def append_or_extend_region(
         regions: List[List], region: List, min_length: int, overlap_size: int):
     """
     Appends or extends a region based on the minimum length.
@@ -110,7 +110,7 @@ def append_or_extend(
 
     if current_length >= min_length:
         logging.debug("append the new region to the regions list")
-        regions = __append(regions, region, overlap_size)
+        regions = extend_region(regions, region, overlap_size)
     else:
         logging.debug("extend the last region with the new end position")
         last_region[2] = current_end
@@ -134,7 +134,7 @@ def split_ref_by_coverage(
         start_chrom = line[0]
         start_pos = int(line[1])
         old_pos = start_pos
-        total_sum = 0
+        cumulative_coverage = 0
 
         regions = []
 
@@ -148,11 +148,12 @@ def split_ref_by_coverage(
                 logging.debug(
                     f"{i}: Test for a new region with: "
                     f"{[start_chrom, start_pos, old_pos]}"
-                    f" ({old_pos-start_pos} bp)"
+                    f" ({old_pos-start_pos+1} bp; "
+                    f"{cumulative_coverage:.2e} cumulative coverage)"
                 )
 
                 # add and open a new region
-                regions = append_or_extend(
+                regions = append_or_extend_region(
                     regions,
                     [start_chrom, start_pos, old_pos],
                     min_length,
@@ -162,24 +163,26 @@ def split_ref_by_coverage(
                 # reset variables
                 start_chrom = chrom
                 start_pos = pos
-                total_sum = 0
+                cumulative_coverage = 0
 
             # determine region size
             length = pos - start_pos
 
             # determine cumulative coverage in this region
-            coverage_at_position = sum(int(sample_cov) for sample_cov in line[2:])
-            total_sum += coverage_at_position
+            coverage_at_position = sum(
+                int(sample_cov) for sample_cov in line[2:])
+            cumulative_coverage += coverage_at_position
 
-            if total_sum > max_coverage and length >= min_length:
+            if cumulative_coverage > max_coverage and length >= min_length:
                 logging.debug(
                     f"{i}: Test for a new region with: "
                     f"{[start_chrom, start_pos, old_pos]}"
-                    f" ({old_pos-start_pos} bp)"
+                    f" ({old_pos-start_pos+1} bp; "
+                    f"{cumulative_coverage:.2e} cumulative coverage)"
                 )
 
                 # add and open a new region
-                regions = append_or_extend(
+                regions = append_or_extend_region(
                     regions,
                     [start_chrom, start_pos, old_pos],
                     min_length,
@@ -189,21 +192,22 @@ def split_ref_by_coverage(
                 # reset variables
                 start_chrom = chrom
                 start_pos = pos
-                total_sum = 0
+                cumulative_coverage = 0
 
             # track last position (useful when chromosome changes)
             old_pos = pos
 
         # check for an open region
-        if total_sum > 0:
+        if cumulative_coverage > 0:
             logging.debug(
                 f"{i}: Test for last region with: "
                 f"{[start_chrom, start_pos, old_pos]}"
-                f" ({old_pos-start_pos} bp)"
+                f" ({old_pos-start_pos+1} bp; "
+                f"{cumulative_coverage:.2e} cumulative coverage)"
             )
 
             # add and open a new region
-            regions = append_or_extend(
+            regions = append_or_extend_region(
                 regions,
                 [start_chrom, start_pos, old_pos],
                 min_length,
@@ -224,7 +228,7 @@ if __name__ == "__main__":
         help="The output of samtools depth file for all samples"
     )
     parser.add_argument(
-        "--min_length", default=10_000, type=int,
+        "--min_length", default=100_000, type=int,
         help="minimum fragment length in bp"
     )
     parser.add_argument(
