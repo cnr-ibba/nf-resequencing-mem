@@ -21,9 +21,10 @@ workflow PREPARE_GENOME {
     // this flag force index calculation
     force_index = false
 
-    // need to add meta information to fasta and fai
+    // need to add meta information to fasta, fai and bwa_index
     genome_fasta = genome_fasta.map{ it -> [[id:it[0].baseName], it] }
     genome_fasta_fai = genome_fasta_fai.map{ it -> [[id:it[0].baseName], it] }
+    genome_bwa_index = genome_bwa_index.map{ it -> [[id:it[0].baseName], it] }
 
     // check if reference genome is compressed or not
     if (params.genome_fasta.endsWith('.gz')) {
