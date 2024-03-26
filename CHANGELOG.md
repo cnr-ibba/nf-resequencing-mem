@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.6.0-dev
 
 - Replace `*.bam` file format with `*.cram` ([#9](https://github.com/cnr-ibba/nf-resequencing-mem/issues/9))
-- Adding _Read Groups_ during the alignment step ([#57](https://github.com/cnr-ibba/nf-resequencing-mem/issues/57))
+- Add _Read Groups_ during the alignment step ([#57](https://github.com/cnr-ibba/nf-resequencing-mem/issues/57))
+- Annotate VCF file with SnpEff ([#59](https://github.com/cnr-ibba/nf-resequencing-mem/issues/59))
 
 ### `Added`
 
@@ -17,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `bam_markduplicates_picard` to work with `*.cram` files by default
 - Add `cram_stats_samtools` custom local subworkflow by modifying
   `bam_stats_samtools` to work with `*.cram` files by default
+- Add `freebayes_splitcram` local module to splice alignments regions relying
+  on `samtools/depth` step
+- Add `snpeff/download` module
+- Add `snpeff/snpeff` module
+- Add `snpeff_annotate` local subworkflow
 
 ### `Fixed`
 
@@ -31,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and to compress output with gzip
 - `resequencing-mem` workflow was modified in order to use local subworkflow, for
   example to deal with `samtools` and `markduplicates`
+- fixed a issue when providing the `--genome_bwa_index` parameter
+- `snpeff_download` was patched in order to remove the `version` parameter
 
 ### `Removed`
 

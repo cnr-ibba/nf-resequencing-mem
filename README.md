@@ -93,6 +93,8 @@ used to save _intermediate results_ or to skip a particular step:
 - `--remove_fastq_duplicates`: (bool, def. false) remove FASTQ duplicates by IDs
 - `--save_unique_fastq`: (bool, def. false) write de-duplicated FASTQ files (require
   `--remove_fastq_duplicates` option)
+- `--snpeff_database`: annotate the VCF file with SnpEff by providing a pre-built
+  database that can be found using the `java -jar snpEff.jar databases` command
 
 You can have a list of available parameters by calling:
 
