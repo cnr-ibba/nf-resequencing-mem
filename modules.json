@@ -109,6 +109,16 @@
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
             "installed_by": ["modules"]
           },
+          "snpeff/download": {
+            "branch": "master",
+            "git_sha": "214d575774c172062924ad3564b4f66655600730",
+            "installed_by": ["modules"]
+          },
+          "snpeff/snpeff": {
+            "branch": "master",
+            "git_sha": "2f3db6f45147ebbb56b371536e31bdf622b5bfee",
+            "installed_by": ["modules"]
+          },
           "tabix/bgzip": {
             "branch": "master",
             "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
