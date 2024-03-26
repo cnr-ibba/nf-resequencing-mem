@@ -197,7 +197,8 @@ workflow RESEQUENCING_MEM {
   if (params.snpeff_database) {
     // annotate VCF with SnpEff
     SNPEFF_ANNOTATE(
-      params.snpeff_database
+      params.snpeff_database,
+      BCFTOOLS_NORM.out.vcf,
     )
     ch_versions = ch_versions.mix(SNPEFF_ANNOTATE.out.versions)
   }
@@ -211,6 +212,7 @@ workflow RESEQUENCING_MEM {
         .concat(CRAM_MARKDUPLICATES_PICARD.out.idxstats.map{it[1]}.ifEmpty([]))
         .concat(CRAM_MARKDUPLICATES_PICARD.out.flagstat.map{it[1]}.ifEmpty([]))
         .concat(CRAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
+        .concat(SNPEFF_ANNOTATE.out.report.map{it[1]}.ifEmpty([]))
         .collect()
         // .view()
 
