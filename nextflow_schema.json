@@ -43,7 +43,8 @@
           "type": "string",
           "format": "directory-path",
           "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
-          "fa_icon": "fas fa-folder-open"
+          "fa_icon": "fas fa-folder-open",
+          "default": "./results"
         },
         "email": {
           "type": "string",
@@ -56,6 +57,12 @@
           "type": "string",
           "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
           "fa_icon": "fas fa-file-signature"
+        },
+        "snpeff_database": {
+          "type": "string",
+          "description": "SnpEff database name (ex. GRCh38.76, Saccharomyces_cerevisiae)",
+          "fa_icon": "fas fa-database",
+          "help_text": "SnpEff database name as returned by 'java -jar snpEff.jar databases' command"
         }
       }
     },
@@ -153,7 +160,7 @@
         "max_cpus": {
           "type": "integer",
           "description": "Maximum number of CPUs that can be requested for any single job.",
-          "default": 16,
+          "default": 32,
           "fa_icon": "fas fa-microchip",
           "hidden": true,
           "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
@@ -161,7 +168,7 @@
         "max_memory": {
           "type": "string",
           "description": "Maximum amount of memory that can be requested for any single job.",
-          "default": "128.GB",
+          "default": "64.GB",
           "fa_icon": "fas fa-memory",
           "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
           "hidden": true,
@@ -246,13 +253,15 @@
           "format": "file-path",
           "description": "Custom config file to supply to MultiQC.",
           "fa_icon": "fas fa-cog",
-          "hidden": true
+          "hidden": true,
+          "default": "assets/multiqc_config.yml"
         },
         "multiqc_logo": {
           "type": "string",
           "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
           "fa_icon": "fas fa-image",
-          "hidden": true
+          "hidden": true,
+          "default": "assets/cnr-ibba.png"
         },
         "multiqc_methods_description": {
           "type": "string",

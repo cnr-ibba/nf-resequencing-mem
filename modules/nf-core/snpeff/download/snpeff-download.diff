@@ -1,0 +1,32 @@
+Changes in module 'nf-core/snpeff/download'
+--- modules/nf-core/snpeff/download/main.nf
++++ modules/nf-core/snpeff/download/main.nf
+@@ -8,7 +8,7 @@
+         'biocontainers/snpeff:5.1--hdfd78af_2' }"
+ 
+     input:
+-    tuple val(meta), val(genome), val(cache_version)
++    tuple val(meta), val(genome)
+ 
+     output:
+     tuple val(meta), path('snpeff_cache'), emit: cache
+@@ -28,7 +28,7 @@
+     """
+     snpEff \\
+         -Xmx${avail_mem}M \\
+-        download ${genome}.${cache_version} \\
++        download ${genome} \\
+         -dataDir \${PWD}/snpeff_cache \\
+         ${args}
+ 
+@@ -41,7 +41,7 @@
+ 
+     stub:
+     """
+-    mkdir ${genome}.${cache_version}
++    mkdir ${genome}
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+
+************************************************************
