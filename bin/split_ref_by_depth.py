@@ -35,7 +35,7 @@ def setup_logger(verbose_level):
                         DEFAULT_LOGGING_LEVEL-(verbose_level*10))))))
 
 
-def extend_region(regions: List[List], region: List, overlap_size: int):
+def overlapping_region(regions: List[List], region: List, overlap_size: int):
     """Resize the ending position of the last region and the starting position
     of the current region in order to create an overlap"""
 
@@ -92,6 +92,8 @@ def append_or_extend_region(
     # get the previous region and the current position
     last_region = regions[-1]
     last_chrom = last_region[0]
+    last_start = last_region[1]
+    last_end = last_region[2]
 
     current_chrom = region[0]
     current_start = region[1]
@@ -106,11 +108,14 @@ def append_or_extend_region(
         return regions
 
     # determine the current size of the last region
-    current_length = current_end - current_start
+    last_length = last_end - last_start +1
+    current_length = current_end - current_start +1
 
-    if current_length >= min_length:
-        logging.debug("append the new region to the regions list")
-        regions = extend_region(regions, region, overlap_size)
+    if last_length >= min_length:
+        logging.debug(f"Last region is {last_length} bp")
+        logging.debug(f"Current region is {current_length} bp")
+        logging.debug(f"Append the new region to the regions list")
+        regions = overlapping_region(regions, region, overlap_size)
     else:
         logging.debug("extend the last region with the new end position")
         last_region[2] = current_end
