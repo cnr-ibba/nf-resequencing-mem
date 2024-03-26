@@ -193,6 +193,10 @@ workflow RESEQUENCING_MEM {
   )
   ch_versions = ch_versions.mix(BCFTOOLS_STATS.out.versions)
 
+  // for simplicity, I will collect SnpEff report in a new channel, in order
+  // to use it as an empty chennel in MultiQC if SnpEff is not used
+  snpeff_report = Channel.empty()
+
   // check for SnpEff annotation
   if (params.snpeff_database) {
     // annotate VCF with SnpEff
@@ -200,7 +204,12 @@ workflow RESEQUENCING_MEM {
       params.snpeff_database,
       BCFTOOLS_NORM.out.vcf,
     )
+
+    // track version
     ch_versions = ch_versions.mix(SNPEFF_ANNOTATE.out.versions)
+
+    // update snpeff_report channel
+    snpeff_report = SNPEFF_ANNOTATE.out.report
   }
 
   // get only the data I need for a MultiQC step
@@ -212,7 +221,7 @@ workflow RESEQUENCING_MEM {
         .concat(CRAM_MARKDUPLICATES_PICARD.out.idxstats.map{it[1]}.ifEmpty([]))
         .concat(CRAM_MARKDUPLICATES_PICARD.out.flagstat.map{it[1]}.ifEmpty([]))
         .concat(CRAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
-        .concat(SNPEFF_ANNOTATE.out.report.map{it[1]}.ifEmpty([]))
+        .concat(snpeff_report.map{it[1]}.ifEmpty([]))
         .collect()
         // .view()
 
