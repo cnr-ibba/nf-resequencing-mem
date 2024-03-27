@@ -10,8 +10,6 @@
 
 ## Pipeline tools
 
-- [bamaddrg](https://github.com/ekg/bamaddrg)
-
 - [bcftools](https://samtools.github.io/bcftools/)
 
 - [bwa](http://bio-bwa.sourceforge.net/)
