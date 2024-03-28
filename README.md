@@ -93,6 +93,17 @@ used to save _intermediate results_ or to skip a particular step:
 - `--remove_fastq_duplicates`: (bool, def. false) remove FASTQ duplicates by IDs
 - `--save_unique_fastq`: (bool, def. false) write de-duplicated FASTQ files (require
   `--remove_fastq_duplicates` option)
+- `--snpeff_database`: annotate the VCF file with SnpEff by providing a pre-built
+  database that can be found using the `java -jar snpEff.jar databases` command.
+  If the database is known to SnpEff will be downloaded and managed by the pipeline
+  itself
+- `--snpeff_cachedir`: SnpEff cache directory. It must contain a subdirectory with
+  the same name of `--snpeff_database`, with a valid SnpEff database as a content.
+  Is required when annotating with SnpEff with a custom database
+- `--snpeff_config`: SnpEff custom config file. Is required **only** with a custom
+  database. Needs to have the same custom database defined by `--snpeff_database` option
+  (see: [Building databases](https://pcingola.github.io/SnpEff/snpeff/build_db/)
+  of SnpEff documentation)
 
 You can have a list of available parameters by calling:
 
