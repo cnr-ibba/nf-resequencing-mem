@@ -53,8 +53,11 @@ include { SNPEFF_ANNOTATE                   } from '../subworkflows/local/snpeff
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
 // of the workflow application.
 workflow RESEQUENCING_MEM {
-  // collect software version
-  ch_versions = Channel.empty()
+    take:
+    ch_samplesheet // channel: samplesheet read in from --input
+
+    main:
+
     // collect software version
     ch_versions = Channel.empty()
     // multiqc stuff
@@ -256,4 +259,7 @@ workflow RESEQUENCING_MEM {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
+    emit:
+    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    versions       = ch_versions                 // channel: [ path(versions.yml) ]
 }

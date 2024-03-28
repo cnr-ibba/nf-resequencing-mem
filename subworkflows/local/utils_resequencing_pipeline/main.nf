@@ -151,7 +151,10 @@ workflow PIPELINE_COMPLETION {
 // Check and validate pipeline parameters
 //
 def validateInputParameters() {
-    genomeExistsError()
+    // genome params not yet supported
+    // genomeExistsError()
+
+    // TODO: validate my custom parameters here
 }
 
 //
