@@ -1,7 +1,7 @@
 Changes in module 'nf-core/snpeff/snpeff'
 --- modules/nf-core/snpeff/snpeff/main.nf
 +++ modules/nf-core/snpeff/snpeff/main.nf
-@@ -4,8 +4,8 @@
+@@ -4,26 +4,31 @@
  
      conda "${moduleDir}/environment.yml"
      container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -12,8 +12,9 @@ Changes in module 'nf-core/snpeff/snpeff'
  
      input:
      tuple val(meta), path(vcf)
-@@ -13,17 +13,21 @@
+     val   db
      tuple val(meta2), path(cache)
++    tuple val(meta2), path(config)
  
      output:
 -    tuple val(meta), path("*.ann.vcf"),   emit: vcf
@@ -39,9 +40,19 @@ Changes in module 'nf-core/snpeff/snpeff'
      def avail_mem = 6144
      if (!task.memory) {
          log.info '[snpEff] Available memory not known - defaulting to 6GB. Specify process memory requirements to change this.'
-@@ -40,7 +44,9 @@
+@@ -32,6 +37,7 @@
+     }
+     def prefix = task.ext.prefix ?: "${meta.id}"
+     def cache_command = cache ? "-dataDir \${PWD}/${cache}" : ""
++    def config_command = config.name != 'NO_FILE' ? "-c ${config}" : ""
+     """
+     snpEff \\
+         -Xmx${avail_mem}M \\
+@@ -39,8 +45,11 @@
+         $args \\
          -csvStats ${prefix}.csv \\
          $cache_command \\
++        $config_command \\
          $vcf \\
 -        > ${prefix}.ann.vcf
 +        | bgzip -c $args2 -@${task.cpus} > ${prefix}.ann.vcf.gz
@@ -50,7 +61,7 @@ Changes in module 'nf-core/snpeff/snpeff'
  
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
-@@ -51,11 +57,16 @@
+@@ -51,11 +60,16 @@
      stub:
      def prefix = task.ext.prefix ?: "${meta.id}"
      """

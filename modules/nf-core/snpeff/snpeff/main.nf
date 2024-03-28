@@ -37,7 +37,7 @@ process SNPEFF_SNPEFF {
     }
     def prefix = task.ext.prefix ?: "${meta.id}"
     def cache_command = cache ? "-dataDir \${PWD}/${cache}" : ""
-    def config_command = config ? "-c ${config}" : ""
+    def config_command = config.name != 'NO_FILE' ? "-c ${config}" : ""
     """
     snpEff \\
         -Xmx${avail_mem}M \\
