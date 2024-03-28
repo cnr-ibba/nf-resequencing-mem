@@ -13,6 +13,7 @@
         "downsampling",
         "fasta",
         "fastq",
+        "flagstat",
         "freebayes",
         "ibba",
         "markduplicate",

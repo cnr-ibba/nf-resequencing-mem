@@ -213,25 +213,39 @@ workflow RESEQUENCING_MEM {
   }
 
   // get only the data I need for a MultiQC step
-  multiqc_input = FASTQC.out.html.map{it[1]}.ifEmpty([])
-        .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
-        .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
-        .concat(CRAM_MARKDUPLICATES_PICARD.out.metrics.map{it[1]}.ifEmpty([]))
-        .concat(CRAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
-        .concat(CRAM_MARKDUPLICATES_PICARD.out.idxstats.map{it[1]}.ifEmpty([]))
-        .concat(CRAM_MARKDUPLICATES_PICARD.out.flagstat.map{it[1]}.ifEmpty([]))
-        .concat(CRAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
-        .concat(snpeff_report.map{it[1]}.ifEmpty([]))
-        .collect()
-        // .view()
+  ch_multiqc_files = FASTQC.out.html.map{it[1]}.ifEmpty([])
+    .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
+    .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.metrics.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.idxstats.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.flagstat.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.coverage.map{it[1]}.ifEmpty([]))
+    .concat(BCFTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
+    .concat(snpeff_report.map{it[1]}.ifEmpty([]))
+    // .view()
 
   // prepare multiqc_config file
-  multiqc_config = Channel.fromPath(params.multiqc_config)
-  multiqc_logo = Channel.fromPath(params.multiqc_logo)
+  ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+  ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
+  ch_multiqc_logo                       = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.empty()
+
+  // TODO: requires nf-validation plugin and other stuff
+  // summary_params                        = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+  // ch_workflow_summary                   = Channel.value(paramsSummaryMultiqc(summary_params))
+  // ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+  // ch_methods_description                = Channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
+  // ch_multiqc_files                      = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+  // ch_multiqc_files                      = ch_multiqc_files.mix(ch_collated_versions)
+  // ch_multiqc_files                      = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: false))
 
   // calling MultiQC
-  MULTIQC(multiqc_input, multiqc_config, [], multiqc_logo)
-  ch_versions = ch_versions.mix(MULTIQC.out.versions)
+  MULTIQC (
+    ch_multiqc_files.collect(),
+    ch_multiqc_config.toList(),
+    ch_multiqc_custom_config.toList(),
+    ch_multiqc_logo.toList()
+  )
 
   // return software version
   CUSTOM_DUMPSOFTWAREVERSIONS (
