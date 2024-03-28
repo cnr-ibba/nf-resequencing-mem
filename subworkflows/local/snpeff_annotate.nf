@@ -13,22 +13,36 @@ workflow SNPEFF_ANNOTATE {
 
   main:
     ch_versions = Channel.empty()
+    cache = Channel.empty()
 
-    // create a input channel for SnpEff download
-    snpeff_genome = [[id: genome], genome]
-    SNPEFF_DOWNLOAD(snpeff_genome)
+    if (! params.snpeff_cachedir || ! params.snpeff_config) {
+      // create a input channel for SnpEff download
+      snpeff_genome = [[id: genome], genome]
+      SNPEFF_DOWNLOAD(snpeff_genome)
 
-    // track version
-    ch_versions = ch_versions.mix(SNPEFF_DOWNLOAD.out.versions)
+      // export snpeff cache
+      cache = SNPEFF_DOWNLOAD.out.cache
 
-    // annotate the VCF file
-    SNPEFF_SNPEFF(vcf, genome, SNPEFF_DOWNLOAD.out.cache)
+      // track version
+      ch_versions = ch_versions.mix(SNPEFF_DOWNLOAD.out.versions)
 
-    // track version
-    ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions)
+      // annotate the VCF file
+      SNPEFF_SNPEFF(vcf, genome, SNPEFF_DOWNLOAD.out.cache, [])
+
+      // track version
+      ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions)
+    } else {
+      // use the provided cache and config
+      config = Channel.fromPath(params.snpeff_config, checkIfExists: true).
+        map { it -> [[id:genome], it] }
+      cache = Channel.fromPath(params.snpeff_cachedir, checkIfExists: true).
+        map { it -> [[id:genome], it] }
+
+      SNPEFF_SNPEFF(vcf, genome, cache, config)
+    }
 
   emit:
-    cache         = SNPEFF_DOWNLOAD.out.cache
+    cache         = cache
     vcf           = SNPEFF_SNPEFF.out.vcf
     report        = SNPEFF_SNPEFF.out.report
     summary_html  = SNPEFF_SNPEFF.out.summary_html

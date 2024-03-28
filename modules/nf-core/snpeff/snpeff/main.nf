@@ -11,6 +11,7 @@ process SNPEFF_SNPEFF {
     tuple val(meta), path(vcf)
     val   db
     tuple val(meta2), path(cache)
+    tuple val(meta2), path(config)
 
     output:
     tuple val(meta), path("*.ann.vcf.gz"),      emit: vcf
@@ -36,6 +37,7 @@ process SNPEFF_SNPEFF {
     }
     def prefix = task.ext.prefix ?: "${meta.id}"
     def cache_command = cache ? "-dataDir \${PWD}/${cache}" : ""
+    def config_command = config ? "-c ${config}" : ""
     """
     snpEff \\
         -Xmx${avail_mem}M \\
@@ -43,6 +45,7 @@ process SNPEFF_SNPEFF {
         $args \\
         -csvStats ${prefix}.csv \\
         $cache_command \\
+        $config_command \\
         $vcf \\
         | bgzip -c $args2 -@${task.cpus} > ${prefix}.ann.vcf.gz
 
