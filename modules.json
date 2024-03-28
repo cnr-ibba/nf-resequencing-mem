@@ -43,9 +43,8 @@
           },
           "bwa/mem": {
             "branch": "master",
-            "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
-            "installed_by": ["modules"],
-            "patch": "modules/nf-core/bwa/mem/bwa-mem.diff"
+            "git_sha": "b97197968ac12dde2463fa54541f6350c46f2035",
+            "installed_by": ["modules"]
           },
           "cat/fastq": {
             "branch": "master",
