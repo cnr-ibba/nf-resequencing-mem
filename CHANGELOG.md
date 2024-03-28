@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   example to deal with `samtools` and `markduplicates`
 - fixed a issue when providing the `--genome_bwa_index` parameter
 - `snpeff_download` was patched in order to remove the `version` parameter
+- `snpeff/snpeff` module was patched to support custom database annotations and
+  to compress VCF output using a mulled image with `tabix`
 
 ### `Removed`
 
