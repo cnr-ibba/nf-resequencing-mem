@@ -1,0 +1,36 @@
+Changes in module 'nf-core/samtools/depth'
+--- modules/nf-core/samtools/depth/main.nf
++++ modules/nf-core/samtools/depth/main.nf
+@@ -12,8 +12,9 @@
+     tuple val(meta2), path(intervals)
+ 
+     output:
+-    tuple val(meta1), path("*.tsv"), emit: tsv
+-    path "versions.yml"           , emit: versions
++    tuple val(meta1), path("*.tsv.gz"),     emit: depth
++    tuple val(meta1), path("*.list.txt"),   emit: bam_list
++    path "versions.yml",                    emit: versions
+ 
+     when:
+     task.ext.when == null || task.ext.when
+@@ -23,13 +24,16 @@
+     def prefix = task.ext.prefix ?: "${meta1.id}"
+     def positions = intervals ? "-b ${intervals}" : ""
+     """
++    ls $bam | xargs -n1 > ${prefix}.list.txt
++
+     samtools \\
+         depth \\
+         --threads ${task.cpus-1} \\
+         $args \\
+         $positions \\
+-        -o ${prefix}.tsv \\
+-        $bam
++        -H -a \\
++        -f ${prefix}.list.txt \\
++        | gzip -c > ${prefix}.depth.tsv.gz
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+
+************************************************************
