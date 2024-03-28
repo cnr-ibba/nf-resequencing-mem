@@ -64,13 +64,13 @@ workflow RESEQUENCING_MEM {
   )
   .reads
   .map {
-      meta, fastq ->
-        def meta_clone = meta.clone()
-        tmp = meta_clone.id.split('_')
-        if (tmp.size() > 1) {
-          meta_clone.id = tmp[0..-2].join('_')
-        }
-        [ meta_clone, fastq ]
+    meta, fastq ->
+      def meta_clone = meta.clone()
+      tmp = meta_clone.id.split('_')
+      if (tmp.size() > 1) {
+        meta_clone.id = tmp[0..-2].join('_')
+      }
+      [ meta_clone, fastq ]
     }
     .groupTuple(by: [0])
     .branch {
