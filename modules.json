@@ -118,7 +118,8 @@
           "snpeff/snpeff": {
             "branch": "master",
             "git_sha": "2f3db6f45147ebbb56b371536e31bdf622b5bfee",
-            "installed_by": ["modules"]
+            "installed_by": ["modules"],
+            "patch": "modules/nf-core/snpeff/snpeff/snpeff-snpeff.diff"
           },
           "tabix/bgzip": {
             "branch": "master",

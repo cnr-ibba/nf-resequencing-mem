@@ -4,8 +4,8 @@ process SNPEFF_SNPEFF {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/snpeff:5.1--hdfd78af_2' :
-        'biocontainers/snpeff:5.1--hdfd78af_2' }"
+        'https://depot.galaxyproject.org/singularity/mulled-v2-2fe536b56916bd1d61a6a1889eb2987d9ea0cd2f:c51b2e46bf63786b2d9a7a7d23680791163ab39a-0' :
+        'biocontainers/mulled-v2-2fe536b56916bd1d61a6a1889eb2987d9ea0cd2f:c51b2e46bf63786b2d9a7a7d23680791163ab39a-0' }"
 
     input:
     tuple val(meta), path(vcf)
@@ -13,17 +13,21 @@ process SNPEFF_SNPEFF {
     tuple val(meta2), path(cache)
 
     output:
-    tuple val(meta), path("*.ann.vcf"),   emit: vcf
-    tuple val(meta), path("*.csv"),       emit: report
-    tuple val(meta), path("*.html"),      emit: summary_html
-    tuple val(meta), path("*.genes.txt"), emit: genes_txt
-    path "versions.yml"                 , emit: versions
+    tuple val(meta), path("*.ann.vcf.gz"),      emit: vcf
+    tuple val(meta), path("*.tbi"),             optional:true, emit: tbi
+    tuple val(meta), path("*.csi"),             optional:true, emit: csi
+    tuple val(meta), path("*.csv"),             emit: report
+    tuple val(meta), path("*.html"),            emit: summary_html
+    tuple val(meta), path("*.genes.txt"),       emit: genes_txt
+    path "versions.yml"                 ,       emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
+    def args2 = task.ext.args2 ?: ''
+    def args3 = task.ext.args3 ?: ''
     def avail_mem = 6144
     if (!task.memory) {
         log.info '[snpEff] Available memory not known - defaulting to 6GB. Specify process memory requirements to change this.'
@@ -40,7 +44,9 @@ process SNPEFF_SNPEFF {
         -csvStats ${prefix}.csv \\
         $cache_command \\
         $vcf \\
-        > ${prefix}.ann.vcf
+        | bgzip -c $args2 -@${task.cpus} > ${prefix}.ann.vcf.gz
+
+    tabix $args3 ${prefix}.ann.vcf.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -51,11 +57,16 @@ process SNPEFF_SNPEFF {
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    touch ${prefix}.ann.vcf
+    touch ${prefix}.ann.vcf.gz
+    touch ${prefix}.ann.vcf.gz.tbi
+    touch ${prefix}.ann.csv
+    touch ${prefix}.ann.genes.txt
+    touch snpEff_summary.html
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         snpeff: \$(echo \$(snpEff -version 2>&1) | cut -f 2 -d ' ')
+        tabix: \$(echo \$(tabix -h 2>&1) | sed 's/^.*Version: //; s/ .*\$//')
     END_VERSIONS
     """
 

@@ -1,8 +1,14 @@
 Changes in module 'nf-core/snpeff/download'
 --- modules/nf-core/snpeff/download/main.nf
 +++ modules/nf-core/snpeff/download/main.nf
-@@ -8,7 +8,7 @@
-         'biocontainers/snpeff:5.1--hdfd78af_2' }"
+@@ -4,11 +4,11 @@
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/snpeff:5.1--hdfd78af_2' :
+-        'biocontainers/snpeff:5.1--hdfd78af_2' }"
++        'https://depot.galaxyproject.org/singularity/mulled-v2-2fe536b56916bd1d61a6a1889eb2987d9ea0cd2f:c51b2e46bf63786b2d9a7a7d23680791163ab39a-0' :
++        'biocontainers/mulled-v2-2fe536b56916bd1d61a6a1889eb2987d9ea0cd2f:c51b2e46bf63786b2d9a7a7d23680791163ab39a-0' }"
  
      input:
 -    tuple val(meta), val(genome), val(cache_version)
@@ -28,5 +34,15 @@ Changes in module 'nf-core/snpeff/download'
  
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
+
+--- modules/nf-core/snpeff/download/environment.yml
++++ modules/nf-core/snpeff/download/environment.yml
+@@ -4,4 +4,5 @@
+   - bioconda
+   - defaults
+ dependencies:
+-  - bioconda::snpeff=5.1
++  - bioconda::snpeff=5.2
++  - bioconda::tabix=1.11
 
 ************************************************************
