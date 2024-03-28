@@ -31,7 +31,7 @@ workflow CRAM_MARKDUPLICATES_PICARD {
             else [ meta, cram, csi ]
         }
 
-    CRAM_STATS_SAMTOOLS ( ch_cram_crai, ch_fasta )
+    CRAM_STATS_SAMTOOLS ( ch_cram_crai, ch_fasta, ch_fai )
     ch_versions = ch_versions.mix(CRAM_STATS_SAMTOOLS.out.versions)
 
     emit:
