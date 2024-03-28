@@ -140,7 +140,7 @@ workflow RESEQUENCING_MEM {
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
   // third params is if we want to sort data or not (true, so I don't need to SORT
   // with an additional step)
-  BWA_MEM(TRIMGALORE.out.reads, PREPARE_GENOME.out.bwa_index, true)
+  BWA_MEM(TRIMGALORE.out.reads, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.genome_fasta, true)
   ch_versions = ch_versions.mix(BWA_MEM.out.versions)
 
   // Perform Picard MarkDuplicates, index CRAM file and run samtools stats, flagstat and idxstats
