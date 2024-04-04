@@ -17,7 +17,7 @@ workflow CRAM_MARKDUPLICATES_SAMTOOLS {
 
     ch_versions = Channel.empty()
 
-    SAMTOOLS_MARKDUP ( ch_cram, ch_fasta )
+    SAMTOOLS_MARKDUP ( ch_cram, ch_fasta, ch_fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MARKDUP.out.versions.first())
 
     SAMTOOLS_INDEX ( SAMTOOLS_MARKDUP.out.cram )
@@ -36,6 +36,7 @@ workflow CRAM_MARKDUPLICATES_SAMTOOLS {
 
     emit:
     cram     = SAMTOOLS_MARKDUP.out.cram          // channel: [ val(meta), path(cram) ]
+    metrics  = SAMTOOLS_MARKDUP.out.metrics       // channel: [ val(meta), path(metrics) ]
     crai     = SAMTOOLS_INDEX.out.crai            // channel: [ val(meta), path(crai) ]
     csi      = SAMTOOLS_INDEX.out.csi             // channel: [ val(meta), path(csi) ]
 
