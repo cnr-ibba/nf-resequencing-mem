@@ -388,45 +388,6 @@ try to determine which value make sense to be used for filtering.
 required for each step will be unpredictable. Using a very low coverage limit
 could affect the SNP calling process. Use this option with caution.
 
-### FASTQ has duplicated IDs
-
-When a `FASTQ` file have duplicated IDs, the `MarkDuplicates` fails with an error
-message like this:
-
-```text
-Exception in thread "main" htsjdk.samtools.SAMException: Value was put into PairInfoMap more than once.  11: RGE200002173L1C027R02800999933
-  at htsjdk.samtools.CoordinateSortedPairInfoMap.ensureSequenceLoaded(CoordinateSortedPairInfoMap.java:133)
-  at htsjdk.samtools.CoordinateSortedPairInfoMap.remove(CoordinateSortedPairInfoMap.java:86)
-  at picard.sam.markduplicates.util.DiskBasedReadEndsForMarkDuplicatesMap.remove(DiskBasedReadEndsForMarkDuplicatesMap.java:61)
-  at picard.sam.markduplicates.MarkDuplicates.buildSortedReadEndLists(MarkDuplicates.java:571)
-  at picard.sam.markduplicates.MarkDuplicates.doWork(MarkDuplicates.java:270)
-  at picard.cmdline.CommandLineProgram.instanceMain(CommandLineProgram.java:308)
-  at picard.cmdline.PicardCommandLine.instanceMain(PicardCommandLine.java:103)
-  at picard.cmdline.PicardCommandLine.main(PicardCommandLine.java:113)
-```
-
-This is a not an issue with `MarkDuplicates` (as discussed
-[here](https://gatk.broadinstitute.org/hc/en-us/community/posts/4408717387803-SAMException-Value-was-put-into-PairInfoMap-more-than-once))
-but an issue at _demultiplexing_ step: the only way to deal with this problem is
-to make rid of duplicated IDs using [seqkit/rmdup](https://bioinf.shenwei.me/seqkit/usage/#rmdup)
-by providing the `--remove_fastq_duplicates` option.
-
-### MarkDuplicates temporary files
-
-Markduplicates writes temporary files into `/tmp` partition by default. If your
-organization have a different location where temporary files should be stored
-(ex `/scratch` or any other `$TMP` position) and your jobs are running out of
-spaces, you should provide a different temporary location to `MarkDuplicates` steps,
-for example:
-
-```config
-process {
-    withName: PICARD_MARKDUPLICATES {
-        ext.args = '--TMP_DIR $TMPDIR'
-    }
-}
-```
-
 ## Acknowledgments
 
 This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/master/LICENSE).

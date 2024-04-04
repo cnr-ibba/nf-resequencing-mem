@@ -1,12 +1,12 @@
 //
-// Picard MarkDuplicates, index CRAM file and run samtools stats, flagstat and idxstats
+// mark duplicates, index CRAM file and run samtools stats, flagstat and idxstats
 //
 
-include { PICARD_MARKDUPLICATES } from '../../../modules/nf-core/picard/markduplicates/main'
+include { SAMTOOLS_MARKDUP      } from '../../../modules/nf-core/samtools/markdup/main'
 include { SAMTOOLS_INDEX        } from '../../../modules/nf-core/samtools/index/main'
-include { CRAM_STATS_SAMTOOLS    } from '../cram_stats_samtools/main'
+include { CRAM_STATS_SAMTOOLS   } from '../cram_stats_samtools/main'
 
-workflow CRAM_MARKDUPLICATES_PICARD {
+workflow CRAM_MARKDUPLICATES_SAMTOOLS {
 
     take:
     ch_cram  // channel: [ val(meta), path(cram) ]
@@ -17,13 +17,13 @@ workflow CRAM_MARKDUPLICATES_PICARD {
 
     ch_versions = Channel.empty()
 
-    PICARD_MARKDUPLICATES ( ch_cram, ch_fasta, ch_fai )
-    ch_versions = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions.first())
+    SAMTOOLS_MARKDUP ( ch_cram, ch_fasta )
+    ch_versions = ch_versions.mix(SAMTOOLS_MARKDUP.out.versions.first())
 
-    SAMTOOLS_INDEX ( PICARD_MARKDUPLICATES.out.cram )
+    SAMTOOLS_INDEX ( SAMTOOLS_MARKDUP.out.cram )
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
 
-    ch_cram_crai = PICARD_MARKDUPLICATES.out.cram
+    ch_cram_crai = SAMTOOLS_MARKDUP.out.cram
         .join(SAMTOOLS_INDEX.out.crai, by: [0], remainder: true)
         .join(SAMTOOLS_INDEX.out.csi, by: [0], remainder: true)
         .map{meta, cram, crai, csi ->
@@ -35,10 +35,9 @@ workflow CRAM_MARKDUPLICATES_PICARD {
     ch_versions = ch_versions.mix(CRAM_STATS_SAMTOOLS.out.versions)
 
     emit:
-    cram     = PICARD_MARKDUPLICATES.out.cram    // channel: [ val(meta), path(cram) ]
-    metrics  = PICARD_MARKDUPLICATES.out.metrics // channel: [ val(meta), path(cram) ]
-    crai     = SAMTOOLS_INDEX.out.crai          // channel: [ val(meta), path(crai) ]
-    csi      = SAMTOOLS_INDEX.out.csi            // channel: [ val(meta), path(csi) ]
+    cram     = SAMTOOLS_MARKDUP.out.cram          // channel: [ val(meta), path(cram) ]
+    crai     = SAMTOOLS_INDEX.out.crai            // channel: [ val(meta), path(crai) ]
+    csi      = SAMTOOLS_INDEX.out.csi             // channel: [ val(meta), path(csi) ]
 
     stats    = CRAM_STATS_SAMTOOLS.out.stats      // channel: [ val(meta), path(stats) ]
     flagstat = CRAM_STATS_SAMTOOLS.out.flagstat   // channel: [ val(meta), path(flagstat) ]
