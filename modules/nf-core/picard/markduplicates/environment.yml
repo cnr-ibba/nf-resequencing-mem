@@ -5,4 +5,3 @@ channels:
   - defaults
 dependencies:
   - bioconda::picard=3.1.1
-  - bioconda::samtools=1.19.2

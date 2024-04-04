@@ -9,22 +9,23 @@ include { SAMTOOLS_COVERAGE } from '../../../modules/nf-core/samtools/coverage/m
 
 workflow CRAM_STATS_SAMTOOLS {
     take:
-    ch_bam_crai // channel: [ val(meta), path(bam), path(crai) ]
-    ch_fasta    // channel: [ val(meta), path(fasta) ]
+    ch_cram_crai  // channel: [ val(meta), path(cram), path(crai) ]
+    ch_fasta      // channel: [ val(meta), path(fasta) ]
+    ch_faidx      // channel: [ val(meta), path(faidx) ]
 
     main:
     ch_versions = Channel.empty()
 
-    SAMTOOLS_STATS ( ch_bam_crai, ch_fasta )
+    SAMTOOLS_STATS ( ch_cram_crai, ch_fasta )
     ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
 
-    SAMTOOLS_FLAGSTAT ( ch_bam_crai )
+    SAMTOOLS_FLAGSTAT ( ch_cram_crai )
     ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
-    SAMTOOLS_IDXSTATS ( ch_bam_crai )
+    SAMTOOLS_IDXSTATS ( ch_cram_crai )
     ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions)
 
-    SAMTOOLS_COVERAGE ( ch_bam_crai )
+    SAMTOOLS_COVERAGE ( ch_cram_crai, ch_fasta, ch_faidx )
     ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE.out.versions)
 
     emit:
