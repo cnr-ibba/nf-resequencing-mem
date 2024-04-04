@@ -46,7 +46,7 @@ include { BCFTOOLS_NORM                     } from '../modules/nf-core/bcftools/
 include { TABIX_TABIX                       } from '../modules/nf-core/tabix/tabix/main'
 include { BCFTOOLS_STATS                    } from '../modules/nf-core/bcftools/stats/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS       } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { CRAM_MARKDUPLICATES_PICARD        } from '../subworkflows/local/cram_markduplicates_picard/main'
+include { CRAM_MARKDUPLICATES_SAMTOOLS      } from '../subworkflows/local/cram_markduplicates_samtools/main'
 include { SNPEFF_ANNOTATE                   } from '../subworkflows/local/snpeff_annotate'
 
 // A workflow definition which does not declare any name is assumed to be the
@@ -143,13 +143,13 @@ workflow RESEQUENCING_MEM {
   BWA_MEM(TRIMGALORE.out.reads, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.genome_fasta, true)
   ch_versions = ch_versions.mix(BWA_MEM.out.versions)
 
-  // Perform Picard MarkDuplicates, index CRAM file and run samtools stats, flagstat and idxstats
-  CRAM_MARKDUPLICATES_PICARD(BWA_MEM.out.cram, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
-  ch_versions = ch_versions.mix(CRAM_MARKDUPLICATES_PICARD.out.versions)
+  // Perform mark duplicates, index CRAM file and run samtools stats, flagstat and idxstats
+  CRAM_MARKDUPLICATES_SAMTOOLS(BWA_MEM.out.cram, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
+  ch_versions = ch_versions.mix(CRAM_MARKDUPLICATES_SAMTOOLS.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
-  freebayes_input_cram = CRAM_MARKDUPLICATES_PICARD.out.cram.map{ meta, cram -> [cram] }.collect().map{ it -> [[id: "all-samples"], it]}
-  freebayes_input_crai = CRAM_MARKDUPLICATES_PICARD.out.crai.map{ meta, crai -> [crai] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_cram = CRAM_MARKDUPLICATES_SAMTOOLS.out.cram.map{ meta, cram -> [cram] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_crai = CRAM_MARKDUPLICATES_SAMTOOLS.out.crai.map{ meta, crai -> [crai] }.collect().map{ it -> [[id: "all-samples"], it]}
 
   // call freebayes paralle
   CRAM_FREEBAYES_PARALLEL(
@@ -216,11 +216,10 @@ workflow RESEQUENCING_MEM {
   ch_multiqc_files = FASTQC.out.html.map{it[1]}.ifEmpty([])
     .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
     .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
-    .concat(CRAM_MARKDUPLICATES_PICARD.out.metrics.map{it[1]}.ifEmpty([]))
-    .concat(CRAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
-    .concat(CRAM_MARKDUPLICATES_PICARD.out.idxstats.map{it[1]}.ifEmpty([]))
-    .concat(CRAM_MARKDUPLICATES_PICARD.out.flagstat.map{it[1]}.ifEmpty([]))
-    .concat(CRAM_MARKDUPLICATES_PICARD.out.coverage.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_SAMTOOLS.out.stats.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_SAMTOOLS.out.idxstats.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_SAMTOOLS.out.flagstat.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_SAMTOOLS.out.coverage.map{it[1]}.ifEmpty([]))
     .concat(BCFTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
     .concat(snpeff_report.map{it[1]}.ifEmpty([]))
     // .view()
