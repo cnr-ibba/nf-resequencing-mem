@@ -216,6 +216,7 @@ workflow RESEQUENCING_MEM {
   ch_multiqc_files = FASTQC.out.html.map{it[1]}.ifEmpty([])
     .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
     .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_SAMTOOLS.out.metrics.map{it[1]}.ifEmpty([]))
     .concat(CRAM_MARKDUPLICATES_SAMTOOLS.out.stats.map{it[1]}.ifEmpty([]))
     .concat(CRAM_MARKDUPLICATES_SAMTOOLS.out.idxstats.map{it[1]}.ifEmpty([]))
     .concat(CRAM_MARKDUPLICATES_SAMTOOLS.out.flagstat.map{it[1]}.ifEmpty([]))

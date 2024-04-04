@@ -8,14 +8,16 @@ process SAMTOOLS_MARKDUP {
         'biocontainers/samtools:1.19.2--h50ea8bc_0' }"
 
     input:
-    tuple val(meta), path(input)
+    tuple val(meta),  path(input)
     tuple val(meta2), path(fasta)
+    tuple val(meta3), path(fai)
 
     output:
-    tuple val(meta), path("*.bam"),  emit: bam, optional: true
-    tuple val(meta), path("*.cram"), emit: cram, optional: true
-    tuple val(meta), path("*.sam"),  emit: sam,  optional: true
-    path "versions.yml",             emit: versions
+    tuple val(meta), path("*.bam"),             emit: bam, optional: true
+    tuple val(meta), path("*.cram"),            emit: cram, optional: true
+    tuple val(meta), path("*.sam"),             emit: sam,  optional: true
+    tuple val(meta), path("*.metrics.json"),    emit: metrics
+    path "versions.yml",                        emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -37,6 +39,7 @@ process SAMTOOLS_MARKDUP {
         -@ $task.cpus \\
         -T $prefix \\
         $input \\
+        --json -f ${prefix}.markdup.metrics.json \\
         ${prefix}.${extension}
 
     cat <<-END_VERSIONS > versions.yml
@@ -54,6 +57,7 @@ process SAMTOOLS_MARKDUP {
     if ("$input" == "${prefix}.${extension}") error "Input and output names are the same, use \"task.ext.prefix\" to disambiguate!"
     """
     touch ${prefix}.${extension}
+    touch ${prefix}.markdup.metrics.json
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
