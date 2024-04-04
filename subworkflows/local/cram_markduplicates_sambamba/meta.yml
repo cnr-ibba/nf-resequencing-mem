@@ -1,13 +1,13 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
 name: "cram_markduplicates_sambamba"
-description: Picard MarkDuplicates, index BAM file and run samtools stats, flagstat and idxstats
+description: SamBamba MarkDuplicates, index BAM file and run samtools stats, flagstat and idxstats
 keywords:
   - markduplicates
   - bam
   - sam
   - cram
 components:
-  - picard/markduplicates
+  - sambamba/markdup
   - samtools/index
   - samtools/stats
   - samtools/idxstats
