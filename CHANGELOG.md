@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.6.0-dev
+## 0.6.0 - [2024-04-04]
 
 - Replace `*.bam` file format with `*.cram` ([#9](https://github.com/cnr-ibba/nf-resequencing-mem/issues/9))
 - Add _Read Groups_ during the alignment step ([#57](https://github.com/cnr-ibba/nf-resequencing-mem/issues/57))
