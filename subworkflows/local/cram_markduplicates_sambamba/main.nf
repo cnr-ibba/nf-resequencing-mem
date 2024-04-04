@@ -6,7 +6,7 @@ include { PICARD_MARKDUPLICATES } from '../../../modules/nf-core/picard/markdupl
 include { SAMTOOLS_INDEX        } from '../../../modules/nf-core/samtools/index/main'
 include { CRAM_STATS_SAMTOOLS    } from '../cram_stats_samtools/main'
 
-workflow CRAM_MARKDUPLICATES_PICARD {
+workflow CRAM_MARKDUPLICATES_SAMBAMBA {
 
     take:
     ch_cram  // channel: [ val(meta), path(cram) ]

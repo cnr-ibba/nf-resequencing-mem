@@ -1,0 +1,2 @@
+subworkflows/cram_markduplicates_sambamba:
+  - subworkflows/nf-core/cram_markduplicates_sambamba/**
