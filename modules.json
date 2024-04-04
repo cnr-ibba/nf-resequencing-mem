@@ -102,6 +102,11 @@
             "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
             "installed_by": ["modules"]
           },
+          "samtools/markdup": {
+            "branch": "master",
+            "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
+            "installed_by": ["modules"]
+          },
           "samtools/stats": {
             "branch": "master",
             "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
