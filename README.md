@@ -411,6 +411,22 @@ but an issue at _demultiplexing_ step: the only way to deal with this problem is
 to make rid of duplicated IDs using [seqkit/rmdup](https://bioinf.shenwei.me/seqkit/usage/#rmdup)
 by providing the `--remove_fastq_duplicates` option.
 
+### MarkDuplicates temporary files
+
+Markduplicates writes temporary files into `/tmp` partition by default. If your
+organization have a different location where temporary files should be stored
+(ex `/scratch` or any other `$TMP` position) and your jobs are running out of
+spaces, you should provide a different temporary location to `MarkDuplicates` steps,
+for example:
+
+```config
+process {
+    withName: PICARD_MARKDUPLICATES {
+        ext.args = '--TMP_DIR $TMPDIR'
+    }
+}
+```
+
 ## Acknowledgments
 
 This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/master/LICENSE).
