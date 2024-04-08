@@ -1,20 +1,20 @@
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     VALIDATE INPUTS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.genome_fasta ]
+def checkPathParamList = [ params.input, params.multiqc_config, params.genome_fasta, params.genome_bwa_index ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
 
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 //
@@ -24,9 +24,9 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT NF-CORE MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 //
@@ -41,18 +41,13 @@ include {
                                             } from '../modules/cnr-ibba/seqkit/rmdup/main'
 include { TRIMGALORE                        } from '../modules/nf-core/trimgalore/main'
 include { BWA_MEM                           } from '../modules/nf-core/bwa/mem/main'
-include { BAMADDRG                          } from '../modules/cnr-ibba/bamaddrg/main'
-include { PICARD_MARKDUPLICATES             } from '../modules/nf-core/picard/markduplicates/main'
-include { SAMTOOLS_INDEX                    } from '../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_STATS                    } from '../modules/nf-core/samtools/stats/main'
-include { SAMTOOLS_IDXSTATS                 } from '../modules/nf-core/samtools/idxstats/main'
-include { SAMTOOLS_FLAGSTAT                 } from '../modules/nf-core/samtools/flagstat/main'
-include { SAMTOOLS_COVERAGE                 } from '../modules/nf-core/samtools/coverage/main'
-include { FREEBAYES_PARALLEL                } from '../subworkflows/cnr-ibba/freebayes_parallel/main'
+include { CRAM_FREEBAYES_PARALLEL           } from '../subworkflows/local/cram_freebayes_parallel/main'
 include { BCFTOOLS_NORM                     } from '../modules/nf-core/bcftools/norm/main'
 include { TABIX_TABIX                       } from '../modules/nf-core/tabix/tabix/main'
 include { BCFTOOLS_STATS                    } from '../modules/nf-core/bcftools/stats/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS       } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { CRAM_MARKDUPLICATES_PICARD        } from '../subworkflows/local/cram_markduplicates_picard/main'
+include { SNPEFF_ANNOTATE                   } from '../subworkflows/local/snpeff_annotate'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -69,13 +64,13 @@ workflow RESEQUENCING_MEM {
   )
   .reads
   .map {
-      meta, fastq ->
-        def meta_clone = meta.clone()
-        tmp = meta_clone.id.split('_')
-        if (tmp.size() > 1) {
-          meta_clone.id = tmp[0..-2].join('_')
-        }
-        [ meta_clone, fastq ]
+    meta, fastq ->
+      def meta_clone = meta.clone()
+      tmp = meta_clone.id.split('_')
+      if (tmp.size() > 1) {
+        meta_clone.id = tmp[0..-2].join('_')
+      }
+      [ meta_clone, fastq ]
     }
     .groupTuple(by: [0])
     .branch {
@@ -145,66 +140,31 @@ workflow RESEQUENCING_MEM {
   // which can be read from BWA_INDEX.out emit channel (https://www.nextflow.io/docs/edge/dsl2.html#process-named-output)
   // third params is if we want to sort data or not (true, so I don't need to SORT
   // with an additional step)
-  BWA_MEM(TRIMGALORE.out.reads, PREPARE_GENOME.out.bwa_index, true)
+  BWA_MEM(TRIMGALORE.out.reads, PREPARE_GENOME.out.bwa_index, PREPARE_GENOME.out.genome_fasta, true)
   ch_versions = ch_versions.mix(BWA_MEM.out.versions)
 
-  // add sample names to BAM files. Required to name samples with freebayes
-  BAMADDRG(BWA_MEM.out.bam)
-  ch_versions = ch_versions.mix(BAMADDRG.out.versions)
-
-  // BAM file need to be sorted in order to mark duplicates. This was don in BWA_MEM
-  // step. Markduplicates requires meta information + bam files, the same output of
-  // SAMTOOLS_SORT step
-  PICARD_MARKDUPLICATES(BAMADDRG.out.bam, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
-  ch_versions = ch_versions.mix(PICARD_MARKDUPLICATES.out.versions)
-
-  // bam need to be indexed before doing flagstat
-  SAMTOOLS_INDEX(PICARD_MARKDUPLICATES.out.bam)
-  ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
-
-  // now I can do the samtools steps. I need bam and bai files from markduplicates and
-  // samtools index and the meta informations as three different input. From both channels,
-  // I have an output like 'val(meta), path("*.bam")' and 'val(meta), path("*.bai")'
-  // I can join two channels with the same key (https://www.nextflow.io/docs/latest/operator.html#join)
-  // two options to check to have exactly the same keys with no duplications
-  samtools_input = PICARD_MARKDUPLICATES.out.bam.join(SAMTOOLS_INDEX.out.bai, failOnMismatch: true, failOnDuplicate: true)//.view()
-
-  // call samtools stats
-  SAMTOOLS_STATS(samtools_input, PREPARE_GENOME.out.genome_fasta)
-  ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
-
-  // call samtools idxstats
-  SAMTOOLS_IDXSTATS(samtools_input)
-  ch_versions = ch_versions.mix(SAMTOOLS_IDXSTATS.out.versions)
-
-  // time to call flagstat
-  SAMTOOLS_FLAGSTAT(samtools_input)
-  ch_versions = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
-
-  // prepare input for samtools coverage
-  samtools_coverage_input = PICARD_MARKDUPLICATES.out.bam.join(
-      PICARD_MARKDUPLICATES.out.bai,
-      failOnMismatch: true,
-      failOnDuplicate: true)
-    // .view()
-
-  // calculate sample coverage
-  SAMTOOLS_COVERAGE(samtools_coverage_input)
-  ch_versions = ch_versions.mix(SAMTOOLS_COVERAGE.out.versions)
+  // Perform Picard MarkDuplicates, index CRAM file and run samtools stats, flagstat and idxstats
+  CRAM_MARKDUPLICATES_PICARD(BWA_MEM.out.cram, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
+  ch_versions = ch_versions.mix(CRAM_MARKDUPLICATES_PICARD.out.versions)
 
   // prepare to call freebayes (multi) - get rid of meta.id
-  freebayes_input_bam = PICARD_MARKDUPLICATES.out.bam.map{ meta, bam -> [bam] }.collect().map{ it -> [[id: "all-samples"], it]}
-  freebayes_input_bai = SAMTOOLS_INDEX.out.bai.map{ meta, bai -> [bai] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_cram = CRAM_MARKDUPLICATES_PICARD.out.cram.map{ meta, cram -> [cram] }.collect().map{ it -> [[id: "all-samples"], it]}
+  freebayes_input_crai = CRAM_MARKDUPLICATES_PICARD.out.crai.map{ meta, crai -> [crai] }.collect().map{ it -> [[id: "all-samples"], it]}
 
   // call freebayes paralle
-  FREEBAYES_PARALLEL(freebayes_input_bam, freebayes_input_bai, PREPARE_GENOME.out.genome_fasta, PREPARE_GENOME.out.genome_fasta_fai)
-  ch_versions = ch_versions.mix(FREEBAYES_PARALLEL.out.versions)
+  CRAM_FREEBAYES_PARALLEL(
+    freebayes_input_cram,
+    freebayes_input_crai,
+    PREPARE_GENOME.out.genome_fasta,
+    PREPARE_GENOME.out.genome_fasta_fai
+  )
+  ch_versions = ch_versions.mix(CRAM_FREEBAYES_PARALLEL.out.versions)
 
   // create bcftools channel. Freebayes multi will emit a single value for vcf and indexes.
   // join it and then change meta key to avoid file name collisions (meta is used to
   // determine output files)
-  bcftools_ch = FREEBAYES_PARALLEL.out.vcf
-    .join(FREEBAYES_PARALLEL.out.tbi)
+  bcftools_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
+    .join(CRAM_FREEBAYES_PARALLEL.out.tbi)
     .map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
@@ -233,25 +193,59 @@ workflow RESEQUENCING_MEM {
   )
   ch_versions = ch_versions.mix(BCFTOOLS_STATS.out.versions)
 
+  // for simplicity, I will collect SnpEff report in a new channel, in order
+  // to use it as an empty chennel in MultiQC if SnpEff is not used
+  snpeff_report = Channel.empty()
+
+  // check for SnpEff annotation
+  if (params.snpeff_database) {
+    // annotate VCF with SnpEff
+    SNPEFF_ANNOTATE(
+      params.snpeff_database,
+      BCFTOOLS_NORM.out.vcf,
+    )
+
+    // track version
+    ch_versions = ch_versions.mix(SNPEFF_ANNOTATE.out.versions)
+
+    // update snpeff_report channel
+    snpeff_report = SNPEFF_ANNOTATE.out.report
+  }
+
   // get only the data I need for a MultiQC step
-  multiqc_input = FASTQC.out.html.map{it[1]}.ifEmpty([])
-        .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
-        .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
-        .concat(PICARD_MARKDUPLICATES.out.metrics.map{it[1]}.ifEmpty([]))
-        .concat(SAMTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
-        .concat(SAMTOOLS_IDXSTATS.out.idxstats.map{it[1]}.ifEmpty([]))
-        .concat(SAMTOOLS_FLAGSTAT.out.flagstat.map{it[1]}.ifEmpty([]))
-        .concat(BCFTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
-        .collect()
-        // .view()
+  ch_multiqc_files = FASTQC.out.html.map{it[1]}.ifEmpty([])
+    .concat(FASTQC.out.zip.map{it[1]}.ifEmpty([]))
+    .concat(TRIMGALORE.out.log.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.metrics.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.stats.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.idxstats.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.flagstat.map{it[1]}.ifEmpty([]))
+    .concat(CRAM_MARKDUPLICATES_PICARD.out.coverage.map{it[1]}.ifEmpty([]))
+    .concat(BCFTOOLS_STATS.out.stats.map{it[1]}.ifEmpty([]))
+    .concat(snpeff_report.map{it[1]}.ifEmpty([]))
+    // .view()
 
   // prepare multiqc_config file
-  multiqc_config = Channel.fromPath(params.multiqc_config)
-  multiqc_logo = Channel.fromPath(params.multiqc_logo)
+  ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+  ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
+  ch_multiqc_logo                       = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.empty()
+
+  // TODO: requires nf-validation plugin and other stuff
+  // summary_params                        = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+  // ch_workflow_summary                   = Channel.value(paramsSummaryMultiqc(summary_params))
+  // ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+  // ch_methods_description                = Channel.value(methodsDescriptionText(ch_multiqc_custom_methods_description))
+  // ch_multiqc_files                      = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+  // ch_multiqc_files                      = ch_multiqc_files.mix(ch_collated_versions)
+  // ch_multiqc_files                      = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml', sort: false))
 
   // calling MultiQC
-  MULTIQC(multiqc_input, multiqc_config, [], multiqc_logo)
-  ch_versions = ch_versions.mix(MULTIQC.out.versions)
+  MULTIQC (
+    ch_multiqc_files.collect(),
+    ch_multiqc_config.toList(),
+    ch_multiqc_custom_config.toList(),
+    ch_multiqc_logo.toList()
+  )
 
   // return software version
   CUSTOM_DUMPSOFTWAREVERSIONS (

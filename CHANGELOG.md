@@ -3,6 +3,52 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.0 - [2024-04-04]
+
+- Replace `*.bam` file format with `*.cram` ([#9](https://github.com/cnr-ibba/nf-resequencing-mem/issues/9))
+- Add _Read Groups_ during the alignment step ([#57](https://github.com/cnr-ibba/nf-resequencing-mem/issues/57))
+- Annotate VCF file with SnpEff ([#59](https://github.com/cnr-ibba/nf-resequencing-mem/issues/59))
+- Configure MultiQC analysis ([#60](https://github.com/cnr-ibba/nf-resequencing-mem/issues/60))
+- Update modules ([#64](https://github.com/cnr-ibba/nf-resequencing-mem/issues/64))
+
+### `Added`
+
+- Add `samtools/depth` process
+- Add `freebayes_splitcram` custom module to split genome in regions relying on
+  _total sample coverage_
+- Add `cram_markduplicates_picard` custom local subworkflow by modifying
+  `bam_markduplicates_picard` to work with `*.cram` files by default
+- Add `cram_stats_samtools` custom local subworkflow by modifying
+  `bam_stats_samtools` to work with `*.cram` files by default
+- Add `freebayes_splitcram` local module to splice alignments regions relying
+  on `samtools/depth` step
+- Add `snpeff/download` module
+- Add `snpeff/snpeff` module
+- Add `snpeff_annotate` local subworkflow
+
+### `Fixed`
+
+- `freebayes_parallel` subworkflow was moved to `cram_freebayes_parallel` local
+  subworkflow and was modified to deal with _total sample coverage_ and to work
+  with `*.cram` files
+- `picard/markduplicates` now works with `.*.cram` files
+- `bwa/mem` was configured to write files as `*.cram` files
+- `samtools/depth` was patched to write results with headers, with 0 coverage position
+  and to compress output with gzip
+- `resequencing-mem` workflow was modified in order to use local subworkflow, for
+  example to deal with `samtools` and `markduplicates`
+- fixed a issue when providing the `--genome_bwa_index` parameter
+- `snpeff_download` was patched in order to remove the `version` parameter
+- `snpeff/snpeff` module was patched to support custom database annotations and
+  to compress VCF output using a mulled image with `tabix`
+- the configuration file for MultiQC module was updated to simplify results, to order
+  them and to support all the supported modules
+
+### `Removed`
+
+- Remove `cnr-ibba/bamaddrg` module
+- Remove `cnr-ibba/freebayes/splitbam` module
+
 ## 0.5.2 - [2023-12-21]
 
 - Use MultiQC with all supported tools ([#53](https://github.com/cnr-ibba/nf-resequencing-mem/issues/53))
