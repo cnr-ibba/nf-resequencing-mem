@@ -1,6 +1,14 @@
 Changes in module 'nf-core/samtools/depth'
 --- modules/nf-core/samtools/depth/main.nf
 +++ modules/nf-core/samtools/depth/main.nf
+@@ -1,6 +1,6 @@
+ process SAMTOOLS_DEPTH {
+     tag "$meta1.id"
+-    label 'process_low'
++    label 'process_medium'
+ 
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
 @@ -12,8 +12,9 @@
      tuple val(meta2), path(intervals)
  
@@ -13,7 +21,7 @@ Changes in module 'nf-core/samtools/depth'
  
      when:
      task.ext.when == null || task.ext.when
-@@ -23,13 +24,16 @@
+@@ -23,17 +24,23 @@
      def prefix = task.ext.prefix ?: "${meta1.id}"
      def positions = intervals ? "-b ${intervals}" : ""
      """
@@ -21,16 +29,24 @@ Changes in module 'nf-core/samtools/depth'
 +
      samtools \\
          depth \\
-         --threads ${task.cpus-1} \\
+-        --threads ${task.cpus-1} \\
++        --threads ${task.cpus} \\
          $args \\
          $positions \\
 -        -o ${prefix}.tsv \\
 -        $bam
 +        -H -a \\
 +        -f ${prefix}.list.txt \\
-+        | gzip -c > ${prefix}.depth.tsv.gz
++        | bgzip \\
++        --threads ${task.cpus} \\
++        --stdout > ${prefix}.depth.tsv.gz
  
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
+         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
++        tabix: \$(echo \$(tabix -h 2>&1) | sed 's/^.*Version: //; s/ .*\$//')
+     END_VERSIONS
+     """
+ }
 
 ************************************************************
