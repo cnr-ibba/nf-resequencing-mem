@@ -12,7 +12,7 @@ Date: 2024/04/11
 
 Usage:
     python split_ref_by_depth.py --depth_file <depth_file> \
-      --chromosome_length <chromosome_length> \
+      --chromosome <chromosome> --chromosome_length <chromosome_length> \
       [--min_length <min_length>] [--max_coverage <max_coverage>] \
       [--overlap_size <overlap_size>] [--verbose <verbose>] [--quiet <quiet>]
 
@@ -131,8 +131,8 @@ def append_or_extend_region(
 
 
 def split_ref_by_coverage(
-        depthfile: str, chromosome_length: int, max_coverage: int,
-        min_length: int, overlap_size: int):
+        depthfile: str, chromosome: str, chromosome_length: int,
+        max_coverage: int, min_length: int, overlap_size: int):
     with gzip.open(depthfile, "rt") as handle:
         reader = csv.reader(handle, delimiter="\t", lineterminator="\n")
         header = next(reader)
@@ -140,14 +140,22 @@ def split_ref_by_coverage(
         # header: ["#CHROM", "POS", "Sample_1.bam", "Sample_2.bam", ...]
         logging.debug(f"Got header: {header}")
 
+        # test if I have reads aligned in this file
+        try:
+            line = next(reader)
+
+        except StopIteration:
+            logging.error(
+                f"File '{depthfile}' has no coverage data"
+            )
+            return [[chromosome, 0, chromosome_length]]
+
         # Initialize some variables
-        line = next(reader)
-        start_chrom = line[0]
-        start_pos = 0
+        regions = []
+        start_chrom = chromosome
+        start_pos = 1
         old_pos = start_pos
         cumulative_coverage = 0
-
-        regions = []
 
         logging.debug(f"Starting from chrom: '{start_chrom}'")
 
@@ -155,7 +163,7 @@ def split_ref_by_coverage(
             chrom, pos = line[0], int(line[1])
 
             if chrom != start_chrom:
-                logging.error(f"{i}: Got a new chromosome '{chrom}'")
+                logging.critical(f"{i}: Got a new chromosome '{chrom}'")
                 raise Exception("This script works on a single chromosome at a time")
 
             # determine region size
@@ -229,6 +237,10 @@ if __name__ == "__main__":
         help="The output of samtools depth file for all samples"
     )
     parser.add_argument(
+        '-c', '--chromosome', required=True, type=str,
+        help="The chromosome name"
+    )
+    parser.add_argument(
         '-l', '--chromosome_length', required=True, type=int,
         help="The length of the chromosome"
     )
@@ -264,6 +276,7 @@ if __name__ == "__main__":
     # split reference by coverage depth
     regions = split_ref_by_coverage(
         args.depth_file,
+        args.chromosome,
         args.chromosome_length,
         args.max_coverage,
         args.min_length,

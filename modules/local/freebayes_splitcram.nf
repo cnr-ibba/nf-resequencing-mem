@@ -24,6 +24,7 @@ process FREEBAYES_SPLITCRAM {
     """
     split_ref_by_depth.py \\
         --depth_file ${depth} \\
+        --chromosome ${meta.id} \\
         --chromosome_length ${meta.length} \\
         > ${prefix}.regions.txt
 
