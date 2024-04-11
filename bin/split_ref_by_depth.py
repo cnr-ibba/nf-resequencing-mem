@@ -2,14 +2,19 @@
 # -*- coding: utf-8 -*-
 
 """
+
 This script will write a list of region from a reference file relying on
-coverage depth
+coverage depth. Is supposed to work on a single chromosome at a time, it
+requires chromosome length in order to work on sample depth with no 0 regions
 
 Author: Paolo Cozzi
-Date: 2024/03/21
+Date: 2024/04/11
 
 Usage:
-    python split_ref_by_depth.py --depth_file <depth_file>
+    python split_ref_by_depth.py --depth_file <depth_file> \
+      --chromosome_length <chromosome_length> \
+      [--min_length <min_length>] [--max_coverage <max_coverage>] \
+      [--overlap_size <overlap_size>] [--verbose <verbose>] [--quiet <quiet>]
 
 Arguments:
     depth_file: The path of samtools depth output file
@@ -126,7 +131,8 @@ def append_or_extend_region(
 
 
 def split_ref_by_coverage(
-        depthfile: str, max_coverage: int, min_length: int, overlap_size: int):
+        depthfile: str, chromosome_length: int, max_coverage: int,
+        min_length: int, overlap_size: int):
     with gzip.open(depthfile, "rt") as handle:
         reader = csv.reader(handle, delimiter="\t", lineterminator="\n")
         header = next(reader)
@@ -134,10 +140,10 @@ def split_ref_by_coverage(
         # header: ["#CHROM", "POS", "Sample_1.bam", "Sample_2.bam", ...]
         logging.debug(f"Got header: {header}")
 
-        # Inizialize some variables
+        # Initialize some variables
         line = next(reader)
         start_chrom = line[0]
-        start_pos = int(line[1])
+        start_pos = 0
         old_pos = start_pos
         cumulative_coverage = 0
 
@@ -149,26 +155,8 @@ def split_ref_by_coverage(
             chrom, pos = line[0], int(line[1])
 
             if chrom != start_chrom:
-                logging.debug(f"{i}: Got a new chromosome '{chrom}'")
-                logging.debug(
-                    f"{i}: Test for a new region with: "
-                    f"{[start_chrom, start_pos, old_pos]}"
-                    f" ({old_pos-start_pos+1} bp; "
-                    f"{cumulative_coverage:.2e} cumulative coverage)"
-                )
-
-                # add and open a new region
-                regions = append_or_extend_region(
-                    regions,
-                    [start_chrom, start_pos, old_pos],
-                    min_length,
-                    overlap_size
-                )
-
-                # reset variables
-                start_chrom = chrom
-                start_pos = pos
-                cumulative_coverage = 0
+                logging.error(f"{i}: Got a new chromosome '{chrom}'")
+                raise Exception("This script works on a single chromosome at a time")
 
             # determine region size
             length = pos - start_pos
@@ -219,6 +207,14 @@ def split_ref_by_coverage(
                 overlap_size
             )
 
+        # check for last region end
+        last_region = regions[-1]
+        if last_region[2] < chromosome_length:
+            logging.debug(
+                f"Extending the last region: {last_region} to {chromosome_length}"
+            )
+            last_region[2] = chromosome_length
+
     return regions
 
 
@@ -231,6 +227,10 @@ if __name__ == "__main__":
     parser.add_argument(
         '-d', '--depth_file', required=True,
         help="The output of samtools depth file for all samples"
+    )
+    parser.add_argument(
+        '-l', '--chromosome_length', required=True, type=int,
+        help="The length of the chromosome"
     )
     parser.add_argument(
         "--min_length", default=100_000, type=int,
@@ -263,7 +263,12 @@ if __name__ == "__main__":
 
     # split reference by coverage depth
     regions = split_ref_by_coverage(
-        args.depth_file, args.max_coverage, args.min_length, args.overlap_size)
+        args.depth_file,
+        args.chromosome_length,
+        args.max_coverage,
+        args.min_length,
+        args.overlap_size
+    )
 
     logging.info(f"Number of regions: {len(regions)}")
 

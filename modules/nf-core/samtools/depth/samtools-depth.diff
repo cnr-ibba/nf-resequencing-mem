@@ -34,7 +34,7 @@ Changes in module 'nf-core/samtools/depth'
          $positions \\
 -        -o ${prefix}.tsv \\
 -        $bam
-+        -H -a \\
++        -H \\
 +        -f ${prefix}.list.txt \\
 +        | gzip -c > ${prefix}.${meta3.id}.depth.tsv.gz
  

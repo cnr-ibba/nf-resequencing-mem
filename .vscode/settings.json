@@ -10,6 +10,7 @@
         "coverage",
         "cpus",
         "demultiplexing",
+        "depthfile",
         "downsampling",
         "fasta",
         "fastq",

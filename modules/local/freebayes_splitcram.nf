@@ -23,7 +23,9 @@ process FREEBAYES_SPLITCRAM {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     split_ref_by_depth.py \\
-        --depth_file ${depth} > ${prefix}.regions.txt
+        --depth_file ${depth} \\
+        --chromosome_length ${meta.length} \\
+        > ${prefix}.regions.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

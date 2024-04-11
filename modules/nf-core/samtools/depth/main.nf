@@ -32,7 +32,7 @@ process SAMTOOLS_DEPTH {
         --threads ${task.cpus-1} \\
         $args \\
         $positions \\
-        -H -a \\
+        -H \\
         -f ${prefix}.list.txt \\
         | gzip -c > ${prefix}.${meta3.id}.depth.tsv.gz
 
