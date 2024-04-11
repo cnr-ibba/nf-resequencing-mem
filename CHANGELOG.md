@@ -3,6 +3,15 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.1 - [2024-04-11]
+
+- Calculate `samtools/depth` on each chromosomes ([#73](https://github.com/cnr-ibba/nf-resequencing-mem/issues/73))
+
+### `Fixed`
+
+- Passing args to `modules/local/freebayes_splitcram`
+- Calculate `samtools/depth` without *0 coverage* regions
+
 ## 0.6.0 - [2024-04-04]
 
 - Replace `*.bam` file format with `*.cram` ([#9](https://github.com/cnr-ibba/nf-resequencing-mem/issues/9))
