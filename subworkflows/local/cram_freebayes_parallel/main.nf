@@ -41,7 +41,15 @@ workflow CRAM_FREEBAYES_PARALLEL {
         .map{ it -> [[id: it.trim()], it.trim()]}
 
     // call freebayes on each region
-    FREEBAYES_CHUNK ( regions_ch, bam, bai, SAMTOOLS_DEPTH.out.bam_list, fasta, fai )
+    FREEBAYES_CHUNK (
+        regions_ch,
+        bam,
+        bai,
+        // converting to a value channel
+        SAMTOOLS_DEPTH.out.bam_list.first(),
+        fasta,
+        fai
+    )
     ch_versions = ch_versions.mix(FREEBAYES_CHUNK.out.versions)
 
     // merge freebayes chunks
