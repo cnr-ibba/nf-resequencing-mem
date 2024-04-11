@@ -9,10 +9,11 @@ process SAMTOOLS_DEPTH {
 
     input:
     tuple val(meta1), path(bam)
-    tuple val(meta2), path(intervals)
+    tuple val(meta2), path(bai)
+    tuple val(meta3), val(chromosome)
 
     output:
-    tuple val(meta1), path("*.tsv.gz"),     emit: depth
+    tuple val(meta3), path("*.tsv.gz"),     emit: depth
     tuple val(meta1), path("*.list.txt"),   emit: bam_list
     path "versions.yml",                    emit: versions
 
@@ -22,7 +23,7 @@ process SAMTOOLS_DEPTH {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta1.id}"
-    def positions = intervals ? "-b ${intervals}" : ""
+    def positions = chromosome ? "-r ${chromosome}" : ""
     """
     ls $bam | xargs -n1 > ${prefix}.list.txt
 
@@ -33,7 +34,7 @@ process SAMTOOLS_DEPTH {
         $positions \\
         -H -a \\
         -f ${prefix}.list.txt \\
-        | gzip -c > ${prefix}.depth.tsv.gz
+        | gzip -c > ${prefix}.${meta3.id}.depth.tsv.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

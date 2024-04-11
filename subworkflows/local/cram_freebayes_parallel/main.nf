@@ -18,8 +18,16 @@ workflow CRAM_FREEBAYES_PARALLEL {
     main:
     ch_versions = Channel.empty()
 
-    // calculate total coverage depth for all samples
-    SAMTOOLS_DEPTH( bam, [[], []] )
+    // read chromosome list from fasta index
+    chromosome_ch = fai.map{ it -> it[1] }
+        .splitCsv(header: false, sep: '\t')
+        .map{ row -> [[id: row[0], length: row[1]], row[0]] }
+        // .view()
+
+    // calculate total coverage depth for all samples by chromosome
+    // bam is a value channel; chromosome_ch is a queue channel
+    // for every chromosome
+    SAMTOOLS_DEPTH( bam, bai, chromosome_ch )
     ch_versions = ch_versions.mix(SAMTOOLS_DEPTH.out.versions)
 
     // split fasta in chunks relying BAM size
