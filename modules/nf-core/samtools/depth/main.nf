@@ -1,6 +1,6 @@
 process SAMTOOLS_DEPTH {
     tag "$meta1.id"
-    label 'process_medium'
+    label 'process_low'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -28,19 +28,16 @@ process SAMTOOLS_DEPTH {
 
     samtools \\
         depth \\
-        --threads ${task.cpus} \\
+        --threads ${task.cpus-1} \\
         $args \\
         $positions \\
         -H -a \\
         -f ${prefix}.list.txt \\
-        | bgzip \\
-        --threads ${task.cpus} \\
-        --stdout > ${prefix}.depth.tsv.gz
+        | gzip -c > ${prefix}.depth.tsv.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-        tabix: \$(echo \$(tabix -h 2>&1) | sed 's/^.*Version: //; s/ .*\$//')
     END_VERSIONS
     """
 }
