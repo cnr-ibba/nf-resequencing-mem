@@ -1,6 +1,13 @@
 Changes in module 'nf-core/samtools/depth'
 --- modules/nf-core/samtools/depth/main.nf
 +++ modules/nf-core/samtools/depth/main.nf
+@@ -1,5 +1,5 @@
+ process SAMTOOLS_DEPTH {
+-    tag "$meta1.id"
++    tag "$meta3.id"
+     label 'process_low'
+ 
+     conda "${moduleDir}/environment.yml"
 @@ -9,11 +9,13 @@
  
      input:
