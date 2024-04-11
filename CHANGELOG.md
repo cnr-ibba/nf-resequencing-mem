@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Fixed`
 
 - Passing args to `modules/local/freebayes_splitcram`
-- Calculate `samtools/depth` without *0 coverage* regions
+- Calculate `samtools/depth` without _0 coverage_ regions
 
 ## 0.6.0 - [2024-04-04]
 
