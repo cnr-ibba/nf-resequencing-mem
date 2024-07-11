@@ -3,6 +3,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.2 - dev
+
+- Fixed issue with `picard/markduplicates` ([#77](https://github.com/cnr-ibba/nf-resequencing-mem/issues/77))
+- Display current chromosome in `samtools/depth`
+
+### `Fixed`
+
+- `picard/markduplicates` was updated to the latest release in order to work
+  with `*.cram` files
+
 ## 0.6.1 - [2024-04-11]
 
 - Calculate `samtools/depth` on each chromosomes ([#73](https://github.com/cnr-ibba/nf-resequencing-mem/issues/73))
