@@ -68,7 +68,7 @@
           },
           "picard/markduplicates": {
             "branch": "master",
-            "git_sha": "1943aa60f7490c3d6740e8872e6e69122ccc8087",
+            "git_sha": "0dee12b56ccecc416d6f7a1ccd85fd571eab3307",
             "installed_by": ["modules"]
           },
           "samtools/coverage": {
