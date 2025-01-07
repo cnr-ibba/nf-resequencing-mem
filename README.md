@@ -37,6 +37,24 @@ nextflow manual, and lets nextflow to download and execute the pipeline, for exa
 nextflow pull cnr-ibba/nf-resequencing-mem
 ```
 
+## Testing stuff
+
+In order to test this pipeline in your infrastructure, you can call this pipeline
+on the _test_ dataset using the `test` profile. You can provide the _path_ where
+the pipeline is stored, or if you let nextflow to manage the pipeline (ie.
+`nextflow pull`), you can test the pipeline like this:
+
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -profile test,<your profile>
+```
+
+where `<your profile>` is one of `docker`, `singularity` or `conda` profile.
+This `cnr-ibba/nf-resequencing-mem` is the name of the pipeline which will
+be used; if you have cloned the repository, you can provide the path to the
+cloned folder. Regardless of the way you have chosen to set up the pipeline,
+nextflow will download the required containers (if necessary) and will execute
+the pipeline on the test dataset by collecting remote files.
+
 ## Customize configuration
 
 When running Nextflow, Nextflow looks for a file named `nextflow.config` in the
@@ -78,6 +96,7 @@ files). These are pipeline parameters which are _mandatory_:
   same sample before calling _trimgalore_ in the `CAT_FASTQ` process.
 - `--genome_fasta`: (required) path to genome (FASTA) file. If file is compressed,
   index calculation will be forced even if provided by CLI
+- `--outdir`: (required) directory in which store _results_
 
 There are also additional pipeline parameters that can be provided and can be
 used to save _intermediate results_ or to skip a particular step:
