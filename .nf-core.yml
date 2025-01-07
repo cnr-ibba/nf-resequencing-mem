@@ -1,3 +1,7 @@
+repository_type: pipeline
+
+nf_core_version: 3.1.1
+
 lint:
   actions_awsfulltest: False
   pipeline_todos: False
@@ -9,5 +13,3 @@ lint:
   merge_markers: False
   multiqc_config: False
   pipeline_name_conventions: False
-repository_type: pipeline
-nf_core_version: "2.14.1"
