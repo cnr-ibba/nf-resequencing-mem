@@ -22,14 +22,8 @@ which is the final output of this pipeline.
 ## Setting up
 
 In order to execute this pipeline, you will need `nextflow` installed and one of this
-different executors: `conda`, `singularity` and `docker`. You can choose to clone
-this repository if you plan to change this pipeline according your needs:
-
-```bash
-git clone https://github.com/cnr-ibba/nf-resequencing-mem
-```
-
-The other way to running this pipeline is described in
+different executors: `conda`, `singularity` and `docker`.
+The proper way to running this pipeline is described in
 [pipeline sharing](https://www.nextflow.io/docs/latest/sharing.html#pipeline-sharing)
 nextflow manual, and lets nextflow to download and execute the pipeline, for example:
 
@@ -37,22 +31,24 @@ nextflow manual, and lets nextflow to download and execute the pipeline, for exa
 nextflow pull cnr-ibba/nf-resequencing-mem
 ```
 
+You can specify the version of the pipeline to be downloaded by providing the
+`-r` option, for example:
+
+```bash
+nextflow pull cnr-ibba/nf-resequencing-mem v0.6.2
+```
+
 ## Testing stuff
 
 In order to test this pipeline in your infrastructure, you can call this pipeline
-on the _test_ dataset using the `test` profile. You can provide the _path_ where
-the pipeline is stored, or if you let nextflow to manage the pipeline (ie.
-`nextflow pull`), you can test the pipeline like this:
+on the _test_ dataset using the `test` profile:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -profile test,<your profile>
 ```
 
 where `<your profile>` is one of `docker`, `singularity` or `conda` profile.
-This `cnr-ibba/nf-resequencing-mem` is the name of the pipeline which will
-be used; if you have cloned the repository, you can provide the path to the
-cloned folder. Regardless of the way you have chosen to set up the pipeline,
-nextflow will download the required containers (if necessary) and will execute
+Nextflow will download the required containers (if necessary) and will execute
 the pipeline on the test dataset by collecting remote files.
 
 ## Customize configuration
