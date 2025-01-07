@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.6.2 - dev
 
+- Use remote files with `test` profile
 - Fixed issue with `picard/markduplicates` ([#77](https://github.com/cnr-ibba/nf-resequencing-mem/issues/77))
 - Display current chromosome in `samtools/depth`
 
