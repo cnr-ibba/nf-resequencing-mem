@@ -5,12 +5,57 @@ nf_core_version: 3.1.1
 lint:
   files_unchanged:
     - .gitignore
+    - .prettierignore
     - LICENSE
   nextflow_config: False
-  multiqc_config: False
-  files_exist: False
-  actions_awsfulltest: False
+  multiqc_config:
+    - report_comment
+  files_exist:
+    - conf/igenomes.config
+    - conf/igenomes_ignored.config
+    - CODE_OF_CONDUCT.md
+    - assets/nf-core-nf-resequencing-mem_logo_light.png
+    - docs/images/nf-core-nf-resequencing-mem_logo_light.png
+    - docs/images/nf-core-nf-resequencing-mem_logo_dark.png
+    - .github/ISSUE_TEMPLATE/config.yml
+    - .github/workflows/awstest.yml
+    - .github/workflows/awsfulltest.yml
+    - ro-crate-metadata.json
+    # the following files will be introduced by templates
+    - .github/.dockstore.yml
+    - .github/CONTRIBUTING.md
+    - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .github/ISSUE_TEMPLATE/feature_request.yml
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - assets/email_template.html
+    - assets/email_template.txt
+    - assets/sendmail_template.txt
+    - conf/test_full.config
+    - docs/output.md
+    - docs/README.md
+    - docs/README.md
+    - docs/usage.md
+    # the following files should be removed when updating templates
+    - .markdownlint.yml
+    - lib/NfcoreTemplate.groovy
+    - lib/Utils.groovy
+    - lib/WorkflowMain.groovy
+    - lib/nfcore_external_java_deps.jar
   pipeline_todos: False
-  actions_ci: False
-  merge_markers: False
   pipeline_name_conventions: False
+
+template:
+  org: cnr-ibba
+  name: nf-resequencing-mem
+  description: Nextflow Resequencing pipeline with BWA-MEM and Freebayes
+  author: Paolo Cozzi, Barbara Lazzari
+  version: 0.6.2-dev
+  force: true
+  outdir: .
+  skip_features:
+    - igenomes
+    - adaptivecard
+    - slackreport
+    - seqera_platform
+    - rocrate
+  is_nfcore: false
