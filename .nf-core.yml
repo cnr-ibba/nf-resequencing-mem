@@ -3,13 +3,14 @@ repository_type: pipeline
 nf_core_version: 3.1.1
 
 lint:
-  actions_awsfulltest: False
-  pipeline_todos: False
-  files_exist: False
-  nextflow_config: False
   files_unchanged:
     - .gitignore
+    - LICENSE
+  nextflow_config: False
+  multiqc_config: False
+  files_exist: False
+  actions_awsfulltest: False
+  pipeline_todos: False
   actions_ci: False
   merge_markers: False
-  multiqc_config: False
   pipeline_name_conventions: False
