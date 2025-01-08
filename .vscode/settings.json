@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "awsbatch",
+        "awsfulltest",
         "awsqueue",
         "awsregion",
         "bamaddrg",
@@ -23,6 +24,8 @@
         "markduplicate",
         "markduplicated",
         "markduplicates",
+        "mshick",
+        "multiqc",
         "nextflow",
         "outdir",
         "ploidy",
