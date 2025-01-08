@@ -8,6 +8,7 @@ lint:
     - .prettierignore
     - LICENSE
   nextflow_config: False
+  included_configs: False
   multiqc_config:
     - report_comment
   files_exist:
