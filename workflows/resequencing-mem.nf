@@ -165,7 +165,7 @@ workflow RESEQUENCING_MEM {
   // determine output files)
   bcftools_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
     .join(CRAM_FREEBAYES_PARALLEL.out.tbi)
-    .map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
+    .map{ meta, vcf, tbi -> [[id: "${meta.id}.normalized"], vcf, tbi]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
   BCFTOOLS_NORM(

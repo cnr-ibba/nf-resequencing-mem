@@ -16,8 +16,9 @@ workflow SNPEFF_ANNOTATE {
     cache = Channel.empty()
 
     // define configuration for SnpEff
-    config = Channel.fromPath(params.snpeff_config, checkIfExists: true).
-      map { it -> [[id:genome], it] }
+    config = Channel.fromPath(params.snpeff_config, checkIfExists: true)
+      .map { it -> [[id:genome], it] }
+      .first()
 
     if (! params.snpeff_cachedir) {
       // create a input channel for SnpEff download
@@ -29,19 +30,18 @@ workflow SNPEFF_ANNOTATE {
 
       // track version
       ch_versions = ch_versions.mix(SNPEFF_DOWNLOAD.out.versions)
-
-      // annotate the VCF file
-      SNPEFF_SNPEFF(vcf, genome, SNPEFF_DOWNLOAD.out.cache, config)
-
-      // track version
-      ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions)
     } else {
       // use the provided cache
-      cache = Channel.fromPath(params.snpeff_cachedir, checkIfExists: true).
-        map { it -> [[id:genome], it] }
-
-      SNPEFF_SNPEFF(vcf, genome, cache, config)
+      cache = Channel.fromPath(params.snpeff_cachedir, checkIfExists: true)
+        .map { it -> [[id:genome], it] }
+        .first()
     }
+
+    // annotate the VCF file
+    SNPEFF_SNPEFF(vcf, Channel.value(genome), cache, config)
+
+    // track version
+    ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions)
 
   emit:
     cache         = cache
