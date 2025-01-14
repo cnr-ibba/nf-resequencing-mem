@@ -165,7 +165,6 @@ workflow RESEQUENCING_MEM {
   // determine output files)
   bcftools_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
     .join(CRAM_FREEBAYES_PARALLEL.out.tbi)
-    .map{ meta, vcf, tbi -> [[id: "${meta.id}.no-overlap"], vcf, tbi]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
   // required to remove overlapping regions after concatenation
@@ -178,7 +177,7 @@ workflow RESEQUENCING_MEM {
 
   // normalize VCF using freebayes and bcftools
   FREEBAYES_NORMALIZE(
-    REMOVE_OVERLAP.out.vcf.map{ meta, vcf -> [[id: "${meta.id}.freebayes-normalized"], vcf] },
+    REMOVE_OVERLAP.out.vcf,
     PREPARE_GENOME.out.genome_fasta
   )
   ch_versions = ch_versions.mix(FREEBAYES_NORMALIZE.out.versions)

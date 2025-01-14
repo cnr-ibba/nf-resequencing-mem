@@ -24,7 +24,7 @@ workflow FREEBAYES_NORMALIZE {
         ch_versions = ch_versions.mix(FREEBAYES_NORM.out.versions)
 
         // sort VCF file
-        BCFTOOLS_SORT(FREEBAYES_NORM.out.vcf.map{ meta, vcf -> [[id: "${meta.id}.sorted"], vcf] },)
+        BCFTOOLS_SORT(FREEBAYES_NORM.out.vcf)
         ch_versions = ch_versions.mix(BCFTOOLS_SORT.out.versions)
 
         // index sorted vcf
@@ -34,7 +34,6 @@ workflow FREEBAYES_NORMALIZE {
         // prepare to normalize with bcftools
         normalize_in_ch = BCFTOOLS_SORT.out.vcf
             .join(BCFTOOLS_SORT_TBI.out.tbi)
-            .map{ meta, vcf, tbi -> [[id: "${meta.id}.bcftools-normalized"], vcf, tbi]}
 
         // normalize with bcftools (2nd normalization, after vcfallelicprimitives)
         BCFTOOLS_NORM(
