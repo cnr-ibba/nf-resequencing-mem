@@ -13,18 +13,18 @@ include { BCFTOOLS_FILLTAGS           } from '../../modules/local/bcftools_fillt
 
 workflow FREEBAYES_NORMALIZE {
     take:
-        vcf       // channel: [mandatory] the VCF file to normalize
+        vcf_ch    // channel: [mandatory] the VCF file to normalize
         ref_fasta // value: [mandatory] the reference fasta file coming from PREPARE_GENOME
 
     main:
         ch_versions = Channel.empty()
 
         // normalize input using vcfallelicprimitives
-        FREEBAYES_NORM(vcf)
+        FREEBAYES_NORM(vcf_ch)
         ch_versions = ch_versions.mix(FREEBAYES_NORM.out.versions)
 
         // sort VCF file
-        BCFTOOLS_SORT(FREEBAYES_NORM.out.vcf)
+        BCFTOOLS_SORT(FREEBAYES_NORM.out.vcf.map{ meta, vcf -> [[id: "${meta.id}.sorted"], vcf] },)
         ch_versions = ch_versions.mix(BCFTOOLS_SORT.out.versions)
 
         // index sorted vcf
@@ -34,6 +34,7 @@ workflow FREEBAYES_NORMALIZE {
         // prepare to normalize with bcftools
         normalize_in_ch = BCFTOOLS_SORT.out.vcf
             .join(BCFTOOLS_SORT_TBI.out.tbi)
+            .map{ meta, vcf, tbi -> [[id: "${meta.id}.bcftools-normalized"], vcf, tbi]}
 
         // normalize with bcftools (2nd normalization, after vcfallelicprimitives)
         BCFTOOLS_NORM(

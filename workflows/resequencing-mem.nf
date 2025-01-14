@@ -42,8 +42,7 @@ include {
 include { TRIMGALORE                        } from '../modules/nf-core/trimgalore/main'
 include { BWA_MEM                           } from '../modules/nf-core/bwa/mem/main'
 include { CRAM_FREEBAYES_PARALLEL           } from '../subworkflows/local/cram_freebayes_parallel/main'
-include { BCFTOOLS_NORM                     } from '../modules/nf-core/bcftools/norm/main'
-include { TABIX_TABIX                       } from '../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_NORM as REMOVE_OVERLAP   } from '../modules/nf-core/bcftools/norm/main'
 include { BCFTOOLS_STATS                    } from '../modules/nf-core/bcftools/stats/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS       } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { CRAM_MARKDUPLICATES_PICARD        } from '../subworkflows/local/cram_markduplicates_picard/main'
@@ -166,31 +165,27 @@ workflow RESEQUENCING_MEM {
   // determine output files)
   bcftools_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
     .join(CRAM_FREEBAYES_PARALLEL.out.tbi)
-    .map{ meta, vcf, tbi -> [[id: "${meta.id}.normalized"], vcf, tbi]}
+    .map{ meta, vcf, tbi -> [[id: "${meta.id}.no-overlap"], vcf, tbi]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
   // required to remove overlapping regions after concatenation
   // TODO: move this normalization in CRAM_FREEBAYES_PARALLEL, after concatenation
-  BCFTOOLS_NORM(
+  REMOVE_OVERLAP(
     bcftools_ch,
     PREPARE_GENOME.out.genome_fasta
   )
-  ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
-
-  // index normalized VCF file
-  TABIX_TABIX(BCFTOOLS_NORM.out.vcf)
-  ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
+  ch_versions = ch_versions.mix(REMOVE_OVERLAP.out.versions)
 
   // normalize VCF using freebayes and bcftools
   FREEBAYES_NORMALIZE(
-    BCFTOOLS_NORM.out.vcf,
+    REMOVE_OVERLAP.out.vcf.map{ meta, vcf -> [[id: "${meta.id}.freebayes-normalized"], vcf] },
     PREPARE_GENOME.out.genome_fasta
   )
   ch_versions = ch_versions.mix(FREEBAYES_NORMALIZE.out.versions)
 
   // prepare input for bcftools stats
-  bcftools_in_ch = BCFTOOLS_NORM.out.vcf
-    .join(TABIX_TABIX.out.tbi)
+  bcftools_in_ch = FREEBAYES_NORMALIZE.out.vcf
+    .join(FREEBAYES_NORMALIZE.out.tbi)
     // .view()
 
   BCFTOOLS_STATS(
@@ -212,7 +207,7 @@ workflow RESEQUENCING_MEM {
     // annotate VCF with SnpEff
     SNPEFF_ANNOTATE(
       params.snpeff_database,
-      BCFTOOLS_NORM.out.vcf,
+      FREEBAYES_NORMALIZE.out.vcf,
     )
 
     // track version

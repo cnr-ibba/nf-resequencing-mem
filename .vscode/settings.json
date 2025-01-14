@@ -42,6 +42,7 @@
         "subworkflow",
         "subworkflows",
         "TABIX",
-        "trimgalore"
+        "trimgalore",
+        "vcfallelicprimitives"
     ]
 }
