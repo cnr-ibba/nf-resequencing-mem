@@ -5,6 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.6.2 - dev
 
+- Normalize VCF file with `vcfallelicprimitives`  ([#76](https://github.com/cnr-ibba/nf-resequencing-mem/issues/76))
+- Add `freebayes_normalized` local subworkflow
 - Update `nextflow` to version `24.04.0`
 - Using the `resourceLimits` directive to set the max requirements for each process
 - Update CI system ([#81](https://github.com/cnr-ibba/nf-resequencing-mem/issues/81))
@@ -14,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
+- Add `bcftools_filltags` process
+- Add `freebayes_norm` process
+- Add `freebayes_normalized` local subworkflow
 - Add `bcftools/sort` process
 
 ### `Fixed`
@@ -24,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Removed`
 
+- Remove `tabix/tabix` after the first normalization step (removing overlap)
 - Remove `check_max` function
 
 ## 0.6.1 - [2024-04-11]
