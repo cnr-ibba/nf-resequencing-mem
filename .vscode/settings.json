@@ -17,6 +17,7 @@
         "downsampling",
         "fasta",
         "fastq",
+        "FILLTAGS",
         "flagstat",
         "freebayes",
         "htsjdk",
@@ -40,6 +41,7 @@
         "SPLITCRAM",
         "subworkflow",
         "subworkflows",
+        "TABIX",
         "trimgalore"
     ]
 }

@@ -47,6 +47,7 @@ include { TABIX_TABIX                       } from '../modules/nf-core/tabix/tab
 include { BCFTOOLS_STATS                    } from '../modules/nf-core/bcftools/stats/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS       } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { CRAM_MARKDUPLICATES_PICARD        } from '../subworkflows/local/cram_markduplicates_picard/main'
+include { FREEBAYES_NORMALIZE               } from '../subworkflows/local/freebayes_normalize.nf'
 include { SNPEFF_ANNOTATE                   } from '../subworkflows/local/snpeff_annotate'
 
 // A workflow definition which does not declare any name is assumed to be the
@@ -66,7 +67,7 @@ workflow RESEQUENCING_MEM {
   .map {
     meta, fastq ->
       def meta_clone = meta.clone()
-      tmp = meta_clone.id.split('_')
+      def tmp = meta_clone.id.split('_')
       if (tmp.size() > 1) {
         meta_clone.id = tmp[0..-2].join('_')
       }
@@ -179,6 +180,13 @@ workflow RESEQUENCING_MEM {
   // index normalized VCF file
   TABIX_TABIX(BCFTOOLS_NORM.out.vcf)
   ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
+
+  // normalize VCF using freebayes and bcftools
+  FREEBAYES_NORMALIZE(
+    BCFTOOLS_NORM.out.vcf,
+    PREPARE_GENOME.out.genome_fasta
+  )
+  ch_versions = ch_versions.mix(FREEBAYES_NORMALIZE.out.versions)
 
   // prepare input for bcftools stats
   bcftools_in_ch = BCFTOOLS_NORM.out.vcf
