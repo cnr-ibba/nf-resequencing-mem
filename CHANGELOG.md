@@ -5,10 +5,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.6.2 - dev
 
-- update CI system ([#81](https://github.com/cnr-ibba/nf-resequencing-mem/issues/81))
+- Update `nextflow` to version `24.04.0`
+- Using the `resourceLimits` directive to set the max requirements for each process
+- Update CI system ([#81](https://github.com/cnr-ibba/nf-resequencing-mem/issues/81))
 - Use remote files with `test` profile
 - Fixed issue with `picard/markduplicates` ([#77](https://github.com/cnr-ibba/nf-resequencing-mem/issues/77))
 - Display current chromosome in `samtools/depth`
+
+### `Added`
+
+- Add `bcftools/sort` process
 
 ### `Fixed`
 
@@ -16,9 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `picard/markduplicates` was updated to the latest release in order to work
   with `*.cram` files
 
-### `Added`
+### `Removed`
 
-- Add `bcftools/sort` process
+- Remove `check_max` function
 
 ## 0.6.1 - [2024-04-11]
 
