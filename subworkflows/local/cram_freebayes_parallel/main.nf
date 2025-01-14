@@ -55,14 +55,14 @@ workflow CRAM_FREEBAYES_PARALLEL {
     // merge freebayes chunks
     vcf_ch = FREEBAYES_CHUNK.out.vcf
         .map{ meta, region -> {
-            chromosome = meta.id.tokenize(":")[0]
+            def chromosome = meta.id.tokenize(":")[0]
             [ [id: chromosome], region ]
         }}
         .groupTuple()
         // .view()
     tbi_ch = FREEBAYES_CHUNK.out.index
         .map{ meta, region -> {
-            chromosome = meta.id.tokenize(":")[0]
+            def chromosome = meta.id.tokenize(":")[0]
             [ [id: chromosome], region ]
         }}
         .groupTuple()

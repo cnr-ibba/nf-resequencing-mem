@@ -168,6 +168,8 @@ workflow RESEQUENCING_MEM {
     .map{ meta, vcf, tbi -> [[id: "${meta.id}.normalized"], vcf, tbi]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
+  // required to remove overlapping regions after concatenation
+  // TODO: move this normalization in CRAM_FREEBAYES_PARALLEL, after concatenation
   BCFTOOLS_NORM(
     bcftools_ch,
     PREPARE_GENOME.out.genome_fasta
