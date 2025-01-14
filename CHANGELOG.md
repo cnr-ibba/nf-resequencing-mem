@@ -12,8 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
+- Use remote files with `test` profile
 - `picard/markduplicates` was updated to the latest release in order to work
   with `*.cram` files
+
+### `Added`
+
+- Add `bcftools/sort` process
 
 ## 0.6.1 - [2024-04-11]
 
