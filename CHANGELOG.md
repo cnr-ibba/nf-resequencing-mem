@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.6.2 - dev
 
+- Update `nextflow.config`
 - Parallelize normalization steps by chromosomes. Merge VCF files after normalization
 - Normalize VCF file with `vcfallelicprimitives` ([#76](https://github.com/cnr-ibba/nf-resequencing-mem/issues/76))
 - Add `freebayes_normalized` local subworkflow
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Removed`
 
+- Remove unsupported options in `nextflow.config`
 - Remove `tabix/tabix` after the first normalization step (removing overlap)
 - Remove `check_max` function
 
