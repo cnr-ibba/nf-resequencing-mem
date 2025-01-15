@@ -12,7 +12,6 @@ process BCFTOOLS_FILLTAGS {
 
     output:
     tuple val(meta), path("*.vcf.gz")     , emit: vcf
-    tuple val(meta), path("*.vcf.gz.tbi") , emit: index
     path  "versions.yml"                  , emit: versions
 
     when:
@@ -30,12 +29,9 @@ process BCFTOOLS_FILLTAGS {
         --output ${prefix}.vcf.gz \\
         $args2
 
-    tabix ${prefix}.vcf.gz
-
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-        tabix: \$(echo \$(tabix -h 2>&1) | sed 's/^.*Version: //; s/ .*\$//')
     END_VERSIONS
     """
 }
