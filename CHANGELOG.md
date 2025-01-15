@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
+- Add `bcftools/concat` process
 - Add `bcftools_filltags` process
 - Add `freebayes_norm` process
 - Add `freebayes_normalized` local subworkflow
