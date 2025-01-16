@@ -13,7 +13,8 @@
           "freebayes/chunk": {
             "branch": "master",
             "git_sha": "03189b5139b1112cc869e8b78b3b6f82c595d4df",
-            "installed_by": ["modules"]
+            "installed_by": ["modules"],
+            "patch": "modules/cnr-ibba/freebayes/chunk/freebayes-chunk.diff"
           },
           "seqkit/rmdup": {
             "branch": "master",
