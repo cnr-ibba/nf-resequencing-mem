@@ -57,7 +57,7 @@
         },
         "gvcf_chunk": {
           "type": "integer",
-          "description": "Write gVCF output, which indicates coverage in uncalled regions."
+          "description": "When writing gVCF output emit a record for every N bases."
         },
         "gvcf_dont_use_chunk": {
           "type": "boolean",
