@@ -11,3 +11,7 @@ results/
 # ignore any compressed file
 *.gz
 *.zip
+
+# ignore lint files
+lint_log.txt
+lint_results.md

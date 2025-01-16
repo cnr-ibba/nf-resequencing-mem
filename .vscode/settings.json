@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "apptainer",
         "awsbatch",
         "awsfulltest",
         "awsqueue",
@@ -17,6 +18,7 @@
         "downsampling",
         "fasta",
         "fastq",
+        "FILLTAGS",
         "flagstat",
         "freebayes",
         "htsjdk",
@@ -40,6 +42,8 @@
         "SPLITCRAM",
         "subworkflow",
         "subworkflows",
-        "trimgalore"
+        "TABIX",
+        "trimgalore",
+        "vcfallelicprimitives"
     ]
 }

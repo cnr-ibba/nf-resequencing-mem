@@ -6,7 +6,7 @@
 [![GitHub Actions Linting Status](https://github.com/cnr-ibba/nf-resequencing-mem/actions/workflows/linting.yml/badge.svg)](https://github.com/cnr-ibba/nf-resequencing-mem/actions/workflows/linting.yml)
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A523.04.0-23aa62.svg)](https://www.nextflow.io/)
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.0-23aa62.svg)](https://www.nextflow.io/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
@@ -47,15 +47,19 @@ on the _test_ dataset using the `test` profile:
 nextflow run cnr-ibba/nf-resequencing-mem -profile test,<your profile>
 ```
 
-where `<your profile>` is one of `docker`, `singularity` or `conda` profile.
+where `<your profile>` is one of `docker`, `singularity`, `apptainer` or `conda` profile.
 Nextflow will download the required containers (if necessary) and will execute
-the pipeline on the test dataset by collecting remote files.
+For more information, please see [Profiles scope](#profiles-scope) section
+of this documentation.
 
 ## Customize configuration
 
 When running Nextflow, Nextflow looks for a file named `nextflow.config` in the
 current directory and in the script base directory (if it is not the same as the
-current directory). Finally it checks for the file `$HOME/.nextflow/config`.
+current directory). Finally it checks for the file `$HOME/.nextflow/config`, which
+have lower priority than the other configuration files.
+There's also a _institutional configuration_ for this pipeline, which is located
+at [cnr-ibba/nf-config](https://github.com/cnr-ibba/nf-configs/blob/ibba/docs/pipeline/nf-resequencing-mem/ibba.md).
 Additionally, you can provide a custom config file using the `-config` option,
 which has an higher priority respect to the other configuration files.
 There are tree different _scopes_, which can be used to customize this
@@ -84,7 +88,8 @@ the highest priority and override each parameter defined in other configuration
 files). These are pipeline parameters which are _mandatory_:
 
 - `--input`: (required) specify the samplesheet CSV/TSV file where `sample,fastq_1,fastq_2`
-  columns are described (see `assets/samplesheet.csv` for an example). In the
+  columns are described (see [assets/samplesheet.csv](https://raw.githubusercontent.com/cnr-ibba/nf-resequencing-mem/refs/heads/master/assets/samplesheet.csv)
+  for an example). In the
   `fastq_1` and `fastq_2` columns you need to specify the path fore _R1_ and _R2_
   files respectively. If you have single paired reads, leave `fastq_2` column empty.
   if you have more file for the same sample, specify all the single/pair files using
@@ -188,6 +193,8 @@ by defining three different profiles:
 - **singularity**: manage requirements using singularity images. You can execute
   this profile without any permissions. `singularity` software need to be installed
   and available in your `$PATH` bash environment variable
+- **apptainer**: manage requirements using apptainer images, which is the community
+  driven continuation of Singularity, maintained under the Linux Foundation.
 
 Then there are also profiles which define the _executor_ used to submit/collect a
 job, that can be customized in order to affect the pipeline in a particular environment.
@@ -197,12 +204,35 @@ Profiles can be combined when calling nextflow, for example:
 nextflow run -profile singularity,slurm ...
 ```
 
-will enable all the configuration to be applied on slurm executor using singularity
+will enable all the configuration to be applied on slurm executor using singularity.
+Profiles are also defined in the _institutional configuration_ file, with the aim
+to describe and configure the infrastructure available by a certain institution.
+For this pipeline, the base repository (`--custom_config_base`)
+for the institutional configuration is located at
+[cnr-ibba/nf-configs](https://github.com/cnr-ibba/nf-configs) using
+[ibba](https://github.com/cnr-ibba/nf-configs/tree/ibba) as default branch. You
+call any profile described by the
+[cnr-ibba/nf-config/README.md](https://github.com/cnr-ibba/nf-configs/blob/ibba/README.md)
+file.
 
 ### Process scope
 
 The process configuration scope allows you to provide a specific configuration
-for a specific process. You can specify here any property described in the process
+for a specific process. For example, within this scope you can declare the
+maximum number of CPUs used by a certain process or the amount of memory required,
+for example:
+
+```config
+process {
+  // https://www.nextflow.io/docs/edge/reference/process.html#resourcelimits
+  resourceLimits = [
+      cpus: 32,
+      memory: 64.GB
+  ]
+}
+```
+
+You can specify here any property described in the process
 directive and the executor sections and override them.
 With the `withLabel` selector, you can configure of all processes annotated with
 such label selector. For example:
@@ -238,8 +268,8 @@ There are parameters which are nextflow specific. They start all with a single
 Here are the most used parameters:
 
 - `-resume`: recover previous attempt
-- `-profile`: specify one of `docker`, `singularity` and `conda` profiles. `singularity`
-  is the recommended profile in a HPC environment
+- `-profile`: specify one of `docker`, `singularity`, `apptainer` and `conda` profiles.
+  `singularity` and `apptainer` are the recommended profile in a HPC environment
 - `-work-dir`: save temporary files in a default temporary directory
   (def. `$projectDir/work`)
 

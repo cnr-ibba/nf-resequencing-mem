@@ -5,15 +5,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.6.2 - dev
 
-- update CI system ([#81](https://github.com/cnr-ibba/nf-resequencing-mem/issues/81))
+- Update `nextflow.config`
+- Support for institutional configuration
+- Parallelize normalization steps by chromosomes. Merge VCF files after normalization
+- Normalize VCF file with `vcfallelicprimitives` ([#76](https://github.com/cnr-ibba/nf-resequencing-mem/issues/76))
+- Add `freebayes_normalized` local subworkflow
+- Update `nextflow` to version `24.04.0`
+- Using the `resourceLimits` directive to set the max requirements for each process
+- Update CI system ([#81](https://github.com/cnr-ibba/nf-resequencing-mem/issues/81))
 - Use remote files with `test` profile
 - Fixed issue with `picard/markduplicates` ([#77](https://github.com/cnr-ibba/nf-resequencing-mem/issues/77))
 - Display current chromosome in `samtools/depth`
 
+### `Added`
+
+- Add institutional configuration custom repository
+- Add `bcftools/concat` process
+- Add `bcftools_filltags` process
+- Add `freebayes_norm` process
+- Add `freebayes_normalized` local subworkflow
+- Add `bcftools/sort` process
+
 ### `Fixed`
 
+- Use remote files with `test` profile
 - `picard/markduplicates` was updated to the latest release in order to work
   with `*.cram` files
+
+### `Removed`
+
+- Remove unsupported options in `nextflow.config`
+- Remove `tabix/tabix` after the first normalization step (removing overlap)
+- Remove `check_max` function
 
 ## 0.6.1 - [2024-04-11]
 

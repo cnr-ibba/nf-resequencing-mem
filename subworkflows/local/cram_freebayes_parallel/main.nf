@@ -54,11 +54,19 @@ workflow CRAM_FREEBAYES_PARALLEL {
 
     // merge freebayes chunks
     vcf_ch = FREEBAYES_CHUNK.out.vcf
-        .collect{ it -> it[1]}
-        .map{ it -> [[id: 'all-samples'], it]}
+        .map{ meta, region -> {
+            def chromosome = meta.id.tokenize(":")[0]
+            [ [id: chromosome], region ]
+        }}
+        .groupTuple()
+        // .view()
     tbi_ch = FREEBAYES_CHUNK.out.index
-        .collect{ it -> it[1]}
-        .map{ it -> [[id: 'all-samples'], it]}
+        .map{ meta, region -> {
+            def chromosome = meta.id.tokenize(":")[0]
+            [ [id: chromosome], region ]
+        }}
+        .groupTuple()
+        // .view()
 
     FREEBAYES_CONCAT ( vcf_ch.join(tbi_ch) )
     ch_versions = ch_versions.mix(FREEBAYES_CONCAT.out.versions)

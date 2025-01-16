@@ -32,22 +32,23 @@ include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { CAT_FASTQ                         } from '../modules/nf-core/cat/fastq/main'
-include { FASTQC                            } from '../modules/nf-core/fastqc/main'
-include { MULTIQC                           } from '../modules/nf-core/multiqc/main'
+include { CAT_FASTQ                            } from '../modules/nf-core/cat/fastq/main'
+include { FASTQC                               } from '../modules/nf-core/fastqc/main'
 include {
-          SEQKIT_RMDUP as SEQKIT_RMDUP_R1;
-          SEQKIT_RMDUP as SEQKIT_RMDUP_R2;
-                                            } from '../modules/cnr-ibba/seqkit/rmdup/main'
-include { TRIMGALORE                        } from '../modules/nf-core/trimgalore/main'
-include { BWA_MEM                           } from '../modules/nf-core/bwa/mem/main'
-include { CRAM_FREEBAYES_PARALLEL           } from '../subworkflows/local/cram_freebayes_parallel/main'
-include { BCFTOOLS_NORM                     } from '../modules/nf-core/bcftools/norm/main'
-include { TABIX_TABIX                       } from '../modules/nf-core/tabix/tabix/main'
-include { BCFTOOLS_STATS                    } from '../modules/nf-core/bcftools/stats/main'
-include { CUSTOM_DUMPSOFTWAREVERSIONS       } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { CRAM_MARKDUPLICATES_PICARD        } from '../subworkflows/local/cram_markduplicates_picard/main'
-include { SNPEFF_ANNOTATE                   } from '../subworkflows/local/snpeff_annotate'
+  SEQKIT_RMDUP as SEQKIT_RMDUP_R1;
+  SEQKIT_RMDUP as SEQKIT_RMDUP_R2;             } from '../modules/cnr-ibba/seqkit/rmdup/main'
+include { TRIMGALORE                           } from '../modules/nf-core/trimgalore/main'
+include { BWA_MEM                              } from '../modules/nf-core/bwa/mem/main'
+include { CRAM_FREEBAYES_PARALLEL              } from '../subworkflows/local/cram_freebayes_parallel/main'
+include { BCFTOOLS_NORM as REMOVE_OVERLAP      } from '../modules/nf-core/bcftools/norm/main'
+include { CRAM_MARKDUPLICATES_PICARD           } from '../subworkflows/local/cram_markduplicates_picard/main'
+include { FREEBAYES_NORMALIZE                  } from '../subworkflows/local/freebayes_normalize'
+include { BCFTOOLS_CONCAT                      } from '../modules/nf-core/bcftools/concat/main'
+include { TABIX_TABIX as BCFTOOLS_CONCAT_TABIX } from '../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_STATS                       } from '../modules/nf-core/bcftools/stats/main'
+include { SNPEFF_ANNOTATE                      } from '../subworkflows/local/snpeff_annotate'
+include { CUSTOM_DUMPSOFTWAREVERSIONS          } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { MULTIQC                              } from '../modules/nf-core/multiqc/main'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -66,7 +67,7 @@ workflow RESEQUENCING_MEM {
   .map {
     meta, fastq ->
       def meta_clone = meta.clone()
-      tmp = meta_clone.id.split('_')
+      def tmp = meta_clone.id.split('_')
       if (tmp.size() > 1) {
         meta_clone.id = tmp[0..-2].join('_')
       }
@@ -163,24 +164,48 @@ workflow RESEQUENCING_MEM {
   // create bcftools channel. Freebayes multi will emit a single value for vcf and indexes.
   // join it and then change meta key to avoid file name collisions (meta is used to
   // determine output files)
-  bcftools_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
+  bcftools_in_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
     .join(CRAM_FREEBAYES_PARALLEL.out.tbi)
-    .map{ it -> [[id: "all-samples-normalized"], it[1], it[2]]}
 
   // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
-  BCFTOOLS_NORM(
-    bcftools_ch,
+  // required to remove overlapping regions after concatenation
+  // TODO: move this normalization in CRAM_FREEBAYES_PARALLEL, after concatenation
+  REMOVE_OVERLAP(
+    bcftools_in_ch,
     PREPARE_GENOME.out.genome_fasta
   )
-  ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions)
+  ch_versions = ch_versions.mix(REMOVE_OVERLAP.out.versions)
+
+  // normalize VCF using freebayes and bcftools
+  FREEBAYES_NORMALIZE(
+    REMOVE_OVERLAP.out.vcf,
+    PREPARE_GENOME.out.genome_fasta
+  )
+  ch_versions = ch_versions.mix(FREEBAYES_NORMALIZE.out.versions)
+
+  // concatenate all chromosome in one file.
+  bcftools_in_ch = FREEBAYES_NORMALIZE.out.vcf
+    .map{ _meta, vcf -> [vcf] }
+    .collect()
+    .map{ it -> [[id: "all-samples-normalized"], it]}
+    .join(
+      FREEBAYES_NORMALIZE.out.tbi
+        .map{ _meta, vcf -> [vcf] }
+        .collect()
+        .map{ it -> [[id: "all-samples-normalized"], it]}
+    )
+    // .view()
+
+  BCFTOOLS_CONCAT(bcftools_in_ch)
+  ch_versions = ch_versions.mix(BCFTOOLS_CONCAT.out.versions)
 
   // index normalized VCF file
-  TABIX_TABIX(BCFTOOLS_NORM.out.vcf)
-  ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
+  BCFTOOLS_CONCAT_TABIX(BCFTOOLS_CONCAT.out.vcf)
+  ch_versions = ch_versions.mix(BCFTOOLS_CONCAT_TABIX.out.versions)
 
   // prepare input for bcftools stats
-  bcftools_in_ch = BCFTOOLS_NORM.out.vcf
-    .join(TABIX_TABIX.out.tbi)
+  bcftools_in_ch = BCFTOOLS_CONCAT.out.vcf
+    .join(BCFTOOLS_CONCAT_TABIX.out.tbi)
     // .view()
 
   BCFTOOLS_STATS(
@@ -202,7 +227,7 @@ workflow RESEQUENCING_MEM {
     // annotate VCF with SnpEff
     SNPEFF_ANNOTATE(
       params.snpeff_database,
-      BCFTOOLS_NORM.out.vcf,
+      FREEBAYES_NORMALIZE.out.vcf,
     )
 
     // track version

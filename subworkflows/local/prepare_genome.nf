@@ -30,8 +30,8 @@ workflow PREPARE_GENOME {
     if (params.genome_fasta.endsWith('.gz')) {
       genome_fasta = genome_fasta.map{
           meta, fasta -> {
-            in_fasta = ["fa", "fna", "fasta"].contains(meta.id.tokenize(".")[-1])
-            id = in_fasta ? meta.id.tokenize(".")[0..-2].join(".") : meta.id
+            def in_fasta = ["fa", "fna", "fasta"].contains(meta.id.tokenize(".")[-1])
+            def id = in_fasta ? meta.id.tokenize(".")[0..-2].join(".") : meta.id
             [ [id:id], fasta ]
           }
         }
@@ -43,7 +43,7 @@ workflow PREPARE_GENOME {
       // track version
       ch_versions = ch_versions.mix(TABIX_BGZIP.out.versions)
 
-      // overvrite fasta channel
+      // overwrite fasta channel
       genome_fasta = TABIX_BGZIP.out.output
 
       // force index calculation on uncompressed file
@@ -54,7 +54,7 @@ workflow PREPARE_GENOME {
     if (! params.genome_fasta_fai || force_index) {
       SAMTOOLS_FAIDX(genome_fasta, [[],[]])
 
-      // overvrite fasta_fai channel
+      // overwrite fasta_fai channel
       genome_fasta_fai = SAMTOOLS_FAIDX.out.fai
 
       // track version
