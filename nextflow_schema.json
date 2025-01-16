@@ -46,17 +46,22 @@
           "fa_icon": "fas fa-folder-open",
           "default": "./results"
         },
-        "email": {
-          "type": "string",
-          "description": "Email address for completion summary.",
-          "fa_icon": "fas fa-envelope",
-          "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
-          "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+        "ploidy": {
+          "type": "integer",
+          "default": 2,
+          "description": "Sets the default ploidy for the analysis."
         },
-        "multiqc_title": {
-          "type": "string",
-          "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
-          "fa_icon": "fas fa-file-signature"
+        "gvcf": {
+          "type": "boolean",
+          "description": "Write gVCF output, which indicates coverage in uncalled regions."
+        },
+        "gvcf_chunk": {
+          "type": "integer",
+          "description": "When writing gVCF output emit a record for every N bases."
+        },
+        "gvcf_dont_use_chunk": {
+          "type": "boolean",
+          "description": "When writing the gVCF output emit a record for all bases, will also route an int to --gvcf_chunk similar to --output-mode EMIT_ALL_SITES from GATK"
         },
         "snpeff_database": {
           "type": "string",
@@ -76,6 +81,18 @@
           "fa_icon": "fas fa-database",
           "help_text": "SnpEff configuration file which should include the custom database name",
           "default": "assets/NO_FILE"
+        },
+        "multiqc_title": {
+          "type": "string",
+          "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
+          "fa_icon": "fas fa-file-signature"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address for completion summary.",
+          "fa_icon": "fas fa-envelope",
+          "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
+          "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
         }
       }
     },

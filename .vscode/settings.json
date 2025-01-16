@@ -21,6 +21,7 @@
         "FILLTAGS",
         "flagstat",
         "freebayes",
+        "gvcf",
         "htsjdk",
         "ibba",
         "markduplicate",

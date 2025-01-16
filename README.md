@@ -113,6 +113,12 @@ used to save _intermediate results_ or to skip a particular step:
 - `--remove_fastq_duplicates`: (bool, def. false) remove FASTQ duplicates by IDs
 - `--save_unique_fastq`: (bool, def. false) write de-duplicated FASTQ files (require
   `--remove_fastq_duplicates` option)
+- `--ploidy`: (integer, def. 2) Sets the default ploidy for the analysis
+- `--gvcf`: (bool, def. false) save output in _gVCF_ format (def. false)
+- `--gvcf_chunk`: (integer) When writing gVCF output emit a record for every N bases.
+- `--gvcf_dont_use_chunk`: (bool, def. false) When writing the gVCF output emit a
+  record for all bases, will also route an int to `--gvcf_chunk` similar to
+  `--output-mode EMIT_ALL_SITES` from _GATK_
 - `--snpeff_database`: annotate the VCF file with SnpEff by providing a pre-built
   database that can be found using the `java -jar snpEff.jar databases` command.
   If the database is known to SnpEff will be downloaded and managed by the pipeline
@@ -260,6 +266,9 @@ process {
     }
 }
 ```
+
+> NOTE: freebayes _ploidy_ can be set using the `--ploidy` parameter, see
+> [Params scope](#params-scope) section of this documentation.
 
 ## Nextflow specific parameters
 

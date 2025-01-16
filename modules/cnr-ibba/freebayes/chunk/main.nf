@@ -28,9 +28,17 @@ process FREEBAYES_CHUNK {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def ploidy = params.ploidy == 2 ? "": "--ploidy ${params.ploidy}"
+    def gvcf = params.gvcf ? "--gvcf" : ""
+    def gvcf_chunk = params.gvcf_chunk ? "--gvcf-chunk ${params.gvcf_chunk}" : ""
+    def gvcf_dont_use_chunk = params.gvcf_dont_use_chunk ? "--gvcf-dont-use-chunk true" : ""
     """
     freebayes \\
         $args \\
+        $ploidy \\
+        $gvcf \\
+        $gvcf_chunk \\
+        $gvcf_dont_use_chunk \\
         --bam-list $bam_list \\
         --standard-filters \\
         -f $genome_fasta \\
