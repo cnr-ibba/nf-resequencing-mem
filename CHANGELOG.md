@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.6.2 - dev
 
 - Update `nextflow.config`
+- Support for institutional configuration
 - Parallelize normalization steps by chromosomes. Merge VCF files after normalization
 - Normalize VCF file with `vcfallelicprimitives` ([#76](https://github.com/cnr-ibba/nf-resequencing-mem/issues/76))
 - Add `freebayes_normalized` local subworkflow
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
+- Add institutional configuration custom repository
 - Add `bcftools/concat` process
 - Add `bcftools_filltags` process
 - Add `freebayes_norm` process
