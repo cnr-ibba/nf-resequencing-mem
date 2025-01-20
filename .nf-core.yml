@@ -45,6 +45,12 @@ lint:
   pipeline_todos: False
   pipeline_name_conventions: False
 
+update:
+  https://github.com/nf-core/modules.git:
+    nf-core:
+      snpeff/snpeff: False
+      snpeff/download: False
+
 template:
   org: cnr-ibba
   name: nf-resequencing-mem
