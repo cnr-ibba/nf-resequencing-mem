@@ -18,22 +18,6 @@ nextflow.enable.dsl = 2
 include { validateParameters; paramsHelp  } from 'plugin/nf-validation'
 include { PIPELINE_INITIALIZATION         } from './subworkflows/local/pipeline_initialization.nf'
 
-// Print help message if needed
-if (params.help) {
-    def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
-    def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
-    def String command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv --genome_fasta /path/to/genome.fasta -profile docker"
-    log.info logo + paramsHelp(command) + citation + NfcoreTemplate.dashedLine(params.monochrome_logs)
-    System.exit(0)
-}
-
-// Validate input parameters
-if (params.validate_params) {
-    validateParameters()
-}
-
-WorkflowMain.initialise(workflow, params, log)
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOW FOR PIPELINE
@@ -70,6 +54,23 @@ workflow CNR_IBBA {
 //
 workflow {
     main:
+
+    // Print help message if needed
+    if (params.help) {
+        def logo = NfcoreTemplate.logo(workflow, params.monochrome_logs)
+        def citation = '\n' + WorkflowMain.citation(workflow) + '\n'
+        def String command = "nextflow run ${workflow.manifest.name} --input samplesheet.csv --genome_fasta /path/to/genome.fasta -profile docker"
+        log.info logo + paramsHelp(command) + citation + NfcoreTemplate.dashedLine(params.monochrome_logs)
+        System.exit(0)
+    }
+
+    // Validate input parameters
+    if (params.validate_params) {
+        validateParameters()
+    }
+
+    WorkflowMain.initialise(workflow, params, log)
+
     //
     // SUBWORKFLOW: Run initializations tasks
     //
