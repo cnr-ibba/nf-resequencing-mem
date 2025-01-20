@@ -1,15 +1,3 @@
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    VALIDATE INPUTS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-// Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.genome_fasta, params.genome_bwa_index ]
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
-// Check mandatory parameters
-if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -53,6 +41,10 @@ include { MULTIQC                              } from '../modules/nf-core/multiq
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
 // of the workflow application.
 workflow RESEQUENCING_MEM {
+  take:
+  ch_input // channel: samplesheet read in from --input
+
+  main:
   // collect software version
   ch_versions = Channel.empty()
 
@@ -261,4 +253,7 @@ workflow RESEQUENCING_MEM {
     ch_versions.unique().collectFile(name: 'collated_versions.yml')
   )
 
+  emit:
+  multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+  versions       = ch_versions                 // channel: [ path(versions.yml) ]
 }

@@ -15,7 +15,8 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { validateParameters; paramsHelp } from 'plugin/nf-validation'
+include { validateParameters; paramsHelp  } from 'plugin/nf-validation'
+include { PIPELINE_INITIALIZATION         } from './subworkflows/local/pipeline_initialization.nf'
 
 // Print help message if needed
 if (params.help) {
@@ -45,7 +46,16 @@ include { RESEQUENCING_MEM } from './workflows/resequencing-mem'
 // WORKFLOW: Run main cnr-ibba/nf-resequencing-mem analysis pipeline
 //
 workflow CNR_IBBA {
-    RESEQUENCING_MEM ()
+    take:
+    samplesheet // channel: samplesheet read in from --input
+
+    main:
+    RESEQUENCING_MEM (
+        samplesheet
+    )
+
+    emit:
+    multiqc_report = RESEQUENCING_MEM.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 
 /*
@@ -59,7 +69,20 @@ workflow CNR_IBBA {
 // See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
-    CNR_IBBA ()
+    main:
+    //
+    // SUBWORKFLOW: Run initializations tasks
+    //
+    PIPELINE_INITIALIZATION (
+        params.input,
+        params.multiqc_config,
+        params.genome_fasta,
+        params.genome_bwa_index
+    )
+
+    CNR_IBBA (
+        PIPELINE_INITIALIZATION.out.samplesheet
+    )
 }
 
 /*
