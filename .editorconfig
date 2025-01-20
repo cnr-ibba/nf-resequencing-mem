@@ -8,6 +8,9 @@ trim_trailing_whitespace = true
 indent_size = 4
 indent_style = space
 
+[*.diff]
+indent_size = unset
+
 [*.{md,yml,yaml,html,css,scss,js}]
 indent_size = 2
 
@@ -29,7 +32,7 @@ indent_style = unset
 indent_size = unset
 
 # ignore python and markdown
-[*.{py,md}]
+[*.{py,md,cff}]
 indent_style = unset
 
 # ignore ro-crate metadata files

@@ -5,6 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.6.2 - dev
 
+- Solve linter issues related to VScode and _nextflow languageserver_ plugin ([#86](https://github.com/cnr-ibba/nf-resequencing-mem/issues/86))
+- Update `.editorconfig`
 - Update modules
 - Restructure `modules.config`
 - Move functions inside workflows
