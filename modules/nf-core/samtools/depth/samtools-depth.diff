@@ -1,4 +1,5 @@
-Changes in module 'nf-core/samtools/depth'
+Changes in component 'nf-core/samtools/depth'
+Changes in 'samtools/depth/main.nf':
 --- modules/nf-core/samtools/depth/main.nf
 +++ modules/nf-core/samtools/depth/main.nf
 @@ -1,5 +1,5 @@
@@ -48,4 +49,8 @@ Changes in module 'nf-core/samtools/depth'
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
 
+'modules/nf-core/samtools/depth/environment.yml' is unchanged
+'modules/nf-core/samtools/depth/meta.yml' is unchanged
+'modules/nf-core/samtools/depth/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/samtools/depth/tests/main.nf.test' is unchanged
 ************************************************************

@@ -5,7 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.6.2 - dev
 
-- Update MultiQC module
+- Update modules
+- Restructure `modules.config`
 - Move functions inside workflows
 - Convert freebayes specific parameters in pipeline parameters ([#80](https://github.com/cnr-ibba/nf-resequencing-mem/issues/80))
 - Update `nextflow.config`
