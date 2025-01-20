@@ -20,7 +20,7 @@ workflow FREEBAYES_NORMALIZE {
     main:
         ch_versions = Channel.empty()
 
-        // normalize input using vcfallelicprimitives
+        // normalize input using vcfallelicprimitives (1st normalization)
         FREEBAYES_NORM(vcf_ch)
         ch_versions = ch_versions.mix(FREEBAYES_NORM.out.versions)
 
@@ -53,7 +53,7 @@ workflow FREEBAYES_NORMALIZE {
 
         // index VCFs with tags
         BCFTOOLS_FILLTAGS_TABIX(BCFTOOLS_FILLTAGS.out.vcf)
-
+        ch_versions = ch_versions.mix(BCFTOOLS_FILLTAGS_TABIX.out.versions)
 
     emit:
         vcf           = BCFTOOLS_FILLTAGS.out.vcf

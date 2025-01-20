@@ -40,7 +40,6 @@ include {
 include { TRIMGALORE                           } from '../modules/nf-core/trimgalore/main'
 include { BWA_MEM                              } from '../modules/nf-core/bwa/mem/main'
 include { CRAM_FREEBAYES_PARALLEL              } from '../subworkflows/local/cram_freebayes_parallel/main'
-include { BCFTOOLS_NORM as REMOVE_OVERLAP      } from '../modules/nf-core/bcftools/norm/main'
 include { CRAM_MARKDUPLICATES_PICARD           } from '../subworkflows/local/cram_markduplicates_picard/main'
 include { FREEBAYES_NORMALIZE                  } from '../subworkflows/local/freebayes_normalize'
 include { BCFTOOLS_CONCAT                      } from '../modules/nf-core/bcftools/concat/main'
@@ -161,24 +160,9 @@ workflow RESEQUENCING_MEM {
   )
   ch_versions = ch_versions.mix(CRAM_FREEBAYES_PARALLEL.out.versions)
 
-  // create bcftools channel. Freebayes multi will emit a single value for vcf and indexes.
-  // join it and then change meta key to avoid file name collisions (meta is used to
-  // determine output files)
-  bcftools_in_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
-    .join(CRAM_FREEBAYES_PARALLEL.out.tbi)
-
-  // normalize VCF (see https://github.com/freebayes/freebayes#normalizing-variant-representation)
-  // required to remove overlapping regions after concatenation
-  // TODO: move this normalization in CRAM_FREEBAYES_PARALLEL, after concatenation
-  REMOVE_OVERLAP(
-    bcftools_in_ch,
-    PREPARE_GENOME.out.genome_fasta
-  )
-  ch_versions = ch_versions.mix(REMOVE_OVERLAP.out.versions)
-
   // normalize VCF using freebayes and bcftools
   FREEBAYES_NORMALIZE(
-    REMOVE_OVERLAP.out.vcf,
+    CRAM_FREEBAYES_PARALLEL.out.vcf,
     PREPARE_GENOME.out.genome_fasta
   )
   ch_versions = ch_versions.mix(FREEBAYES_NORMALIZE.out.versions)
