@@ -4,7 +4,7 @@ process FREEBAYES_NORM {
     label 'process_low'
     label 'error_retry'
 
-    conda "${moduleDir}/environment.yml"
+    conda "bioconda::freebayes=1.3.6"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/freebayes:1.3.6--hb089aa1_0':
         'biocontainers/freebayes:1.3.6--hb089aa1_0' }"
