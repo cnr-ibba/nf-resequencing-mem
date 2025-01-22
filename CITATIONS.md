@@ -42,6 +42,10 @@
 
 - [trimgalore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
 
+- [vcflib](https://github.com/vcflib/vcflib)
+
+  > <https://doi.org/10.1101/2021.05.21.445151>
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

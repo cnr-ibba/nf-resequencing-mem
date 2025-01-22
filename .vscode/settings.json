@@ -7,6 +7,9 @@
         "awsregion",
         "bamaddrg",
         "bcftools",
+        "bgzip",
+        "bioconda",
+        "biocontainers",
         "bioinformatics",
         "cachedir",
         "cmdline",
@@ -45,6 +48,7 @@
         "subworkflows",
         "TABIX",
         "trimgalore",
-        "vcfallelicprimitives"
+        "vcflib",
+        "vcfwave"
     ]
 }

@@ -2,7 +2,7 @@
 // Normalize VCF using freebayes and bcftools
 //
 
-include { FREEBAYES_NORM                    } from '../../modules/local/freebayes_norm'
+include { VCFLIB_VCFWAVE                    } from '../../modules/local/vcflib_vcfwave'
 include { BCFTOOLS_SORT                     } from '../../modules/nf-core/bcftools/sort/main'
 include {
     TABIX_TABIX as BCFTOOLS_SORT_TABIX;
@@ -21,12 +21,12 @@ workflow FREEBAYES_NORMALIZE {
     main:
         ch_versions = Channel.empty()
 
-        // normalize input using vcfallelicprimitives (1st normalization)
-        FREEBAYES_NORM(vcf_ch.join(tbi_ch))
-        ch_versions = ch_versions.mix(FREEBAYES_NORM.out.versions)
+        // normalize input using vcflib/vcfwave (1st normalization)
+        VCFLIB_VCFWAVE(vcf_ch.join(tbi_ch))
+        ch_versions = ch_versions.mix(VCFLIB_VCFWAVE.out.versions)
 
         // sort VCF file
-        BCFTOOLS_SORT(FREEBAYES_NORM.out.vcf)
+        BCFTOOLS_SORT(VCFLIB_VCFWAVE.out.vcf)
         ch_versions = ch_versions.mix(BCFTOOLS_SORT.out.versions)
 
         // index sorted vcf
@@ -37,7 +37,7 @@ workflow FREEBAYES_NORMALIZE {
         normalize_in_ch = BCFTOOLS_SORT.out.vcf
             .join(BCFTOOLS_SORT_TABIX.out.tbi)
 
-        // normalize with bcftools (2nd normalization, after vcfallelicprimitives)
+        // normalize with bcftools (2nd normalization, after vcfwave)
         BCFTOOLS_NORM(
             normalize_in_ch,
             ref_fasta
