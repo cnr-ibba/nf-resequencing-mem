@@ -25,13 +25,38 @@ process FREEBAYES_NORM {
     """
     tabix ${vcf}
 
+    # turning off pipefail because vcfallelicprimitives returns a non-zero exit code
+    set +o pipefail
+
     vcfallelicprimitives \\
         $args \\
-        -kg \\
+        -k \\
         ${vcf} \\
     | bgzip \\
         --threads $task.cpus \\
         --stdout > ${prefix}.vcf.gz
+
+    # collect exit statuses
+    exit_status_vcfallelicprimitives=\${PIPESTATUS[0]:-0}
+    exit_status_bgzip=\${PIPESTATUS[1]:-0}
+
+    # Checking 1st exit status
+    if [ "\$exit_status_vcfallelicprimitives" -ne 0 ]; then
+        # a 132 status is a warning not an error
+        if [ "\$exit_status_vcfallelicprimitives" -ne 132 ]; then
+            echo "Critical error in vcfallelicprimitives! Exit status \$exit_status_vcfallelicprimitives" >&2
+            exit 1
+        fi
+    fi
+
+    # Checking 2nd exit status
+    if [ "\$exit_status_bgzip" -ne 0 ]; then
+        echo "Critical error in bgzip! Exit status \$exit_status_bgzip" >&2
+        exit 1
+    fi
+
+    # turning on pipefail
+    set -o pipefail
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
