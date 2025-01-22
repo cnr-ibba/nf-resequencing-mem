@@ -155,6 +155,7 @@ workflow RESEQUENCING_MEM {
     // normalize VCF using freebayes and bcftools
     FREEBAYES_NORMALIZE(
         CRAM_FREEBAYES_PARALLEL.out.vcf,
+        CRAM_FREEBAYES_PARALLEL.out.tbi,
         PREPARE_GENOME.out.genome_fasta
     )
     ch_versions = ch_versions.mix(FREEBAYES_NORMALIZE.out.versions)

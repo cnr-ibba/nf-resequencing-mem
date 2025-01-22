@@ -10,7 +10,7 @@ process FREEBAYES_NORM {
         'biocontainers/freebayes:1.3.8--h6a68c12_0' }"
 
     input:
-    tuple val(meta),  path(vcf)
+    tuple val(meta), path(vcf), path(tbi)
 
     output:
     tuple val(meta), path("*.vcf.gz")     , emit: vcf
@@ -21,18 +21,15 @@ process FREEBAYES_NORM {
 
     script:
     def args = task.ext.args ?: ''
+    def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    tabix ${vcf}
-
-    # turning off pipefail because vcfallelicprimitives returns a non-zero exit code
-    set +o pipefail
-
     vcfallelicprimitives \\
         $args \\
         -k \\
         ${vcf} \\
     | bgzip \\
+        $args2 \\
         --threads $task.cpus \\
         --stdout > ${prefix}.vcf.gz
 
