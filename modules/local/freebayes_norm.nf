@@ -4,10 +4,10 @@ process FREEBAYES_NORM {
     label 'process_low'
     label 'error_retry'
 
-    conda "bioconda::freebayes=1.3.6"
+    conda "bioconda::freebayes=1.3.8"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/freebayes:1.3.6--hb089aa1_0':
-        'biocontainers/freebayes:1.3.6--hb089aa1_0' }"
+        'https://depot.galaxyproject.org/singularity/freebayes:1.3.8--h6a68c12_2':
+        'biocontainers/freebayes:1.3.8--h6a68c12_2' }"
 
     input:
     tuple val(meta),  path(vcf)
