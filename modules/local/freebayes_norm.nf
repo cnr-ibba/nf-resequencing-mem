@@ -6,8 +6,8 @@ process FREEBAYES_NORM {
 
     conda "bioconda::freebayes=1.3.8"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/freebayes:1.3.8--h6a68c12_2':
-        'biocontainers/freebayes:1.3.8--h6a68c12_2' }"
+        'https://depot.galaxyproject.org/singularity/freebayes:1.3.8--h6a68c12_0':
+        'biocontainers/freebayes:1.3.8--h6a68c12_0' }"
 
     input:
     tuple val(meta),  path(vcf)
