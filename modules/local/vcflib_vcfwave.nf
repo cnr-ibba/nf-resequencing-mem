@@ -3,10 +3,9 @@ process VCFLIB_VCFWAVE {
     tag "$meta.id"
     label 'process_low'
 
+    // TODO: conda version is 1.0.10 while container version is v1.0.12
     conda "bioconda::vcflib=1.0.10"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/vcflib:1.0.10--hdcf5f25_0':
-        'biocontainers/vcflib:1.0.10--hdcf5f25_0' }"
+    container "docker.io/bunop/vcflib:0.1"
 
     input:
     tuple val(meta), path(vcf), path(tbi)
