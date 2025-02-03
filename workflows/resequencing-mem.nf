@@ -20,22 +20,22 @@ include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { CAT_FASTQ                            } from '../modules/nf-core/cat/fastq/main'
-include { FASTQC                               } from '../modules/nf-core/fastqc/main'
+include { CAT_FASTQ                             } from '../modules/nf-core/cat/fastq/main'
+include { FASTQC                                } from '../modules/nf-core/fastqc/main'
 include {
     SEQKIT_RMDUP as SEQKIT_RMDUP_R1;
-    SEQKIT_RMDUP as SEQKIT_RMDUP_R2;           } from '../modules/cnr-ibba/seqkit/rmdup/main'
-include { TRIMGALORE                           } from '../modules/nf-core/trimgalore/main'
-include { BWA_MEM                              } from '../modules/nf-core/bwa/mem/main'
-include { CRAM_FREEBAYES_PARALLEL              } from '../subworkflows/local/cram_freebayes_parallel/main'
-include { CRAM_MARKDUPLICATES_PICARD           } from '../subworkflows/local/cram_markduplicates_picard/main'
-include { FREEBAYES_NORMALIZE                  } from '../subworkflows/local/freebayes_normalize'
-include { BCFTOOLS_CONCAT                      } from '../modules/nf-core/bcftools/concat/main'
-include { TABIX_TABIX as BCFTOOLS_CONCAT_TABIX } from '../modules/nf-core/tabix/tabix/main'
-include { BCFTOOLS_STATS                       } from '../modules/nf-core/bcftools/stats/main'
-include { SNPEFF_ANNOTATE                      } from '../subworkflows/local/snpeff_annotate'
-include { CUSTOM_DUMPSOFTWAREVERSIONS          } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { MULTIQC                              } from '../modules/nf-core/multiqc/main'
+    SEQKIT_RMDUP as SEQKIT_RMDUP_R2;            } from '../modules/cnr-ibba/seqkit/rmdup/main'
+include { TRIMGALORE                            } from '../modules/nf-core/trimgalore/main'
+include { BWA_MEM                               } from '../modules/nf-core/bwa/mem/main'
+include { CRAM_FREEBAYES_PARALLEL               } from '../subworkflows/local/cram_freebayes_parallel/main'
+include { CRAM_MARKDUPLICATES_PICARD            } from '../subworkflows/local/cram_markduplicates_picard/main'
+include { FREEBAYES_NORMALIZE                   } from '../subworkflows/local/freebayes_normalize'
+include { BCFTOOLS_CONCAT as NORMALIZED_CONCAT  } from '../modules/nf-core/bcftools/concat/main'
+include { TABIX_TABIX as NORMALIZED_CONCAT_TABIX} from '../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_STATS                        } from '../modules/nf-core/bcftools/stats/main'
+include { SNPEFF_ANNOTATE                       } from '../subworkflows/local/snpeff_annotate'
+include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { MULTIQC                               } from '../modules/nf-core/multiqc/main'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -173,16 +173,16 @@ workflow RESEQUENCING_MEM {
         )
         // .view()
 
-    BCFTOOLS_CONCAT(bcftools_in_ch)
-    ch_versions = ch_versions.mix(BCFTOOLS_CONCAT.out.versions)
+    NORMALIZED_CONCAT(bcftools_in_ch)
+    ch_versions = ch_versions.mix(NORMALIZED_CONCAT.out.versions)
 
     // index normalized VCF file
-    BCFTOOLS_CONCAT_TABIX(BCFTOOLS_CONCAT.out.vcf)
-    ch_versions = ch_versions.mix(BCFTOOLS_CONCAT_TABIX.out.versions)
+    NORMALIZED_CONCAT_TABIX(NORMALIZED_CONCAT.out.vcf)
+    ch_versions = ch_versions.mix(NORMALIZED_CONCAT_TABIX.out.versions)
 
     // prepare input for bcftools stats
-    bcftools_in_ch = BCFTOOLS_CONCAT.out.vcf
-        .join(BCFTOOLS_CONCAT_TABIX.out.tbi)
+    bcftools_in_ch = NORMALIZED_CONCAT.out.vcf
+        .join(NORMALIZED_CONCAT_TABIX.out.tbi)
         // .view()
 
     BCFTOOLS_STATS(
