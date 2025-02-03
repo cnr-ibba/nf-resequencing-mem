@@ -5,6 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 0.6.2 - dev
 
+- Update freebayes to version `1.3.8`
 - Solve linter issues related to VScode and _nextflow languageserver_ plugin ([#86](https://github.com/cnr-ibba/nf-resequencing-mem/issues/86))
 - Update `.editorconfig`
 - Update modules
@@ -14,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `nextflow.config`
 - Support for institutional configuration
 - Parallelize normalization steps by chromosomes. Merge VCF files after normalization
-- Normalize VCF file with `vcfallelicprimitives` ([#76](https://github.com/cnr-ibba/nf-resequencing-mem/issues/76))
+- Normalize VCF file using `vcfwave` ([#76](https://github.com/cnr-ibba/nf-resequencing-mem/issues/76))
 - Add `freebayes_normalized` local subworkflow
 - Update `nextflow` to version `24.04.0`
 - Using the `resourceLimits` directive to set the max requirements for each process
@@ -29,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add institutional configuration custom repository
 - Add `bcftools/concat` process
 - Add `bcftools_filltags` process
-- Add `freebayes_norm` process
+- Add `vcflib_vcfwave` local process
 - Add `freebayes_normalized` local subworkflow
 - Add `bcftools/sort` process
 
