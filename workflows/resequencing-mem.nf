@@ -61,12 +61,12 @@ workflow RESEQUENCING_MEM {
     .reads
     .map {
         meta, fastq ->
-        def meta_clone = meta.clone()
-        def tmp = meta_clone.id.split('_')
-        if (tmp.size() > 1) {
-            meta_clone.id = tmp[0..-2].join('_')
-        }
-        [ meta_clone, fastq ]
+            def meta_clone = meta.clone()
+            def tmp = meta_clone.id.split('_')
+            if (tmp.size() > 1) {
+                meta_clone.id = tmp[0..-2].join('_')
+            }
+            [ meta_clone, fastq ]
         }
         .groupTuple(by: [0])
         .branch {
@@ -94,12 +94,10 @@ workflow RESEQUENCING_MEM {
     //
     // MODULE: Concatenate FastQ files from same sample if required
     //
-    CAT_FASTQ (
-        ch_fastq.multiple
-    )
-    .reads
-    .mix(ch_fastq.single)
-    .set { ch_cat_fastq }
+    CAT_FASTQ (ch_fastq.multiple)
+        .reads
+        .mix(ch_fastq.single)
+        .set { ch_cat_fastq }
     ch_versions = ch_versions.mix(CAT_FASTQ.out.versions.first().ifEmpty(null))
 
     // call FASTQC from module
@@ -120,8 +118,8 @@ workflow RESEQUENCING_MEM {
         ch_versions = ch_versions.mix(SEQKIT_RMDUP_R1.out.versions)
 
         ch_trimgalore_input = SEQKIT_RMDUP_R1.out.unique
-        .join(SEQKIT_RMDUP_R2.out.unique)
-        .map{ meta, r1, r2 -> [meta, [r1, r2]]}
+            .join(SEQKIT_RMDUP_R2.out.unique)
+            .map{ meta, r1, r2 -> [meta, [r1, r2]]}
 
         // Trimming reads
         TRIMGALORE(ch_trimgalore_input)
@@ -230,8 +228,8 @@ workflow RESEQUENCING_MEM {
     if (params.snpeff_database) {
         // annotate VCF with SnpEff
         SNPEFF_ANNOTATE(
-        params.snpeff_database,
-        NORMALIZED_CONCAT.out.vcf,
+            params.snpeff_database,
+            NORMALIZED_CONCAT.out.vcf,
         )
 
         // track version
