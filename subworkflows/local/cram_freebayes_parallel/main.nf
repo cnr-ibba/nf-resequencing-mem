@@ -1,12 +1,12 @@
 //
-// Prepare and run freebayes paralle
+// Prepare and run freebayes parallel on CRAM files.
 //
 
-include { SAMTOOLS_DEPTH }                      from '../../../modules/nf-core/samtools/depth/main'
-include { FREEBAYES_SPLITCRAM }                 from '../../../modules/local/freebayes_splitcram'
-include { FREEBAYES_CHUNK }                     from '../../../modules/cnr-ibba/freebayes/chunk/main'
-include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT } from '../../../modules/cnr-ibba/bcftools/concat/main'
-include { TABIX_TABIX as FREEBAYES_TABIX }      from '../../../modules/nf-core/tabix/tabix/main'
+include { SAMTOOLS_DEPTH                        }from '../../../modules/nf-core/samtools/depth/main'
+include { FREEBAYES_SPLITCRAM                   } from '../../../modules/local/freebayes_splitcram'
+include { FREEBAYES_CHUNK                       } from '../../../modules/cnr-ibba/freebayes/chunk/main'
+include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT   } from '../../../modules/cnr-ibba/bcftools/concat/main'
+include { TABIX_TABIX as FREEBAYES_CONCAT_TABIX } from '../../../modules/nf-core/tabix/tabix/main'
 
 workflow CRAM_FREEBAYES_PARALLEL {
     take:
@@ -68,16 +68,17 @@ workflow CRAM_FREEBAYES_PARALLEL {
         .groupTuple()
         // .view()
 
+    // required to remove overlapping regions after concatenation
     FREEBAYES_CONCAT ( vcf_ch.join(tbi_ch) )
     ch_versions = ch_versions.mix(FREEBAYES_CONCAT.out.versions)
 
     // create index
-    FREEBAYES_TABIX ( FREEBAYES_CONCAT.out.vcf )
-    ch_versions = ch_versions.mix(FREEBAYES_TABIX.out.versions)
+    FREEBAYES_CONCAT_TABIX ( FREEBAYES_CONCAT.out.vcf )
+    ch_versions = ch_versions.mix(FREEBAYES_CONCAT_TABIX.out.versions)
 
     emit:
-    vcf      = FREEBAYES_CONCAT.out.vcf // channel: [ val(meta), [ vcf ] ]
-    tbi      = FREEBAYES_TABIX.out.tbi  // channel: [ val(meta), [ tbi ] ]
-    csi      = FREEBAYES_TABIX.out.csi  // channel: [ val(meta), [ csi ] ]
-    versions = ch_versions              // channel: [ versions.yml ]
+    vcf      = FREEBAYES_CONCAT.out.vcf         // channel: [ val(meta), [ vcf ] ]
+    tbi      = FREEBAYES_CONCAT_TABIX.out.tbi   // channel: [ val(meta), [ tbi ] ]
+    csi      = FREEBAYES_CONCAT_TABIX.out.csi   // channel: [ val(meta), [ csi ] ]
+    versions = ch_versions                      // channel: [ versions.yml ]
 }

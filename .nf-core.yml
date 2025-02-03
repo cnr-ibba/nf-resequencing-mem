@@ -1,6 +1,6 @@
 repository_type: pipeline
 
-nf_core_version: 3.1.1
+nf_core_version: 3.1.2
 
 lint:
   files_unchanged:
@@ -44,6 +44,12 @@ lint:
     - lib/nfcore_external_java_deps.jar
   pipeline_todos: False
   pipeline_name_conventions: False
+
+update:
+  https://github.com/nf-core/modules.git:
+    nf-core:
+      snpeff/snpeff: False
+      snpeff/download: False
 
 template:
   org: cnr-ibba

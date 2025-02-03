@@ -4,13 +4,13 @@ process FREEBAYES_NORM {
     label 'process_low'
     label 'error_retry'
 
-    conda "${moduleDir}/environment.yml"
+    conda "bioconda::freebayes=1.3.6"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/freebayes:1.3.6--hb089aa1_0':
         'biocontainers/freebayes:1.3.6--hb089aa1_0' }"
 
     input:
-    tuple val(meta),  path(vcf)
+    tuple val(meta), path(vcf), path(tbi)
 
     output:
     tuple val(meta), path("*.vcf.gz")     , emit: vcf
@@ -21,15 +21,15 @@ process FREEBAYES_NORM {
 
     script:
     def args = task.ext.args ?: ''
+    def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    tabix ${vcf}
-
     vcfallelicprimitives \\
         $args \\
         -kg \\
         ${vcf} \\
     | bgzip \\
+        $args2 \\
         --threads $task.cpus \\
         --stdout > ${prefix}.vcf.gz
 

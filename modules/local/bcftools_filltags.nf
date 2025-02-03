@@ -2,10 +2,10 @@ process BCFTOOLS_FILLTAGS {
     tag "$meta.id"
     label 'process_single'
 
-    conda "${moduleDir}/environment.yml"
+    conda "bioconda::bcftools=1.20"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bcftools:1.18--h8b25389_0':
-        'biocontainers/bcftools:1.18--h8b25389_0' }"
+        'https://depot.galaxyproject.org/singularity/bcftools:1.20--h8b25389_0':
+        'biocontainers/bcftools:1.20--h8b25389_0' }"
 
     input:
     tuple val(meta), path(vcf), path(index)

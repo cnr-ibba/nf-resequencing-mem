@@ -1,0 +1,28 @@
+Changes in component 'cnr-ibba/bcftools/concat'
+Changes in 'bcftools/concat/main.nf':
+--- modules/cnr-ibba/bcftools/concat/main.nf
++++ modules/cnr-ibba/bcftools/concat/main.nf
+@@ -4,8 +4,8 @@
+
+     conda "${moduleDir}/environment.yml"
+     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+-        'https://depot.galaxyproject.org/singularity/bcftools:1.18--h8b25389_0':
+-        'biocontainers/bcftools:1.18--h8b25389_0' }"
++        'https://depot.galaxyproject.org/singularity/bcftools:1.20--h8b25389_0':
++        'biocontainers/bcftools:1.20--h8b25389_0' }"
+
+     input:
+     tuple val(meta), path(vcfs), path(tbi)
+
+Changes in 'bcftools/concat/environment.yml':
+--- modules/cnr-ibba/bcftools/concat/environment.yml
++++ modules/cnr-ibba/bcftools/concat/environment.yml
+@@ -4,4 +4,4 @@
+   - bioconda
+   - defaults
+ dependencies:
+-  - bioconda::bcftools=1.18
++  - bioconda::bcftools=1.20
+
+'modules/cnr-ibba/bcftools/concat/meta.yml' is unchanged
+************************************************************

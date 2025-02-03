@@ -15,13 +15,14 @@ include { BCFTOOLS_FILLTAGS                 } from '../../modules/local/bcftools
 workflow FREEBAYES_NORMALIZE {
     take:
         vcf_ch    // channel: [mandatory] the VCF file to normalize
+        tbi_ch    // channel: [mandatory] the index file for the VCF file
         ref_fasta // value: [mandatory] the reference fasta file coming from PREPARE_GENOME
 
     main:
         ch_versions = Channel.empty()
 
-        // normalize input using vcfallelicprimitives
-        FREEBAYES_NORM(vcf_ch)
+        // normalize input using vcfallelicprimitives (1st normalization)
+        FREEBAYES_NORM(vcf_ch.join(tbi_ch))
         ch_versions = ch_versions.mix(FREEBAYES_NORM.out.versions)
 
         // sort VCF file
@@ -53,7 +54,7 @@ workflow FREEBAYES_NORMALIZE {
 
         // index VCFs with tags
         BCFTOOLS_FILLTAGS_TABIX(BCFTOOLS_FILLTAGS.out.vcf)
-
+        ch_versions = ch_versions.mix(BCFTOOLS_FILLTAGS_TABIX.out.versions)
 
     emit:
         vcf           = BCFTOOLS_FILLTAGS.out.vcf
