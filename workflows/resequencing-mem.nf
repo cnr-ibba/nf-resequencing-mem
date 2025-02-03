@@ -30,8 +30,12 @@ include { BWA_MEM                               } from '../modules/nf-core/bwa/m
 include { CRAM_FREEBAYES_PARALLEL               } from '../subworkflows/local/cram_freebayes_parallel/main'
 include { CRAM_MARKDUPLICATES_PICARD            } from '../subworkflows/local/cram_markduplicates_picard/main'
 include { FREEBAYES_NORMALIZE                   } from '../subworkflows/local/freebayes_normalize'
-include { BCFTOOLS_CONCAT as NORMALIZED_CONCAT  } from '../modules/nf-core/bcftools/concat/main'
-include { TABIX_TABIX as NORMALIZED_CONCAT_TABIX} from '../modules/nf-core/tabix/tabix/main'
+include {
+    BCFTOOLS_CONCAT as NORMALIZED_CONCAT;
+    BCFTOOLS_CONCAT as FREEBAYES_CONCAT;        } from '../modules/nf-core/bcftools/concat/main'
+include {
+    TABIX_TABIX as NORMALIZED_CONCAT_TABIX;
+    TABIX_TABIX as FREEBAYES_CONCAT_TABIX       } from '../modules/nf-core/tabix/tabix/main'
 include { BCFTOOLS_STATS                        } from '../modules/nf-core/bcftools/stats/main'
 include { SNPEFF_ANNOTATE                       } from '../subworkflows/local/snpeff_annotate'
 include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -151,6 +155,29 @@ workflow RESEQUENCING_MEM {
         PREPARE_GENOME.out.genome_fasta_fai
     )
     ch_versions = ch_versions.mix(CRAM_FREEBAYES_PARALLEL.out.versions)
+
+    // concatenate all freebayes output in one file if `--save_freebayes` parameter is set
+    if (params.save_freebayes) {
+        // concatenate all chromosome in one file.
+        bcftools_in_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
+            .map{ _meta, vcf -> [vcf] }
+            .collect()
+            .map{ it -> [[id: "all-samples"], it]}
+            .join(
+            CRAM_FREEBAYES_PARALLEL.out.tbi
+                .map{ _meta, vcf -> [vcf] }
+                .collect()
+                .map{ it -> [[id: "all-samples"], it]}
+            )
+            // .view()
+
+        FREEBAYES_CONCAT(bcftools_in_ch)
+        ch_versions = ch_versions.mix(FREEBAYES_CONCAT.out.versions)
+
+        // index normalized VCF file
+        FREEBAYES_CONCAT_TABIX(FREEBAYES_CONCAT.out.vcf)
+        ch_versions = ch_versions.mix(FREEBAYES_CONCAT_TABIX.out.versions)
+    }
 
     // normalize VCF using freebayes and bcftools
     FREEBAYES_NORMALIZE(
