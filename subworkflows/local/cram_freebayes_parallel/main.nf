@@ -2,10 +2,10 @@
 // Prepare and run freebayes parallel on CRAM files.
 //
 
-include { SAMTOOLS_DEPTH                        }from '../../../modules/nf-core/samtools/depth/main'
+include { SAMTOOLS_DEPTH                        } from '../../../modules/nf-core/samtools/depth/main'
 include { FREEBAYES_SPLITCRAM                   } from '../../../modules/local/freebayes_splitcram'
 include { FREEBAYES_CHUNK                       } from '../../../modules/cnr-ibba/freebayes/chunk/main'
-include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT   } from '../../../modules/cnr-ibba/bcftools/concat/main'
+include { BCFTOOLS_CONCAT as FREEBAYES_CONCAT   } from '../../../modules/nf-core/bcftools/concat/main'
 include { TABIX_TABIX as FREEBAYES_CONCAT_TABIX } from '../../../modules/nf-core/tabix/tabix/main'
 
 workflow CRAM_FREEBAYES_PARALLEL {
