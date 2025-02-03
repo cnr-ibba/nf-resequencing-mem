@@ -63,6 +63,11 @@
                     "type": "boolean",
                     "description": "When writing the gVCF output emit a record for all bases, will also route an int to --gvcf_chunk similar to --output-mode EMIT_ALL_SITES from GATK"
                 },
+                "skip_normalization": {
+                    "type": "boolean",
+                    "description": "Skip VCF normalization steps",
+                    "default": false
+                },
                 "snpeff_database": {
                     "type": "string",
                     "description": "SnpEff database name (ex. GRCh38.76, Saccharomyces_cerevisiae)",
