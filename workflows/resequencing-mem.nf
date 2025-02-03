@@ -231,7 +231,7 @@ workflow RESEQUENCING_MEM {
         // annotate VCF with SnpEff
         SNPEFF_ANNOTATE(
         params.snpeff_database,
-        FREEBAYES_NORMALIZE.out.vcf,
+        NORMALIZED_CONCAT.out.vcf,
         )
 
         // track version
