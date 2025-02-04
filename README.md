@@ -35,7 +35,7 @@ You can specify the version of the pipeline to be downloaded by providing the
 `-r` option, for example:
 
 ```bash
-nextflow pull cnr-ibba/nf-resequencing-mem v0.6.2
+nextflow pull cnr-ibba/nf-resequencing-mem -r v0.6.2
 ```
 
 ## Testing stuff
@@ -47,8 +47,9 @@ on the _test_ dataset using the `test` profile:
 nextflow run cnr-ibba/nf-resequencing-mem -profile test,<your profile>
 ```
 
-where `<your profile>` is one of `docker`, `singularity`, `apptainer` or `conda` profile.
+where `<your profile>` is one of `docker`, `singularity`, `apptainer` or `conda` profiles.
 Nextflow will download the required containers (if necessary) and will execute
+the pipeline on the test dataset.
 For more information, please see [Profiles scope](#profiles-scope) section
 of this documentation.
 
@@ -119,6 +120,7 @@ used to save _intermediate results_ or to skip a particular step:
 - `--gvcf_dont_use_chunk`: (bool, def. false) When writing the gVCF output emit a
   record for all bases, will also route an int to `--gvcf_chunk` similar to
   `--output-mode EMIT_ALL_SITES` from _GATK_
+  `--skip_normalization`: (bool, def. false) skip VCF normalization steps
 - `--snpeff_database`: annotate the VCF file with SnpEff by providing a pre-built
   database that can be found using the `java -jar snpEff.jar databases` command.
   If the database is known to SnpEff will be downloaded and managed by the pipeline
@@ -152,21 +154,25 @@ placed in a _json_ file, for example `params.json`:
 ```
 
 Parameters have the same name used within the CLI, but without the `--` prefix.
-Nextflow can be called like this:
+Nextflow can be then called like this:
 
 ```bash
 nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
   -params-file params.json
 ```
 
-In alternative, you can create `custom.config` file like this:
+There's also a way to provide parameters using a _config_ file:
+according to the _nextflow_ community, this
+configuration file should be used to specify all the parameters
+that can't be specified using the command line, for example custom arguments
+to be passed to a certain module using `ext.args` option can be defined in
+a `custom.config` file like this:
 
 ```conf
-params {
-  input = "<samplesheet.csv>"
-  genome_fasta = "<genome_fasta>"
-  outdir = "<results dir>"
-  save_fasta_index = true
+process {
+    withName: PICARD_MARKDUPLICATES {
+        ext.args = '--TMP_DIR $TMPDIR'
+    }
 }
 ```
 
@@ -177,9 +183,9 @@ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
   -config custom.config
 ```
 
-However, the custom configuration file should be used to specify all the parameters
-that can't be specified using the command line, for example custom arguments
-to be passed to a certain module using `ext.args` option.
+You can name this file as you prefer, but if is named `nextflow.config` it will
+be automatically loaded by nextflow: is better to use a different name to avoid
+confusion and explictly provide the configuration file using the `-config` option.
 See Nextflow [Configuration](https://www.nextflow.io/docs/latest/config.html)
 documentation for more information.
 
@@ -193,9 +199,10 @@ by defining three different profiles:
 - **conda**: every pipeline step will manage its requirements using conda in a
   specific environment. Conda environments are created inside `work` directory
   (but you can change this behavior using `cacheDir` option within the conda
-  scope).
+  scope). This in not the recommended profile in a HPC environment, should be
+  used if you aren't able to use singularity or docker profiles.
 - **docker**: manage requirements using docker images. You will need to be part of
-  the `docker` group in order to use this profile
+  the `docker` group in order to use this profile.
 - **singularity**: manage requirements using singularity images. You can execute
   this profile without any permissions. `singularity` software need to be installed
   and available in your `$PATH` bash environment variable
@@ -340,7 +347,7 @@ export NXF_EXECUTOR=slurm
 This pipeline could run using the [AWS batch queue system](https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html).
 In order to do so, you need to configure your credentials with [aws cli](https://docs.aws.amazon.com/translate/latest/dg/setup-awscli.html):
 you require to configure a _IAM_ account with permission to run _batch_, _EC2_ and _S3_.
-You require also a s3 bucket in which nextflow could store and retrieve data (nextflow
+You require also a _S3_ bucket in which nextflow could store and retrieve data (nextflow
 will make a copy of the input data and will retrieve the results from here) and
 a AWS batch queue with _EC2 spot instances_ as recommended compute environment.
 After that, you could launch this pipeline by providing only _awsbatch_ as profile
@@ -427,7 +434,7 @@ you could think to skip regions with a very high coverage (`-g` option) or
 try to sub-sample regions with high coverage with the `--limit-coverage` option,
 like this:
 
-```text
+```config
 process {
     withName: FREEBAYES_CHUNK {
         ext.args = '--limit-coverage 25'
@@ -438,7 +445,7 @@ process {
 This pipeline compute a _coverage_ step before calling freebayes, so you could
 try to determine which value make sense to be used for filtering.
 
-**N.B.** Even with downsampling this step could require a lot of time, and time
+> **N.B.** Even with downsampling this step could require a lot of time, and time
 required for each step will be unpredictable. Using a very low coverage limit
 could affect the SNP calling process. Use this option with caution.
 
