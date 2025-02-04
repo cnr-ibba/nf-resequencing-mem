@@ -48,7 +48,15 @@ class WorkflowMain {
         if (!params.input) {
             Nextflow.error("Please provide an input samplesheet to the pipeline e.g. '--input samplesheet.csv'")
         }
+
+        // check for gvcf_chunk options and gvcf
+        if ((params.gvcf_chunk || params.gvcf_dont_use_chunk) && !params.gvcf) {
+            Nextflow.error("Please provide '--gvcf' option when providing '--gvcf_chunk' or '--gvcf_dont_use_chunk' parameters")
+        } else if (params.gvcf_chunk && params.gvcf_dont_use_chunk) {
+            Nextflow.error("Please provide only one of '--gvcf_chunk' or '--gvcf_dont_use_chunk' parameters")
+        }
     }
+
     //
     // Get attribute from genome config file e.g. fasta
     //
