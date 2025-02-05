@@ -24,7 +24,8 @@ include { PIPELINE_INITIALIZATION         } from './subworkflows/local/pipeline_
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { RESEQUENCING_MEM } from './workflows/resequencing-mem'
+include { RESEQUENCING_MEM  } from './workflows/resequencing-mem'
+include { NORMALIZE_VCF     } from './subworkflows/local/normalize_vcf'
 
 //
 // WORKFLOW: Run main cnr-ibba/nf-resequencing-mem analysis pipeline
@@ -42,9 +43,14 @@ workflow CNR_IBBA {
     multiqc_report = RESEQUENCING_MEM.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 
+workflow VCF_NORMALIZE {
+    main:
+    println "Executing normalization workflow on vcf files"
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    RUN ALL WORKFLOWS
+    RUN CNR_IBBA:RESEQUENCING_MEM WORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 

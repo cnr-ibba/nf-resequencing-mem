@@ -137,6 +137,26 @@
                 }
             }
         },
+        "normalization_workflow": {
+            "title": "Normalization workflow",
+            "type": "object",
+            "description": "Normalization workflow parameters",
+            "default": "",
+            "properties": {
+                "input_vcf": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to VCF file to normalize",
+                    "fa_icon": "fas fa-file-code"
+                },
+                "input_tbi": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to VCF index file",
+                    "fa_icon": "fas fa-file-code"
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -312,6 +332,9 @@
         },
         {
             "$ref": "#/definitions/pipeline_custom_parameters"
+        },
+        {
+            "$ref": "#/definitions/normalization_workflow"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
