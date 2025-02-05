@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for institutional configuration
 - Parallelize normalization steps by chromosomes. Merge VCF files after normalization
 - Normalize VCF file using `vcfwave` ([#76](https://github.com/cnr-ibba/nf-resequencing-mem/issues/76))
-- Add `freebayes_normalized` local subworkflow
+- Add `normalize_vcf` local subworkflow
 - Update `nextflow` to version `24.04.0`
 - Using the `resourceLimits` directive to set the max requirements for each process
 - Update CI system ([#81](https://github.com/cnr-ibba/nf-resequencing-mem/issues/81))
@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `bcftools/concat` process from _nf-core_ repository
 - Add `bcftools_filltags` process
 - Add `vcflib_vcfwave` local process
-- Add `freebayes_normalized` local subworkflow
+- Add `normalize_vcf` local subworkflow
 - Add `bcftools/sort` process
 
 ### `Fixed`

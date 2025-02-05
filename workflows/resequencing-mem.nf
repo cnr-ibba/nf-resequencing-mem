@@ -29,7 +29,7 @@ include { TRIMGALORE                            } from '../modules/nf-core/trimg
 include { BWA_MEM                               } from '../modules/nf-core/bwa/mem/main'
 include { CRAM_FREEBAYES_PARALLEL               } from '../subworkflows/local/cram_freebayes_parallel/main'
 include { CRAM_MARKDUPLICATES_PICARD            } from '../subworkflows/local/cram_markduplicates_picard/main'
-include { FREEBAYES_NORMALIZE                   } from '../subworkflows/local/freebayes_normalize'
+include { NORMALIZE_VCF                         } from '../subworkflows/local/normalize_vcf'
 include {
     BCFTOOLS_CONCAT as NORMALIZED_CONCAT;
     BCFTOOLS_CONCAT as FREEBAYES_CONCAT;        } from '../modules/nf-core/bcftools/concat/main'
@@ -187,20 +187,20 @@ workflow RESEQUENCING_MEM {
             // .view()
     } else {
         // normalize VCF using freebayes and bcftools
-        FREEBAYES_NORMALIZE(
+        NORMALIZE_VCF(
             CRAM_FREEBAYES_PARALLEL.out.vcf,
             CRAM_FREEBAYES_PARALLEL.out.tbi,
             PREPARE_GENOME.out.genome_fasta
         )
-        ch_versions = ch_versions.mix(FREEBAYES_NORMALIZE.out.versions)
+        ch_versions = ch_versions.mix(NORMALIZE_VCF.out.versions)
 
         // concatenate all chromosome in one file.
-        bcftools_in_ch = FREEBAYES_NORMALIZE.out.vcf
+        bcftools_in_ch = NORMALIZE_VCF.out.vcf
             .map{ _meta, vcf -> [vcf] }
             .collect()
             .map{ it -> [[id: "all-samples-normalized"], it]}
             .join(
-            FREEBAYES_NORMALIZE.out.tbi
+            NORMALIZE_VCF.out.tbi
                 .map{ _meta, vcf -> [vcf] }
                 .collect()
                 .map{ it -> [[id: "all-samples-normalized"], it]}
