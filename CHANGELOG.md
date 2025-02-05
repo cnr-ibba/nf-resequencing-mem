@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `pipeline_initialization` local subworkflow
 - Add institutional configuration custom repository
-- Add `bcftools/concat` process
+- Add `bcftools/concat` process from _nf-core_ repository
 - Add `bcftools_filltags` process
 - Add `vcflib_vcfwave` local process
 - Add `freebayes_normalized` local subworkflow
@@ -36,12 +36,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
+- Combine _freebayes_ results if `--save-freebayes` parameter is set
+- Rename `bcftools/concat` steps in more informative way
 - Use remote files with `test` profile
 - `picard/markduplicates` was updated to the latest release in order to work
   with `*.cram` files
 
 ### `Removed`
 
+- Remove `bcftools/concat` cominf from _cnr-ibba_ repository
 - Remove unsupported options in `nextflow.config`
 - Remove `tabix/tabix` after the first normalization step (removing overlap)
 - Remove `check_max` function

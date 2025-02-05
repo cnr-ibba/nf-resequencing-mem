@@ -5,12 +5,6 @@
         "https://github.com/cnr-ibba/nf-modules.git": {
             "modules": {
                 "cnr-ibba": {
-                    "bcftools/concat": {
-                        "branch": "master",
-                        "git_sha": "4405d06441e7a1afc1f0ddd1b337e564e404c0ca",
-                        "installed_by": ["modules"],
-                        "patch": "modules/cnr-ibba/bcftools/concat/bcftools-concat.diff"
-                    },
                     "freebayes/chunk": {
                         "branch": "master",
                         "git_sha": "03189b5139b1112cc869e8b78b3b6f82c595d4df",

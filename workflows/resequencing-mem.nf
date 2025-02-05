@@ -20,22 +20,26 @@ include { PREPARE_GENOME } from '../subworkflows/local/prepare_genome'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { CAT_FASTQ                            } from '../modules/nf-core/cat/fastq/main'
-include { FASTQC                               } from '../modules/nf-core/fastqc/main'
+include { CAT_FASTQ                             } from '../modules/nf-core/cat/fastq/main'
+include { FASTQC                                } from '../modules/nf-core/fastqc/main'
 include {
     SEQKIT_RMDUP as SEQKIT_RMDUP_R1;
-    SEQKIT_RMDUP as SEQKIT_RMDUP_R2;           } from '../modules/cnr-ibba/seqkit/rmdup/main'
-include { TRIMGALORE                           } from '../modules/nf-core/trimgalore/main'
-include { BWA_MEM                              } from '../modules/nf-core/bwa/mem/main'
-include { CRAM_FREEBAYES_PARALLEL              } from '../subworkflows/local/cram_freebayes_parallel/main'
-include { CRAM_MARKDUPLICATES_PICARD           } from '../subworkflows/local/cram_markduplicates_picard/main'
-include { FREEBAYES_NORMALIZE                  } from '../subworkflows/local/freebayes_normalize'
-include { BCFTOOLS_CONCAT                      } from '../modules/nf-core/bcftools/concat/main'
-include { TABIX_TABIX as BCFTOOLS_CONCAT_TABIX } from '../modules/nf-core/tabix/tabix/main'
-include { BCFTOOLS_STATS                       } from '../modules/nf-core/bcftools/stats/main'
-include { SNPEFF_ANNOTATE                      } from '../subworkflows/local/snpeff_annotate'
-include { CUSTOM_DUMPSOFTWAREVERSIONS          } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-include { MULTIQC                              } from '../modules/nf-core/multiqc/main'
+    SEQKIT_RMDUP as SEQKIT_RMDUP_R2;            } from '../modules/cnr-ibba/seqkit/rmdup/main'
+include { TRIMGALORE                            } from '../modules/nf-core/trimgalore/main'
+include { BWA_MEM                               } from '../modules/nf-core/bwa/mem/main'
+include { CRAM_FREEBAYES_PARALLEL               } from '../subworkflows/local/cram_freebayes_parallel/main'
+include { CRAM_MARKDUPLICATES_PICARD            } from '../subworkflows/local/cram_markduplicates_picard/main'
+include { FREEBAYES_NORMALIZE                   } from '../subworkflows/local/freebayes_normalize'
+include {
+    BCFTOOLS_CONCAT as NORMALIZED_CONCAT;
+    BCFTOOLS_CONCAT as FREEBAYES_CONCAT;        } from '../modules/nf-core/bcftools/concat/main'
+include {
+    TABIX_TABIX as NORMALIZED_CONCAT_TABIX;
+    TABIX_TABIX as FREEBAYES_CONCAT_TABIX       } from '../modules/nf-core/tabix/tabix/main'
+include { BCFTOOLS_STATS                        } from '../modules/nf-core/bcftools/stats/main'
+include { SNPEFF_ANNOTATE                       } from '../subworkflows/local/snpeff_annotate'
+include { CUSTOM_DUMPSOFTWAREVERSIONS           } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+include { MULTIQC                               } from '../modules/nf-core/multiqc/main'
 
 // A workflow definition which does not declare any name is assumed to be the
 // main workflow and it’s implicitly executed. Therefore it’s the entry point
@@ -57,12 +61,12 @@ workflow RESEQUENCING_MEM {
     .reads
     .map {
         meta, fastq ->
-        def meta_clone = meta.clone()
-        def tmp = meta_clone.id.split('_')
-        if (tmp.size() > 1) {
-            meta_clone.id = tmp[0..-2].join('_')
-        }
-        [ meta_clone, fastq ]
+            def meta_clone = meta.clone()
+            def tmp = meta_clone.id.split('_')
+            if (tmp.size() > 1) {
+                meta_clone.id = tmp[0..-2].join('_')
+            }
+            [ meta_clone, fastq ]
         }
         .groupTuple(by: [0])
         .branch {
@@ -90,12 +94,10 @@ workflow RESEQUENCING_MEM {
     //
     // MODULE: Concatenate FastQ files from same sample if required
     //
-    CAT_FASTQ (
-        ch_fastq.multiple
-    )
-    .reads
-    .mix(ch_fastq.single)
-    .set { ch_cat_fastq }
+    CAT_FASTQ (ch_fastq.multiple)
+        .reads
+        .mix(ch_fastq.single)
+        .set { ch_cat_fastq }
     ch_versions = ch_versions.mix(CAT_FASTQ.out.versions.first().ifEmpty(null))
 
     // call FASTQC from module
@@ -116,8 +118,8 @@ workflow RESEQUENCING_MEM {
         ch_versions = ch_versions.mix(SEQKIT_RMDUP_R1.out.versions)
 
         ch_trimgalore_input = SEQKIT_RMDUP_R1.out.unique
-        .join(SEQKIT_RMDUP_R2.out.unique)
-        .map{ meta, r1, r2 -> [meta, [r1, r2]]}
+            .join(SEQKIT_RMDUP_R2.out.unique)
+            .map{ meta, r1, r2 -> [meta, [r1, r2]]}
 
         // Trimming reads
         TRIMGALORE(ch_trimgalore_input)
@@ -152,39 +154,73 @@ workflow RESEQUENCING_MEM {
     )
     ch_versions = ch_versions.mix(CRAM_FREEBAYES_PARALLEL.out.versions)
 
-    // normalize VCF using freebayes and bcftools
-    FREEBAYES_NORMALIZE(
-        CRAM_FREEBAYES_PARALLEL.out.vcf,
-        CRAM_FREEBAYES_PARALLEL.out.tbi,
-        PREPARE_GENOME.out.genome_fasta
-    )
-    ch_versions = ch_versions.mix(FREEBAYES_NORMALIZE.out.versions)
+    // concatenate all freebayes output in one file if `--save_freebayes` parameter is set
+    // or if `--skip_normalization` is set
+    if (params.save_freebayes || params.skip_normalization) {
+        // concatenate all chromosome in one file.
+        bcftools_in_ch = CRAM_FREEBAYES_PARALLEL.out.vcf
+            .map{ _meta, vcf -> [vcf] }
+            .collect()
+            .map{ it -> [[id: "all-samples"], it]}
+            .join(
+            CRAM_FREEBAYES_PARALLEL.out.tbi
+                .map{ _meta, vcf -> [vcf] }
+                .collect()
+                .map{ it -> [[id: "all-samples"], it]}
+            )
+            // .view()
 
-    // concatenate all chromosome in one file.
-    bcftools_in_ch = FREEBAYES_NORMALIZE.out.vcf
-        .map{ _meta, vcf -> [vcf] }
-        .collect()
-        .map{ it -> [[id: "all-samples-normalized"], it]}
-        .join(
-        FREEBAYES_NORMALIZE.out.tbi
+        FREEBAYES_CONCAT(bcftools_in_ch)
+        ch_versions = ch_versions.mix(FREEBAYES_CONCAT.out.versions)
+
+        // index normalized VCF file
+        FREEBAYES_CONCAT_TABIX(FREEBAYES_CONCAT.out.vcf)
+        ch_versions = ch_versions.mix(FREEBAYES_CONCAT_TABIX.out.versions)
+    }
+
+    bcftools_in_ch = Channel.empty()
+
+    if (params.skip_normalization) {
+        // prepare input for bcftools stats directly from freebayes output
+        bcftools_in_ch = FREEBAYES_CONCAT.out.vcf
+            .join(FREEBAYES_CONCAT_TABIX.out.tbi)
+            // .view()
+    } else {
+        // normalize VCF using freebayes and bcftools
+        FREEBAYES_NORMALIZE(
+            CRAM_FREEBAYES_PARALLEL.out.vcf,
+            CRAM_FREEBAYES_PARALLEL.out.tbi,
+            PREPARE_GENOME.out.genome_fasta
+        )
+        ch_versions = ch_versions.mix(FREEBAYES_NORMALIZE.out.versions)
+
+        // concatenate all chromosome in one file.
+        bcftools_in_ch = FREEBAYES_NORMALIZE.out.vcf
             .map{ _meta, vcf -> [vcf] }
             .collect()
             .map{ it -> [[id: "all-samples-normalized"], it]}
-        )
-        // .view()
+            .join(
+            FREEBAYES_NORMALIZE.out.tbi
+                .map{ _meta, vcf -> [vcf] }
+                .collect()
+                .map{ it -> [[id: "all-samples-normalized"], it]}
+            )
+            // .view()
 
-    BCFTOOLS_CONCAT(bcftools_in_ch)
-    ch_versions = ch_versions.mix(BCFTOOLS_CONCAT.out.versions)
+        NORMALIZED_CONCAT(bcftools_in_ch)
+        ch_versions = ch_versions.mix(NORMALIZED_CONCAT.out.versions)
 
-    // index normalized VCF file
-    BCFTOOLS_CONCAT_TABIX(BCFTOOLS_CONCAT.out.vcf)
-    ch_versions = ch_versions.mix(BCFTOOLS_CONCAT_TABIX.out.versions)
+        // index normalized VCF file
+        NORMALIZED_CONCAT_TABIX(NORMALIZED_CONCAT.out.vcf)
+        ch_versions = ch_versions.mix(NORMALIZED_CONCAT_TABIX.out.versions)
 
-    // prepare input for bcftools stats
-    bcftools_in_ch = BCFTOOLS_CONCAT.out.vcf
-        .join(BCFTOOLS_CONCAT_TABIX.out.tbi)
-        // .view()
+        // prepare input for bcftools stats
+        bcftools_in_ch = NORMALIZED_CONCAT.out.vcf
+            .join(NORMALIZED_CONCAT_TABIX.out.tbi)
+            // .view()
+    }
 
+    // doing stats with vcf files, normalized data or not
     BCFTOOLS_STATS(
         bcftools_in_ch,
         [[], []],
@@ -203,8 +239,8 @@ workflow RESEQUENCING_MEM {
     if (params.snpeff_database) {
         // annotate VCF with SnpEff
         SNPEFF_ANNOTATE(
-        params.snpeff_database,
-        FREEBAYES_NORMALIZE.out.vcf,
+            params.snpeff_database,
+            params.skip_normalization ? FREEBAYES_CONCAT.out.vcf : NORMALIZED_CONCAT.out.vcf,
         )
 
         // track version
