@@ -446,8 +446,8 @@ This pipeline compute a _coverage_ step before calling freebayes, so you could
 try to determine which value make sense to be used for filtering.
 
 > **N.B.** Even with downsampling this step could require a lot of time, and time
-required for each step will be unpredictable. Using a very low coverage limit
-could affect the SNP calling process. Use this option with caution.
+> required for each step will be unpredictable. Using a very low coverage limit
+> could affect the SNP calling process. Use this option with caution.
 
 ### FASTQ has duplicated IDs
 

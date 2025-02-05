@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
-- Combine _freebayes_ results if  ``--save-freebayes`` parameter is set
+- Combine _freebayes_ results if `--save-freebayes` parameter is set
 - Rename `bcftools/concat` steps in more informative way
 - Use remote files with `test` profile
 - `picard/markduplicates` was updated to the latest release in order to work
