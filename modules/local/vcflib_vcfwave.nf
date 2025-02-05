@@ -31,7 +31,7 @@ process VCFLIB_VCFWAVE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        vcflib: "\${VCFLIB_VERSION:=$VERSION}"
+        vcflib: $VERSION
     END_VERSIONS
     """
 
@@ -43,7 +43,7 @@ process VCFLIB_VCFWAVE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        vcflib: vcflib: "\${VCFLIB_VERSION:=$VERSION}"
+        vcflib: $VERSION
     END_VERSIONS
     """
 }
