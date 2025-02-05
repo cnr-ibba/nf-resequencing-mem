@@ -16,7 +16,8 @@ nextflow.enable.dsl = 2
 */
 
 include { validateParameters; paramsHelp  } from 'plugin/nf-validation'
-include { PIPELINE_INITIALIZATION         } from './subworkflows/local/pipeline_initialization.nf'
+include { PIPELINE_INITIALIZATION         } from './subworkflows/local/pipeline_initialization'
+include { NORMALIZATION_INITIALIZATION    } from './subworkflows/local/pipeline_initialization'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,8 +25,9 @@ include { PIPELINE_INITIALIZATION         } from './subworkflows/local/pipeline_
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { RESEQUENCING_MEM  } from './workflows/resequencing-mem'
-include { NORMALIZE_VCF     } from './subworkflows/local/normalize_vcf'
+include { RESEQUENCING_MEM              } from './workflows/resequencing-mem'
+include { NORMALIZE_VCF                 } from './subworkflows/local/normalize_vcf'
+include { CUSTOM_DUMPSOFTWAREVERSIONS   } from './modules/nf-core/custom/dumpsoftwareversions/main'
 
 //
 // WORKFLOW: Run main cnr-ibba/nf-resequencing-mem analysis pipeline
@@ -45,7 +47,28 @@ workflow CNR_IBBA {
 
 workflow VCF_NORMALIZE {
     main:
-    println "Executing normalization workflow on vcf files"
+    // collect software version
+    ch_versions = Channel.empty()
+
+    // setting input channels
+    NORMALIZATION_INITIALIZATION(
+        params.input_vcf,
+        params.input_tbi,
+        params.genome_fasta
+    )
+
+    // calling the normalization workflow
+    NORMALIZE_VCF(
+        NORMALIZATION_INITIALIZATION.out.vcf_ch,
+        NORMALIZATION_INITIALIZATION.out.tbi_ch,
+        NORMALIZATION_INITIALIZATION.out.fasta_ch
+    )
+    ch_versions = ch_versions.mix(NORMALIZE_VCF.out.versions)
+
+    // return software version
+    CUSTOM_DUMPSOFTWAREVERSIONS (
+        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    )
 }
 
 /*
