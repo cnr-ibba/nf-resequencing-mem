@@ -44,16 +44,29 @@ class WorkflowMain {
         // Check AWS batch settings
         NfcoreTemplate.awsBatch(workflow, params)
 
-        // Check input has been provided
-        if (!params.input) {
-            Nextflow.error("Please provide an input samplesheet to the pipeline e.g. '--input samplesheet.csv'")
+        // Check at least one input has been provided
+        if (!params.normalization_only) {
+            // check for mandatory input
+            if (!params.input) {
+                Nextflow.error("Please provide an input samplesheet to the pipeline e.g. '--input samplesheet.csv'")
+            }
+
+            // check for gvcf_chunk options and gvcf
+            if ((params.gvcf_chunk || params.gvcf_dont_use_chunk) && !params.gvcf) {
+                Nextflow.error("Please provide '--gvcf' option when providing '--gvcf_chunk' or '--gvcf_dont_use_chunk' parameters")
+            } else if (params.gvcf_chunk && params.gvcf_dont_use_chunk) {
+                Nextflow.error("Please provide only one of '--gvcf_chunk' or '--gvcf_dont_use_chunk' parameters")
+            }
         }
 
-        // check for gvcf_chunk options and gvcf
-        if ((params.gvcf_chunk || params.gvcf_dont_use_chunk) && !params.gvcf) {
-            Nextflow.error("Please provide '--gvcf' option when providing '--gvcf_chunk' or '--gvcf_dont_use_chunk' parameters")
-        } else if (params.gvcf_chunk && params.gvcf_dont_use_chunk) {
-            Nextflow.error("Please provide only one of '--gvcf_chunk' or '--gvcf_dont_use_chunk' parameters")
+        // doing the normalization workflow
+        if (params.normalization_only) {
+            if (!params.input_vcf || !params.input_tbi) {
+                Nextflow.error("Please provide a VCF file and its index to the pipeline e.g. '--input_vcf input.vcf --input_tbi input.vcf.tbi' when using '--normalization_only'")
+            }
+            if (params.input) {
+                log.warn("You choose to run the normalization workflow. The input samplesheet will be ignored.")
+            }
         }
     }
 

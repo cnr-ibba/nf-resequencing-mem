@@ -46,22 +46,20 @@ workflow CNR_IBBA {
 }
 
 workflow VCF_NORMALIZE {
+    take:
+    vcf_ch // channel: vcf file
+    tbi_ch // channel: tbi file
+    fasta_ch // channel: fasta file
+
     main:
     // collect software version
     ch_versions = Channel.empty()
 
-    // setting input channels
-    NORMALIZATION_INITIALIZATION(
-        params.input_vcf,
-        params.input_tbi,
-        params.genome_fasta
-    )
-
     // calling the normalization workflow
     NORMALIZE_VCF(
-        NORMALIZATION_INITIALIZATION.out.vcf_ch,
-        NORMALIZATION_INITIALIZATION.out.tbi_ch,
-        NORMALIZATION_INITIALIZATION.out.fasta_ch
+        vcf_ch,
+        tbi_ch,
+        fasta_ch
     )
     ch_versions = ch_versions.mix(NORMALIZE_VCF.out.versions)
 
@@ -98,21 +96,39 @@ workflow {
         validateParameters()
     }
 
+    // Initialise the workflow and check specific parameters
     WorkflowMain.initialise(workflow, params, log)
 
-    //
-    // SUBWORKFLOW: Run initializations tasks
-    //
-    PIPELINE_INITIALIZATION (
-        params.input,
-        params.multiqc_config,
-        params.genome_fasta,
-        params.genome_bwa_index
-    )
+    if (!params.normalization_only) {
+        // doing the main analysis
+        // Run initializations tasks
+        PIPELINE_INITIALIZATION (
+            params.input,
+            params.multiqc_config,
+            params.genome_fasta,
+            params.genome_bwa_index
+        )
 
-    CNR_IBBA (
-        PIPELINE_INITIALIZATION.out.samplesheet
-    )
+        // then run the main pipeline
+        CNR_IBBA (
+            PIPELINE_INITIALIZATION.out.samplesheet
+        )
+    } else {
+        // doing only the normalization workflow
+        // setting up
+        NORMALIZATION_INITIALIZATION(
+            params.input_vcf,
+            params.input_tbi,
+            params.genome_fasta
+        )
+
+        // run only the normalization workflow
+        VCF_NORMALIZE (
+            NORMALIZATION_INITIALIZATION.out.vcf_ch,
+            NORMALIZATION_INITIALIZATION.out.tbi_ch,
+            NORMALIZATION_INITIALIZATION.out.fasta_ch
+        )
+    }
 }
 
 /*

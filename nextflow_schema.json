@@ -143,6 +143,11 @@
             "description": "Normalization workflow parameters",
             "default": "",
             "properties": {
+                "normalization_only": {
+                    "type": "boolean",
+                    "description": "Do only the VCF normalization workflow",
+                    "default": false
+                },
                 "input_vcf": {
                     "type": "string",
                     "format": "file-path",
