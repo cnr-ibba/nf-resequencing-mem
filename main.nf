@@ -96,17 +96,14 @@ workflow {
         validateParameters()
     }
 
-    // Initialise the workflow and check specific parameters
+    // Initialize the workflow and check specific parameters
     WorkflowMain.initialise(workflow, params, log)
 
     if (!params.normalization_only) {
         // doing the main analysis
         // Run initializations tasks
         PIPELINE_INITIALIZATION (
-            params.input,
-            params.multiqc_config,
-            params.genome_fasta,
-            params.genome_bwa_index
+            params.input
         )
 
         // then run the main pipeline

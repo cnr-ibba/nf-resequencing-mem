@@ -6,9 +6,6 @@
 workflow PIPELINE_INITIALIZATION {
     take:
     input               // string: path to samplesheet
-    multiqc_config      // file: multiqc config file
-    genome_fasta        // file: genome fasta file
-    genome_bwa_index    // file: genome bwa index file
 
     main:
 
@@ -18,17 +15,11 @@ workflow PIPELINE_INITIALIZATION {
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     */
 
-    // Check input path parameters to see if they exist
-    def optionalFiles = [multiqc_config, genome_fasta, genome_bwa_index]
-    optionalFiles.each { f ->
-        if (f) {
-            Channel.fromPath(f, checkIfExists: true)
-        }
-    }
-
     // this should be present
     Channel.fromPath(input, checkIfExists: true)
         .set { ch_input }
+
+    // other input arguments are evaluated through nf-validation plugin and lib/WorkflowMain.groovy
 
     emit:
     samplesheet = ch_input
@@ -41,17 +32,7 @@ workflow NORMALIZATION_INITIALIZATION {
     genome_fasta        // file: genome fasta file
 
     main:
-    // Check input path parameters to see if they exist
-    def require_parameter = [
-        '--input_vcf': input_vcf,
-        '--input_tbi': input_tbi,
-        '--genome_fasta': genome_fasta
-    ]
-    require_parameter.each { key, value ->
-        if (! value) {
-            error "Required parameter '${key}' is missing"
-        }
-    }
+    // parameters are evaluated through nf-validation plugin and lib/WorkflowMain.groovy
 
     // Set channels for required files
     Channel.fromPath(input_vcf, checkIfExists: true)
