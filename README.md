@@ -120,7 +120,11 @@ used to save _intermediate results_ or to skip a particular step:
 - `--gvcf_dont_use_chunk`: (bool, def. false) When writing the gVCF output emit a
   record for all bases, will also route an int to `--gvcf_chunk` similar to
   `--output-mode EMIT_ALL_SITES` from _GATK_
-  `--skip_normalization`: (bool, def. false) skip VCF normalization steps
+- `--skip_normalization`: (bool, def. false) skip VCF normalization steps
+- `--normalization_only`: (bool, def. false) only normalize a VCF file (skip all the
+  other steps, see [Normalize a vcf file](#normalize-a-vcf-file))
+- `--input_vcf`: path to a VCF file to be normalized (required when `--normalization_only` is set)
+- `--input_tbi`: path to a VCF index file (required when `--normalization_only` is set)
 - `--snpeff_database`: annotate the VCF file with SnpEff by providing a pre-built
   database that can be found using the `java -jar snpEff.jar databases` command.
   If the database is known to SnpEff will be downloaded and managed by the pipeline
@@ -364,6 +368,23 @@ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile awsbatch \
 Please see the [Amazon Cloud](https://www.nextflow.io/docs/latest/awscloud.html#)
 section of nextflow documentation to get other information on nextflow and AWS
 usage.
+
+## Normalize a vcf file
+
+With this pipeline is it possible to perform the normalization workflow on a VCF
+file, without running the whole pipeline. This is useful when you have a VCF file
+that needs to be normalized, for example after a _freebayes_ run. You can call
+this pipeline providing the `--normalization_only` parameter and the `--input_vcf`
+and `--input_tbi` parameters:
+
+```bash
+nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
+  --normalization_only --input_vcf <input.vcf> --input_tbi <input.tbi> \
+  --genome_fasta <genome.fasta> --outdir <results dir>
+```
+
+Other provided parameters will be ignored, and the pipeline will normalize the
+VCF file and will store the normalized VCF file in the `outdir` directory.
 
 ## Known issues
 

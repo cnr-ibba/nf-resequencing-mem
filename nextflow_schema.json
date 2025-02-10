@@ -10,7 +10,7 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "genome_fasta"],
+            "required": ["genome_fasta"],
             "properties": {
                 "input": {
                     "type": "string",
@@ -25,6 +25,7 @@
                 "genome_fasta": {
                     "type": "string",
                     "format": "file-path",
+                    "exists": true,
                     "mimetype": "text/plain",
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file (compression is supported).",
@@ -33,10 +34,14 @@
                 },
                 "genome_fasta_fai": {
                     "type": "string",
+                    "format": "file-path",
+                    "exists": true,
                     "description": "Path to genome fasta index (skip index calculation)"
                 },
                 "genome_bwa_index": {
                     "type": "string",
+                    "format": "directory-path",
+                    "exists": true,
                     "description": "Path to genome fasta BWA index (skip index calculation)"
                 },
                 "outdir": {
@@ -77,12 +82,16 @@
                 "snpeff_cachedir": {
                     "type": "string",
                     "description": "SnpEff custom cache directory",
+                    "format": "directory-path",
+                    "exists": true,
                     "fa_icon": "fas fa-database",
                     "help_text": "SnpEff cache directory which should include another directory with the name of the database in which a valid SnpEff custom database is stored"
                 },
                 "snpeff_config": {
                     "type": "string",
                     "description": "SnpEff custom configuration file",
+                    "format": "file-path",
+                    "exists": true,
                     "fa_icon": "fas fa-database",
                     "help_text": "SnpEff configuration file which should include the custom database name",
                     "default": "assets/NO_FILE"
@@ -133,7 +142,34 @@
                 },
                 "save_unique_fastq": {
                     "type": "boolean",
-                    "description": "Save purget FASTQ in ${results_dir}"
+                    "description": "Save purged FASTQ in ${results_dir}"
+                }
+            }
+        },
+        "normalization_workflow": {
+            "title": "Normalization workflow",
+            "type": "object",
+            "description": "Normalization workflow parameters",
+            "default": "",
+            "properties": {
+                "normalization_only": {
+                    "type": "boolean",
+                    "description": "Do only the VCF normalization workflow",
+                    "default": false
+                },
+                "input_vcf": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Path to VCF file to normalize",
+                    "fa_icon": "fas fa-file-code"
+                },
+                "input_tbi": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "description": "Path to VCF index file",
+                    "fa_icon": "fas fa-file-code"
                 }
             }
         },
@@ -312,6 +348,9 @@
         },
         {
             "$ref": "#/definitions/pipeline_custom_parameters"
+        },
+        {
+            "$ref": "#/definitions/normalization_workflow"
         },
         {
             "$ref": "#/definitions/institutional_config_options"

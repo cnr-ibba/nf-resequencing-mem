@@ -12,7 +12,7 @@ include { BCFTOOLS_NORM                     } from '../../modules/nf-core/bcftoo
 include { BCFTOOLS_FILLTAGS                 } from '../../modules/local/bcftools_filltags'
 
 
-workflow FREEBAYES_NORMALIZE {
+workflow NORMALIZE_VCF {
     take:
         vcf_ch    // channel: [mandatory] the VCF file to normalize
         tbi_ch    // channel: [mandatory] the index file for the VCF file

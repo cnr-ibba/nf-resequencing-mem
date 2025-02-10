@@ -16,7 +16,8 @@ nextflow.enable.dsl = 2
 */
 
 include { validateParameters; paramsHelp  } from 'plugin/nf-validation'
-include { PIPELINE_INITIALIZATION         } from './subworkflows/local/pipeline_initialization.nf'
+include { PIPELINE_INITIALIZATION         } from './subworkflows/local/pipeline_initialization'
+include { NORMALIZATION_INITIALIZATION    } from './subworkflows/local/pipeline_initialization'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,7 +25,9 @@ include { PIPELINE_INITIALIZATION         } from './subworkflows/local/pipeline_
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { RESEQUENCING_MEM } from './workflows/resequencing-mem'
+include { RESEQUENCING_MEM              } from './workflows/resequencing-mem'
+include { NORMALIZE_VCF                 } from './subworkflows/local/normalize_vcf'
+include { CUSTOM_DUMPSOFTWAREVERSIONS   } from './modules/nf-core/custom/dumpsoftwareversions/main'
 
 //
 // WORKFLOW: Run main cnr-ibba/nf-resequencing-mem analysis pipeline
@@ -42,9 +45,33 @@ workflow CNR_IBBA {
     multiqc_report = RESEQUENCING_MEM.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
 
+workflow VCF_NORMALIZE {
+    take:
+    vcf_ch // channel: vcf file
+    tbi_ch // channel: tbi file
+    fasta_ch // channel: fasta file
+
+    main:
+    // collect software version
+    ch_versions = Channel.empty()
+
+    // calling the normalization workflow
+    NORMALIZE_VCF(
+        vcf_ch,
+        tbi_ch,
+        fasta_ch
+    )
+    ch_versions = ch_versions.mix(NORMALIZE_VCF.out.versions)
+
+    // return software version
+    CUSTOM_DUMPSOFTWAREVERSIONS (
+        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    )
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    RUN ALL WORKFLOWS
+    RUN CNR_IBBA:RESEQUENCING_MEM WORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -69,21 +96,36 @@ workflow {
         validateParameters()
     }
 
+    // Initialize the workflow and check specific parameters
     WorkflowMain.initialise(workflow, params, log)
 
-    //
-    // SUBWORKFLOW: Run initializations tasks
-    //
-    PIPELINE_INITIALIZATION (
-        params.input,
-        params.multiqc_config,
-        params.genome_fasta,
-        params.genome_bwa_index
-    )
+    if (!params.normalization_only) {
+        // doing the main analysis
+        // Run initializations tasks
+        PIPELINE_INITIALIZATION (
+            params.input
+        )
 
-    CNR_IBBA (
-        PIPELINE_INITIALIZATION.out.samplesheet
-    )
+        // then run the main pipeline
+        CNR_IBBA (
+            PIPELINE_INITIALIZATION.out.samplesheet
+        )
+    } else {
+        // doing only the normalization workflow
+        // setting up
+        NORMALIZATION_INITIALIZATION(
+            params.input_vcf,
+            params.input_tbi,
+            params.genome_fasta
+        )
+
+        // run only the normalization workflow
+        VCF_NORMALIZE (
+            NORMALIZATION_INITIALIZATION.out.vcf_ch,
+            NORMALIZATION_INITIALIZATION.out.tbi_ch,
+            NORMALIZATION_INITIALIZATION.out.fasta_ch
+        )
+    }
 }
 
 /*
