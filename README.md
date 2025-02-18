@@ -12,12 +12,16 @@
 
 ## Overview
 
-This pipeline will execute a resequencing analysis by calling
-[freebayes](https://github.com/freebayes/freebayes)
-on reads aligned to genome using [bwa](https://bio-bwa.sourceforge.net/bwa.shtml)
-_mem_. Genotypes will be called from all samples, and the resulting _VCF_
-file will be normalized using [bcftools](https://samtools.github.io/bcftools/bcftools.html#norm),
-which is the final output of this pipeline.
+This pipeline performs resequencing analysis by calling
+[freebayes](https://github.com/freebayes/freebayes) on reads aligned to the
+genome using [bwa](https://bio-bwa.sourceforge.net/bwa.shtml) _mem_.
+Aligned _BAM_ files are then filtered with
+[markduplicates](https://broadinstitute.github.io/picard/command-line-overview.html#MarkDuplicates)
+to select reads aligned unambiguously to the genome. Genotypes are called from all samples, and the resulting _VCF_ file is normalized using [vcfwave](https://github.com/vcflib/vcflib/blob/master/doc/vcfwave.md) and [bcftools](https://samtools.github.io/bcftools/bcftools.html#norm), which is the final output of this pipeline.
+
+There's also an additional wiki for this project with more information about
+this pipeline:
+[nf-resequencing-mem wiki](https://github.com/cnr-ibba/nf-resequencing-mem/wiki)
 
 ## Setting up
 
@@ -111,8 +115,9 @@ used to save _intermediate results_ or to skip a particular step:
 - `--save_fasta_index`: (bool, def. false) save fasta index (for reusing with this pipeline)
 - `--save_bwa_index`: (bool, def. false) save bwa index (for reuse with this pipeline)
 - `--save_freebayes`: (bool, def. false) save freebayes output file (not normalized!)
-- `--remove_fastq_duplicates`: (bool, def. false) remove FASTQ duplicates by IDs
-- `--save_unique_fastq`: (bool, def. false) write de-duplicated FASTQ files (require
+- `--remove_fastq_duplicates`: (bool, def. false) remove FASTQ duplicates by IDs using
+  [seqkit/rmdup](https://bioinf.shenwei.me/seqkit/usage/#rmdup)
+- `--save_unique_fastq`: (bool, def. false) write de-duplicated FASTQ files (requires
   `--remove_fastq_duplicates` option)
 - `--ploidy`: (integer, def. 2) Sets the default ploidy for the analysis
 - `--gvcf`: (bool, def. false) save output in _gVCF_ format (def. false)
@@ -128,7 +133,9 @@ used to save _intermediate results_ or to skip a particular step:
 - `--snpeff_database`: annotate the VCF file with SnpEff by providing a pre-built
   database that can be found using the `java -jar snpEff.jar databases` command.
   If the database is known to SnpEff will be downloaded and managed by the pipeline
-  itself
+  itself. Otherwise you can provide a custom database using `--snpeff_cachedir`
+  and `--snpeff_config` parameters. See our wiki [Creating a snpEff database](https://github.com/cnr-ibba/nf-resequencing-mem/wiki/Running-the-pipeline#creating-a-snpeff-database)
+  for more information.
 - `--snpeff_cachedir`: SnpEff cache directory. It must contain a subdirectory with
   the same name of `--snpeff_database`, with a valid SnpEff database as a content.
   Is required when annotating with SnpEff with a custom database
@@ -385,6 +392,16 @@ nextflow run cnr-ibba/nf-resequencing-mem -resume -profile <your profile> \
 
 Other provided parameters will be ignored, and the pipeline will normalize the
 VCF file and will store the normalized VCF file in the `outdir` directory.
+You can find more information about normalization workflow in our
+[Normalizing VCF files](https://github.com/cnr-ibba/nf-resequencing-mem/wiki/Running-the-pipeline#normalizing-vcf-files) and
+[Running normalization only](https://github.com/cnr-ibba/nf-resequencing-mem/wiki/Running-the-pipeline#running-normalization-only)
+wiki pages
+
+## Merge different datasets of SNPs
+
+We have a wiki page that describes how to merge different datasets of SNPs
+using this pipeline: you can find it at
+[Merging different datasets of SNPs](https://github.com/cnr-ibba/nf-resequencing-mem/wiki/Merging-datasets)
 
 ## Known issues
 
