@@ -45,8 +45,11 @@ workflow CRAM_FREEBAYES_PARALLEL {
         regions_ch,
         bam,
         bai,
-        // converting to a value channel
-        SAMTOOLS_DEPTH.out.bam_list.first(),
+        // converting to a value channel. Sorting is required to ensure that the
+        // first element will be the same on each run. Sort by path
+        SAMTOOLS_DEPTH.out.bam_list
+            .toSortedList { a, b -> a[1]<=> b[1] }
+            .map { it.first() },
         fasta,
         fai
     )
