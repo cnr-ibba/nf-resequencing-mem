@@ -2,7 +2,7 @@ Changes in component 'cnr-ibba/freebayes/chunk'
 Changes in 'freebayes/chunk/main.nf':
 --- modules/cnr-ibba/freebayes/chunk/main.nf
 +++ modules/cnr-ibba/freebayes/chunk/main.nf
-@@ -6,8 +6,8 @@
+@@ -6,14 +6,13 @@
  
      conda "${moduleDir}/environment.yml"
      container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -13,7 +13,13 @@ Changes in 'freebayes/chunk/main.nf':
  
      input:
      tuple val(meta),  val(region)
-@@ -28,9 +28,17 @@
+     tuple val(meta2), path(bam)
+     tuple val(meta2), path(bai)
+-    tuple val(meta2), path(bam_list)
+     tuple val(meta3), path(genome_fasta)
+     tuple val(meta3), path(genome_fasta_fai)
+ 
+@@ -28,10 +27,20 @@
      script:
      def args = task.ext.args ?: ''
      def prefix = task.ext.prefix ?: "${meta.id}"
@@ -22,15 +28,19 @@ Changes in 'freebayes/chunk/main.nf':
 +    def gvcf_chunk = params.gvcf_chunk ? "--gvcf-chunk ${params.gvcf_chunk}" : ""
 +    def gvcf_dont_use_chunk = params.gvcf_dont_use_chunk ? "--gvcf-dont-use-chunk true" : ""
      """
++    ls $bam | xargs -n1 | sort > ${prefix}.list.txt
++
      freebayes \\
          $args \\
+-        --bam-list $bam_list \\
 +        $ploidy \\
 +        $gvcf \\
 +        $gvcf_chunk \\
 +        $gvcf_dont_use_chunk \\
-         --bam-list $bam_list \\
++        --bam-list ${prefix}.list.txt \\
          --standard-filters \\
          -f $genome_fasta \\
+         --region $region \\
 
 Changes in 'freebayes/chunk/environment.yml':
 --- modules/cnr-ibba/freebayes/chunk/environment.yml

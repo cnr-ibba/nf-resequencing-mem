@@ -13,7 +13,6 @@ process FREEBAYES_CHUNK {
     tuple val(meta),  val(region)
     tuple val(meta2), path(bam)
     tuple val(meta2), path(bai)
-    tuple val(meta2), path(bam_list)
     tuple val(meta3), path(genome_fasta)
     tuple val(meta3), path(genome_fasta_fai)
 
@@ -33,13 +32,15 @@ process FREEBAYES_CHUNK {
     def gvcf_chunk = params.gvcf_chunk ? "--gvcf-chunk ${params.gvcf_chunk}" : ""
     def gvcf_dont_use_chunk = params.gvcf_dont_use_chunk ? "--gvcf-dont-use-chunk true" : ""
     """
+    ls $bam | xargs -n1 | sort > ${prefix}.list.txt
+
     freebayes \\
         $args \\
         $ploidy \\
         $gvcf \\
         $gvcf_chunk \\
         $gvcf_dont_use_chunk \\
-        --bam-list $bam_list \\
+        --bam-list ${prefix}.list.txt \\
         --standard-filters \\
         -f $genome_fasta \\
         --region $region \\
