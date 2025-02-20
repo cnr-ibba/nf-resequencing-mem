@@ -11,7 +11,7 @@ process SNPEFF_SNPEFF {
     tuple val(meta), path(vcf)
     val   db
     tuple val(meta2), path(cache)
-    tuple val(meta2), path(config)
+    tuple val(meta3), path(config)
 
     output:
     tuple val(meta), path("*.ann.vcf.gz"),      emit: vcf

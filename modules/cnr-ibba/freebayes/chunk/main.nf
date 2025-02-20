@@ -6,14 +6,13 @@ process FREEBAYES_CHUNK {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/freebayes:1.3.6--hb089aa1_0':
-        'biocontainers/freebayes:1.3.6--hb089aa1_0' }"
+        'https://depot.galaxyproject.org/singularity/freebayes:1.3.8--h6a68c12_0':
+        'biocontainers/freebayes:1.3.8--h6a68c12_0' }"
 
     input:
     tuple val(meta),  val(region)
     tuple val(meta2), path(bam)
     tuple val(meta2), path(bai)
-    tuple val(meta2), path(bam_list)
     tuple val(meta3), path(genome_fasta)
     tuple val(meta3), path(genome_fasta_fai)
 
@@ -28,10 +27,20 @@ process FREEBAYES_CHUNK {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def ploidy = params.ploidy == 2 ? "": "--ploidy ${params.ploidy}"
+    def gvcf = params.gvcf ? "--gvcf" : ""
+    def gvcf_chunk = params.gvcf_chunk ? "--gvcf-chunk ${params.gvcf_chunk}" : ""
+    def gvcf_dont_use_chunk = params.gvcf_dont_use_chunk ? "--gvcf-dont-use-chunk true" : ""
     """
+    ls $bam | xargs -n1 | sort > ${prefix}.list.txt
+
     freebayes \\
         $args \\
-        --bam-list $bam_list \\
+        $ploidy \\
+        $gvcf \\
+        $gvcf_chunk \\
+        $gvcf_dont_use_chunk \\
+        --bam-list ${prefix}.list.txt \\
         --standard-filters \\
         -f $genome_fasta \\
         --region $region \\

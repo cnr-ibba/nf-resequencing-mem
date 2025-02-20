@@ -7,43 +7,43 @@ include { SNPEFF_SNPEFF   } from '../../modules/nf-core/snpeff/snpeff/main'
 
 
 workflow SNPEFF_ANNOTATE {
-  take:
+    take:
     genome    // value: [mandatory] the SnpEff genome database to use
     vcf       // channel: [mandatory] the VCF file to annotate
 
-  main:
+    main:
     ch_versions = Channel.empty()
     cache = Channel.empty()
 
     // define configuration for SnpEff
-    config = Channel.fromPath(params.snpeff_config, checkIfExists: true).
-      map { it -> [[id:genome], it] }
+    config = Channel.fromPath(params.snpeff_config, checkIfExists: true)
+        .map { it -> [[id:genome], it] }
+        .first()
 
     if (! params.snpeff_cachedir) {
-      // create a input channel for SnpEff download
-      snpeff_genome = [[id: genome], genome]
-      SNPEFF_DOWNLOAD(snpeff_genome)
+        // create a input channel for SnpEff download
+        snpeff_genome = [[id: genome], genome]
+        SNPEFF_DOWNLOAD(snpeff_genome)
 
-      // export snpeff cache
-      cache = SNPEFF_DOWNLOAD.out.cache
+        // export snpeff cache
+        cache = SNPEFF_DOWNLOAD.out.cache
 
-      // track version
-      ch_versions = ch_versions.mix(SNPEFF_DOWNLOAD.out.versions)
-
-      // annotate the VCF file
-      SNPEFF_SNPEFF(vcf, genome, SNPEFF_DOWNLOAD.out.cache, config)
-
-      // track version
-      ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions)
+        // track version
+        ch_versions = ch_versions.mix(SNPEFF_DOWNLOAD.out.versions)
     } else {
-      // use the provided cache
-      cache = Channel.fromPath(params.snpeff_cachedir, checkIfExists: true).
-        map { it -> [[id:genome], it] }
-
-      SNPEFF_SNPEFF(vcf, genome, cache, config)
+        // use the provided cache
+        cache = Channel.fromPath(params.snpeff_cachedir, checkIfExists: true)
+            .map { it -> [[id:genome], it] }
+            .first()
     }
 
-  emit:
+    // annotate the VCF file
+    SNPEFF_SNPEFF(vcf, Channel.value(genome), cache, config)
+
+    // track version
+    ch_versions = ch_versions.mix(SNPEFF_SNPEFF.out.versions)
+
+    emit:
     cache         = cache
     vcf           = SNPEFF_SNPEFF.out.vcf
     report        = SNPEFF_SNPEFF.out.report

@@ -9,12 +9,12 @@ include { BWA_INDEX } from '../../modules/nf-core/bwa/index/main'
 include { TABIX_BGZIP } from '../../modules/nf-core/tabix/bgzip/main'
 
 workflow PREPARE_GENOME {
-  take:
+    take:
     genome_fasta      // channel: [mandatory] fasta
     genome_fasta_fai  // channel: [optional]  fasta_fai
     genome_bwa_index  // channel: [optional]  bwa index
 
-  main:
+    main:
 
     ch_versions = Channel.empty()
 
@@ -28,48 +28,48 @@ workflow PREPARE_GENOME {
 
     // check if reference genome is compressed or not
     if (params.genome_fasta.endsWith('.gz')) {
-      genome_fasta = genome_fasta.map{
-          meta, fasta -> {
-            in_fasta = ["fa", "fna", "fasta"].contains(meta.id.tokenize(".")[-1])
-            id = in_fasta ? meta.id.tokenize(".")[0..-2].join(".") : meta.id
-            [ [id:id], fasta ]
-          }
-        }
-        // .view()
+        genome_fasta = genome_fasta.map{
+            meta, fasta -> {
+                def in_fasta = ["fa", "fna", "fasta"].contains(meta.id.tokenize(".")[-1])
+                def id = in_fasta ? meta.id.tokenize(".")[0..-2].join(".") : meta.id
+                [ [id:id], fasta ]
+            }
+            }
+            // .view()
 
-      // unpack genome
-      TABIX_BGZIP(genome_fasta)
+        // unpack genome
+        TABIX_BGZIP(genome_fasta)
 
-      // track version
-      ch_versions = ch_versions.mix(TABIX_BGZIP.out.versions)
+        // track version
+        ch_versions = ch_versions.mix(TABIX_BGZIP.out.versions)
 
-      // overvrite fasta channel
-      genome_fasta = TABIX_BGZIP.out.output
+        // overwrite fasta channel
+        genome_fasta = TABIX_BGZIP.out.output
 
-      // force index calculation on uncompressed file
-      force_index = true
+        // force index calculation on uncompressed file
+        force_index = true
     }
 
     // create fasta index if necessary
     if (! params.genome_fasta_fai || force_index) {
-      SAMTOOLS_FAIDX(genome_fasta, [[],[]])
+        SAMTOOLS_FAIDX(genome_fasta, [[],[]])
 
-      // overvrite fasta_fai channel
-      genome_fasta_fai = SAMTOOLS_FAIDX.out.fai
+        // overwrite fasta_fai channel
+        genome_fasta_fai = SAMTOOLS_FAIDX.out.fai
 
-      // track version
-      ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
+        // track version
+        ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
     }
 
     // indexing genome if necessary
     if (! params.genome_bwa_index || force_index) {
-      BWA_INDEX(genome_fasta)
-      genome_bwa_index = BWA_INDEX.out.index
-      ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
+        BWA_INDEX(genome_fasta)
+        genome_bwa_index = BWA_INDEX.out.index
+        ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
     }
 
 
-  emit:
+    emit:
     genome_fasta     = genome_fasta
     genome_fasta_fai = genome_fasta_fai
     bwa_index        = genome_bwa_index

@@ -1,4 +1,5 @@
-Changes in module 'nf-core/snpeff/snpeff'
+Changes in component 'nf-core/snpeff/snpeff'
+Changes in 'snpeff/snpeff/main.nf':
 --- modules/nf-core/snpeff/snpeff/main.nf
 +++ modules/nf-core/snpeff/snpeff/main.nf
 @@ -4,26 +4,31 @@
@@ -14,7 +15,7 @@ Changes in module 'nf-core/snpeff/snpeff'
      tuple val(meta), path(vcf)
      val   db
      tuple val(meta2), path(cache)
-+    tuple val(meta2), path(config)
++    tuple val(meta3), path(config)
  
      output:
 -    tuple val(meta), path("*.ann.vcf"),   emit: vcf
@@ -80,14 +81,183 @@ Changes in module 'nf-core/snpeff/snpeff'
      """
  
 
+Changes in 'snpeff/snpeff/environment.yml':
 --- modules/nf-core/snpeff/snpeff/environment.yml
 +++ modules/nf-core/snpeff/snpeff/environment.yml
-@@ -4,4 +4,5 @@
+@@ -1,7 +1,6 @@
+-name: snpeff_snpeff
+ channels:
+   - conda-forge
    - bioconda
-   - defaults
+-  - defaults
  dependencies:
 -  - bioconda::snpeff=5.1
 +  - bioconda::snpeff=5.2
 +  - bioconda::tabix=1.11
 
+Changes in 'snpeff/snpeff/meta.yml':
+--- modules/nf-core/snpeff/snpeff/meta.yml
++++ modules/nf-core/snpeff/snpeff/meta.yml
+@@ -14,46 +14,85 @@
+       homepage: https://pcingola.github.io/SnpEff/
+       documentation: https://pcingola.github.io/SnpEff/se_introduction/
+       licence: ["MIT"]
++      identifier: biotools:snpeff
+ input:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing sample information
+-        e.g. [ id:'test', single_end:false ]
+-  - vcf:
+-      type: file
+-      description: |
+-        vcf to annotate
+-  - db:
+-      type: string
+-      description: |
+-        which db to annotate with
+-  - cache:
+-      type: file
+-      description: |
+-        path to snpEff cache (optional)
++  - - meta:
++        type: map
++        description: |
++          Groovy Map containing sample information
++          e.g. [ id:'test', single_end:false ]
++    - vcf:
++        type: file
++        description: |
++          vcf to annotate
++  - - db:
++        type: string
++        description: |
++          which db to annotate with
++  - - meta2:
++        type: map
++        description: |
++          Groovy Map containing sample information
++          e.g. [ id:'test', single_end:false ]
++    - cache:
++        type: file
++        description: |
++          path to snpEff cache (optional)
++  - - meta3:
++        type: map
++        description: |
++          Groovy Map containing sample information
++          e.g. [ id:'test', single_end:false ]
++    - cache:
++        type: file
++        description: |
++          path to snpEff config file (optional)
+ output:
+   - vcf:
+-      type: file
+-      description: |
+-        annotated vcf
+-      pattern: "*.ann.vcf"
++      - meta:
++          type: file
++          description: |
++            annotated vcf
++          pattern: "*.ann.vcf"
++      - "*.ann.vcf":
++          type: file
++          description: |
++            annotated vcf
++          pattern: "*.ann.vcf"
+   - report:
+-      type: file
+-      description: snpEff report csv file
+-      pattern: "*.csv"
++      - meta:
++          type: file
++          description: snpEff report csv file
++          pattern: "*.csv"
++      - "*.csv":
++          type: file
++          description: snpEff report csv file
++          pattern: "*.csv"
+   - summary_html:
+-      type: file
+-      description: snpEff summary statistics in html file
+-      pattern: "*.html"
++      - meta:
++          type: file
++          description: snpEff summary statistics in html file
++          pattern: "*.html"
++      - "*.html":
++          type: file
++          description: snpEff summary statistics in html file
++          pattern: "*.html"
+   - genes_txt:
+-      type: file
+-      description: txt (tab separated) file having counts of the number of variants affecting each transcript and gene
+-      pattern: "*.genes.txt"
++      - meta:
++          type: file
++          description: txt (tab separated) file having counts of the number of variants
++            affecting each transcript and gene
++          pattern: "*.genes.txt"
++      - "*.genes.txt":
++          type: file
++          description: txt (tab separated) file having counts of the number of variants
++            affecting each transcript and gene
++          pattern: "*.genes.txt"
+   - versions:
+-      type: file
+-      description: File containing software versions
+-      pattern: "versions.yml"
++      - versions.yml:
++          type: file
++          description: File containing software versions
++          pattern: "versions.yml"
+ authors:
+   - "@maxulysse"
+ maintainers:
+
+Changes in 'snpeff/snpeff/tests/main.nf.test':
+--- modules/nf-core/snpeff/snpeff/tests/main.nf.test
++++ modules/nf-core/snpeff/snpeff/tests/main.nf.test
+@@ -6,6 +6,7 @@
+     config "./nextflow.config"
+     tag "modules"
+     tag "modules_nfcore"
++    tag "modules_snpeff"
+     tag "snpeff"
+     tag "snpeff/download"
+     tag "snpeff/snpeff"
+@@ -17,7 +18,7 @@
+                 script "../../download/main.nf"
+                 process {
+                     """
+-                    input[0] = Channel.of([[id:params.snpeff_genome + '.' + params.snpeff_cache_version], params.snpeff_genome, params.snpeff_cache_version])
++                    input[0] = Channel.of([[id:params.snpeff_db], params.snpeff_db])
+                     """
+                 }
+             }
+@@ -30,7 +31,7 @@
+                     [ id:'test' ], // meta map
+                     file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/vcf/test.vcf', checkIfExists: true)
+                 ])
+-                input[1] = params.snpeff_genome + '.' + params.snpeff_cache_version
++                input[1] = params.snpeff_db
+                 input[2] = SNPEFF_DOWNLOAD.out.cache
+                 """
+             }
+
+Changes in 'snpeff/snpeff/tests/nextflow.config':
+--- modules/nf-core/snpeff/snpeff/tests/nextflow.config
++++ modules/nf-core/snpeff/snpeff/tests/nextflow.config
+@@ -1,4 +1,3 @@
+ params {
+-    snpeff_cache_version = "105"
+-    snpeff_genome = "WBcel235"
++    snpeff_db = "WBcel235.105"
+ }
+
+'modules/nf-core/snpeff/snpeff/tests/tags.yml' is unchanged
+'modules/nf-core/snpeff/snpeff/tests/main.nf.test.snap' is unchanged
 ************************************************************

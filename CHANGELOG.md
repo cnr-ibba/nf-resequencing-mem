@@ -3,6 +3,58 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.2 - [2025-02-20]
+
+- Update `nextflow_schema.json` to check for _file and directory_ existence
+- Perform only the normalization workflow using `--normalization_only` parameter ([#92](https://github.com/cnr-ibba/nf-resequencing-mem/issues/92))
+- Add a parameter to skip normalization _subworkflow_ ([#90](https://github.com/cnr-ibba/nf-resequencing-mem/issues/90))
+- Update freebayes to version `1.3.8` ([#88](https://github.com/cnr-ibba/nf-resequencing-mem/issues/88))
+- Solve linter issues related to VScode and _nextflow languageserver_ plugin ([#86](https://github.com/cnr-ibba/nf-resequencing-mem/issues/86))
+- Update `.editorconfig`
+- Update modules
+- Restructure `modules.config`
+- Move functions inside workflows
+- Convert freebayes specific parameters in pipeline parameters ([#80](https://github.com/cnr-ibba/nf-resequencing-mem/issues/80))
+- Update `nextflow.config`
+- Support for institutional configuration
+- Parallelize normalization steps by chromosomes. Merge VCF files after normalization
+- Normalize VCF file using `vcfwave` ([#76](https://github.com/cnr-ibba/nf-resequencing-mem/issues/76))
+- Add `normalize_vcf` local subworkflow
+- Update `nextflow` to version `24.04.0`
+- Using the `resourceLimits` directive to set the max requirements for each process
+- Update CI system ([#81](https://github.com/cnr-ibba/nf-resequencing-mem/issues/81))
+- Use remote files with `test` profile
+- Fixed issue with `picard/markduplicates` ([#77](https://github.com/cnr-ibba/nf-resequencing-mem/issues/77))
+- Display current chromosome in `samtools/depth`
+
+### `Added`
+
+- Add `pipeline_initialization` local subworkflow
+- Add institutional configuration custom repository
+- Add `bcftools/concat` process from _nf-core_ repository
+- Add `bcftools_filltags` process
+- Add `vcflib_vcfwave` local process
+- Add `normalize_vcf` local subworkflow
+- Add `bcftools/sort` process
+
+### `Fixed`
+
+- Enforce `freebayes_chunk` reproducibility by defining sample list in the same
+  process
+- Enforce parameters validation through `nextflow_schema.json`
+- Combine _freebayes_ results if `--save-freebayes` parameter is set
+- Rename `bcftools/concat` steps in more informative way
+- Use remote files with `test` profile
+- `picard/markduplicates` was updated to the latest release in order to work
+  with `*.cram` files
+
+### `Removed`
+
+- Remove `bcftools/concat` cominf from _cnr-ibba_ repository
+- Remove unsupported options in `nextflow.config`
+- Remove `tabix/tabix` after the first normalization step (removing overlap)
+- Remove `check_max` function
+
 ## 0.6.1 - [2024-04-11]
 
 - Calculate `samtools/depth` on each chromosomes ([#73](https://github.com/cnr-ibba/nf-resequencing-mem/issues/73))

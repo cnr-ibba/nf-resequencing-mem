@@ -1,4 +1,5 @@
-Changes in module 'nf-core/snpeff/download'
+Changes in component 'nf-core/snpeff/download'
+Changes in 'snpeff/download/main.nf':
 --- modules/nf-core/snpeff/download/main.nf
 +++ modules/nf-core/snpeff/download/main.nf
 @@ -4,11 +4,11 @@
@@ -12,7 +13,7 @@ Changes in module 'nf-core/snpeff/download'
  
      input:
 -    tuple val(meta), val(genome), val(cache_version)
-+    tuple val(meta), val(genome)
++    tuple val(meta), val(snpeff_db)
  
      output:
      tuple val(meta), path('snpeff_cache'), emit: cache
@@ -21,28 +22,94 @@ Changes in module 'nf-core/snpeff/download'
      snpEff \\
          -Xmx${avail_mem}M \\
 -        download ${genome}.${cache_version} \\
-+        download ${genome} \\
++        download ${snpeff_db} \\
          -dataDir \${PWD}/snpeff_cache \\
          ${args}
  
-@@ -41,7 +41,7 @@
+@@ -41,7 +41,10 @@
  
      stub:
      """
 -    mkdir ${genome}.${cache_version}
-+    mkdir ${genome}
++    mkdir -p snpeff_cache/${snpeff_db}
++
++    touch snpeff_cache/${snpeff_db}/sequence.I.bin
++    touch snpeff_cache/${snpeff_db}/sequence.bin
  
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
 
+Changes in 'snpeff/download/environment.yml':
 --- modules/nf-core/snpeff/download/environment.yml
 +++ modules/nf-core/snpeff/download/environment.yml
-@@ -4,4 +4,5 @@
+@@ -1,7 +1,6 @@
+-name: snpeff_download
+ channels:
+   - conda-forge
    - bioconda
-   - defaults
+-  - defaults
  dependencies:
 -  - bioconda::snpeff=5.1
 +  - bioconda::snpeff=5.2
 +  - bioconda::tabix=1.11
+
+Changes in 'snpeff/download/meta.yml':
+--- modules/nf-core/snpeff/download/meta.yml
++++ modules/nf-core/snpeff/download/meta.yml
+@@ -14,29 +14,35 @@
+       homepage: https://pcingola.github.io/SnpEff/
+       documentation: https://pcingola.github.io/SnpEff/se_introduction/
+       licence: ["MIT"]
++      identifier: biotools:snpeff
+ input:
+-  - meta:
+-      type: map
+-      description: |
+-        Groovy Map containing sample information
+-        e.g. [ id:'test', single_end:false ]
+-  - vcf:
+-      type: file
+-      description: |
+-        vcf to annotate
+-  - db:
+-      type: string
+-      description: |
+-        which db to annotate with
++  - - meta:
++        type: map
++        description: |
++          Groovy Map containing sample information
++          e.g. [ id:'test', single_end:false ]
++    - genome:
++        type: file
++        description: Reference genome in FASTA format
++        pattern: "*.{fasta,fna,fa}"
++    - cache_version:
++        type: string
++        description: Version of the snpEff cache to download
+ output:
+   - cache:
+-      type: file
+-      description: |
+-        snpEff cache
++      - meta:
++          type: file
++          description: |
++            snpEff cache
++      - snpeff_cache:
++          type: file
++          description: |
++            snpEff cache
+   - versions:
+-      type: file
+-      description: File containing software versions
+-      pattern: "versions.yml"
++      - versions.yml:
++          type: file
++          description: File containing software versions
++          pattern: "versions.yml"
+ authors:
+   - "@maxulysse"
+ maintainers:
 
 ************************************************************
