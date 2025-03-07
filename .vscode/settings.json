@@ -2,6 +2,7 @@
     "cSpell.words": [
         "apptainer",
         "awsbatch",
+        "awscli",
         "awsfulltest",
         "awsqueue",
         "awsregion",
@@ -30,6 +31,7 @@
         "markduplicate",
         "markduplicated",
         "markduplicates",
+        "miniconda",
         "mshick",
         "multiqc",
         "nextflow",

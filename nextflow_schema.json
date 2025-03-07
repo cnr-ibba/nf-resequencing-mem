@@ -70,8 +70,7 @@
                 },
                 "skip_normalization": {
                     "type": "boolean",
-                    "description": "Skip VCF normalization steps",
-                    "default": false
+                    "description": "Skip VCF normalization steps"
                 },
                 "snpeff_database": {
                     "type": "string",
@@ -154,8 +153,7 @@
             "properties": {
                 "normalization_only": {
                     "type": "boolean",
-                    "description": "Do only the VCF normalization workflow",
-                    "default": false
+                    "description": "Do only the VCF normalization workflow"
                 },
                 "input_vcf": {
                     "type": "string",
@@ -220,6 +218,28 @@
                     "fa_icon": "fas fa-users-cog"
                 }
             }
+        },
+        "awsbatch": {
+            "title": "awsbatch",
+            "type": "object",
+            "description": "AWS Batch specific parameters",
+            "default": "",
+            "properties": {
+                "awscli": {
+                    "type": "string",
+                    "default": "/home/ec2-user/miniconda/bin/aws",
+                    "fa_icon": "fas fa-terminal"
+                },
+                "awsqueue": {
+                    "type": "string",
+                    "fa_icon": "fas fa-clock"
+                },
+                "awsregion": {
+                    "type": "string",
+                    "fa_icon": "fas fa-globe-europe"
+                }
+            },
+            "fa_icon": "fab fa-aws"
         },
         "generic_options": {
             "title": "Generic options",
@@ -354,6 +374,9 @@
         },
         {
             "$ref": "#/definitions/institutional_config_options"
+        },
+        {
+            "$ref": "#/definitions/awsbatch"
         },
         {
             "$ref": "#/definitions/generic_options"
