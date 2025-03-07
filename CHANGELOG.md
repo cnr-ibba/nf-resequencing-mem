@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.6.3 - dev
+
+### `Fixed`
+
+- `awsbatch` profile is now managed though _institutional configuration_
+- Pin `nf-validation` plugin to `1.1.4`
+
+### `Removed`
+
+- Remove `conf/awsbatch.config` file
+
 ## 0.6.2 - [2025-02-20]
 
 - Update `nextflow_schema.json` to check for _file and directory_ existence
